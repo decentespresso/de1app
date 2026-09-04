@@ -2364,6 +2364,23 @@ proc later_new_de1_connection_setup {} {
 	#set_feature_flags 1
 
 	set_heater_tweaks
+	# Push the machine's autonomous inactivity-sleep timeout so it self-sleeps
+	# even when the tablet is off/disconnected. Reuses the tablet's existing
+	# "return to sleep after" (screen_saver_delay) value, in minutes.
+	set_sleep_timeout_minutes $::settings(screen_saver_delay)
+
+	# Phase 2: sync the firmware wall-clock (and re-arm periodic re-sync) and push
+	# the weekly wake schedule, so the machine wakes/keeps-warm on schedule and
+	# self-sleeps off-schedule even with no tablet connected.
+	machine_clock_resync
+	set_wake_schedule
+
+	# Cup-warmer pre-warm is firmware-side and flash-persisted; push the app's
+	# setting so a change made while disconnected reaches the machine.
+	set_cupwarmer_preheat [ifexists ::settings(cupwarmer_prewarm_enable) 0] \
+		[ifexists ::settings(cupwarmer_prewarm_minutes) 30]
+	get_cupwarmer_status
+
 	get_refill_kit_present
 	get_sn
 
@@ -2394,6 +2411,12 @@ proc later_new_de1_connection_setup {} {
 	after 7000 get_heater_voltage
 	after 9000 de1_enable_temp_notifications
 	after 11000 de1_enable_state_notifications
+
+	# Push stored LED colours back to the machine after state is known.
+	# Sync all 4 stored LED colours to firmware on connect. The firmware
+	# persists them and switches automatically on sleep/wake, but we push
+	# on connect to reconcile any app-side changes made while disconnected.
+	after 12000 ::led::push_all_stored
 
 }
 
@@ -2950,6 +2973,21 @@ proc de1_ble_handler { event data } {
 							} elseif {$mmr_id == "80385C"} {
 								::bt::msg -INFO "MMR read: steam_highflow_start: '$mmr_val'"
 								set ::de1(refill_kit_detected) $mmr_val
+							} elseif {$mmr_id == "8038AC"} {
+								# CupWarmerMode (0=Off, 1=On). RAM only on FW side.
+								::comms::msg -INFO "MMRead: cupwarmer_mode: '$mmr_val'"
+								set ::de1(cupwarmer_mode) $mmr_val
+
+							} elseif {$mmr_id == "8038B4"} {
+								# MatHeaterDrivePct 0-100. Shown on the cup warmer page as "Heating - N%".
+								set ::de1(mat_heater_drive) $mmr_val
+
+							} elseif {$mmr_id == "8038B8"} {
+								# MatTempFault 0=OK, 1=OpenOrShort, 2=Runaway. Shown on the cup
+								# warmer page as the NTC-disconnected warning.
+								::comms::msg -INFO "MMRead: mat_temp_fault: '$mmr_val'"
+								set ::de1(mat_temp_fault) $mmr_val
+
 							} else {
 							    ::bt::msg -ERROR "Uknown type of direct MMR read" \
 								    [::logging::format_mmr $value]

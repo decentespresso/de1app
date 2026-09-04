@@ -1546,6 +1546,12 @@ proc load_settings {} {
     
     set ::settings(stress_test) 0
 
+    # Cup warmer must not auto-activate after a power cut / app restart. The
+    # target temperature and pre-warm settings persist, but the enable flag
+    # always returns to 0 on app start. User / scheduler explicitly turns it
+    # back on. Mirrors the firmware's RAM-only CupWarmerMode behaviour.
+    set ::settings(cupwarmer_enable) 0
+
 
     # rao request to increase these defaults to 300 (from 120) to aid in pour-overs. Will remove this settings.tdb override in the future, once 
     # everyone's settings.tdb has had time to save this new default

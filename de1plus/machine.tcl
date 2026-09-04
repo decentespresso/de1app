@@ -243,6 +243,9 @@ array set ::settings {
 	cupwarmer_temp 70
 	steam_stop_mode "time"
 	target_milk_temp 60
+	cupwarmer_enable 0
+	cupwarmer_prewarm_enable 0
+	cupwarmer_prewarm_minutes 30
 	tank_desired_water_temperature 0
 	screen_size_height {}
 	log_enabled True
@@ -300,6 +303,11 @@ array set ::settings {
 	logfile "log.txt"
 	firmware_sha {}
 	water_refill_point 5
+	led_front_awake_colour "#191919"
+	led_rear_awake_colour "#191919"
+	led_front_sleep_colour "#000000"
+	led_rear_sleep_colour "#000000"
+	led_target_mode "both"
 	max_steam_pressure 3
 	mmr_enabled 0
 	insight_skin_show_embedded_profile 0

@@ -1130,12 +1130,12 @@ catch {
 		add_de1_button "settings_3" {say [translate {Descale}] $::settings(sound_button_in); set_next_page off descale_prepare; page_show descale_prepare;} 1910 310 2540 510
 	 
 add_de1_text "settings_3" 1304 750 -text [translate "Firmware"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-	# firmware update
-	add_de1_variable "settings_3" 1960 926 -text "" -width [rescale_x_skin 1000] -font Helv_10_bold -fill "#FFFFFF" -justify "center" -anchor "center" -textvariable {[check_firmware_update_is_available][translate $::de1(firmware_update_button_label)]} 
-	#add_de1_variable "settings_3" 1960 964 -font Helv_8 -fill "#FFFFFF" -anchor "center" -width 500 -justify "center" -textvariable {[firmware_uploaded_label]} 
-	#add_de1_button "settings_3" {start_firmware_update} 1280 820 2540 1020
+	# Firmware update — full-width card (matches the single wide card drawn in
+	# settings_3.png). Lighting now lives on the Counter box (LED colours), so
+	# there is no card split here.
+	add_de1_variable "settings_3" 1960 926 -text "" -width [rescale_x_skin 1000] -font Helv_10_bold -fill "#FFFFFF" -justify "center" -anchor "center" -textvariable {[check_firmware_update_is_available][translate $::de1(firmware_update_button_label)]}
 	add_de1_button "settings_3" {set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1} 1280 850 2540 1020
-	
+
 	# hidden button to force a firmware update even if it is currently disabled.
 	add_de1_button "settings_3" {set ::settings(force_fw_update) 1; set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1} 1280 750 1800 810
 
@@ -1272,25 +1272,35 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 
 	add_de1_text "settings_4" 1656 616 -text [translate "Misc"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
 		add_de1_button "settings_4" {say [translate {Misc}] $::settings(sound_button_in); page_to_show_when_off measurements; }  1290 520 1900 720
-		add_de1_text "measurements" 1280 300 -text [translate "Misc"] -font Helv_20_bold -width [rescale_x_skin 2400] -fill "#444444" -anchor "center" -justify "center" 
+		add_de1_text "measurements" 1280 100 -text [translate "Misc"] -font Helv_20_bold -width [rescale_x_skin 2400] -fill "#444444" -anchor "center" -justify "center"
+
+		# Group frames (drawn first so the controls sit on top). Left column shares
+		# x 290..1190; right column shares x 1230..2370. Top row (Screen saver /
+		# Units) is short (285..750); second row (App version / Font+Resolution)
+		# aligns 790..1100; Smart charging stays at 1140..1370. Consistent 40px gaps.
+		dui add canvas_item rect "measurements"  290 285 1190  750 -fill "" -outline "#cdd2e8" -width 2
+		dui add canvas_item rect "measurements"  290 790 1190 1100 -fill "" -outline "#cdd2e8" -width 2
+		dui add canvas_item rect "measurements" 1230 285 2370  750 -fill "" -outline "#cdd2e8" -width 2
+		dui add canvas_item rect "measurements" 1230 790 2370 1100 -fill "" -outline "#cdd2e8" -width 2
+		dui add canvas_item rect "measurements" 1230 1140 2370 1370 -fill "" -outline "#cdd2e8" -width 2
 		
 		#add_de1_text "measurements" 1300 480 -text [translate "Units"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 			#add_de1_widget "measurements" checkbutton 1300 560 {} -text [translate "Fahrenheit"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0
-			dui add dselector "measurements" 2280 480 -bwidth 600 -bheight 80 -orient h -anchor ne -values {0 1} -variable ::settings(enable_fahrenheit) -labels [list [translate "Celsius"] [translate "Fahrenheit"]] -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4" 
+			dui add dselector "measurements" 2280 340 -bwidth 600 -bheight 80 -orient h -anchor ne -values {0 1} -variable ::settings(enable_fahrenheit) -labels [list [translate "Celsius"] [translate "Fahrenheit"]] -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
 			
 
 
 
 			#add_de1_widget "measurements" checkbutton 1650 60 {} -text [translate "AM/PM"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_ampm)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-			dui add dtoggle "measurements" 1280 504 -height 60 -anchor nw -variable ::settings(enable_ampm) 
-			add_de1_text "measurements" 1420 504 -text [translate "AM/PM"] -font $optionfont -width [rescale_x_skin 2400] -fill "#4e85f4" -anchor "nw" 
-			add_de1_button "measurements" { set ::settings(enable_ampm) [expr {!$::settings(enable_ampm)}] } 1280 504 1650 564
+			dui add dtoggle "measurements" 1280 340 -height 60 -anchor nw -variable ::settings(enable_ampm)
+			add_de1_text "measurements" 1420 340 -text [translate "AM/PM"] -font $optionfont -width [rescale_x_skin 2400] -fill "#4e85f4" -anchor "nw"
+			add_de1_button "measurements" { set ::settings(enable_ampm) [expr {!$::settings(enable_ampm)}] } 1280 340 1650 400
 
 			#add_de1_widget "measurements" checkbutton 2000 560 {} -text [translate "1.234,56"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_commanumbers)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
-			dui add dtoggle "measurements" 1280 604 -height 60 -anchor nw -variable ::settings(enable_commanumbers) 
-			add_de1_text "measurements" 1420 604 -text [translate "1.234,56"] -font $optionfont -width [rescale_x_skin 2400] -fill "#4e85f4" -anchor "nw" 
-			add_de1_button "measurements" { set ::settings(enable_commanumbers) [expr {!$::settings(enable_commanumbers)}] } 1280 604 1670 664
+			dui add dtoggle "measurements" 1280 500 -height 60 -anchor nw -variable ::settings(enable_commanumbers)
+			add_de1_text "measurements" 1420 500 -text [translate "1.234,56"] -font $optionfont -width [rescale_x_skin 2400] -fill "#4e85f4" -anchor "nw"
+			add_de1_button "measurements" { set ::settings(enable_commanumbers) [expr {!$::settings(enable_commanumbers)}] } 1280 500 1670 560
 
 	
 		
@@ -1314,9 +1324,9 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			}
 
 
-			dui add dtoggle "measurements"  1740 604 -height 60 -anchor nw -variable ::settings(dim_screen_when_battery_low) 
-			add_de1_text "measurements" 1880 584 -text [translate "Dim screen when battery low"] -font $optionfont -width [rescale_x_skin 440] -fill "#4e85f4" -anchor "nw" 
-			add_de1_button "measurements" { set ::settings(dim_screen_when_battery_low) [expr {!$::settings(dim_screen_when_battery_low)}] } 1740 574 2280 690
+			dui add dtoggle "measurements"  1740 500 -height 60 -anchor nw -variable ::settings(dim_screen_when_battery_low)
+			add_de1_text "measurements" 1880 480 -text [translate "Dim screen when battery low"] -font $optionfont -width [rescale_x_skin 440] -fill "#4e85f4" -anchor "nw"
+			add_de1_button "measurements" { set ::settings(dim_screen_when_battery_low) [expr {!$::settings(dim_screen_when_battery_low)}] } 1740 470 2280 586
 
 
 			if {[ghc_required] == 0} {
@@ -1330,17 +1340,17 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			}
 
 
-			dui add dtoggle "measurements"  1740 704 -height 60 -anchor nw -variable ::settings(enable_sounds) 
-			add_de1_text "measurements" 1880 704 -text [translate "Sounds"] -font $optionfont -width [rescale_x_skin 2400] -fill "#4e85f4" -anchor "nw" 
+			dui add dtoggle "measurements"  1740 660 -height 60 -anchor nw -variable ::settings(enable_sounds)
+			add_de1_text "measurements" 1880 660 -text [translate "Sounds"] -font $optionfont -width [rescale_x_skin 2400] -fill "#4e85f4" -anchor "nw"
 
 			#set ::_placebo_true 1
 			#add_de1_widget "measurements" checkbutton 1300 740  {} -text [translate "Logging is enabled"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable _placebo_true -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat  -state disabled
 
 			#add_de1_widget "measurements" checkbutton 950 90  {} -text [translate "clock"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(display_time_in_screen_saver)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
-			dui add dtoggle "measurements" 1140 510 -height 40 -width 80 -anchor ne -variable ::settings(display_time_in_screen_saver) 
-			add_de1_text "measurements" 1040 498 -text [translate "clock"] -font $optionfont -width [rescale_x_skin 2400] -fill "#4e85f4" -anchor "ne" 
-			add_de1_button "measurements" { set ::settings(display_time_in_screen_saver) [expr {!$::settings(display_time_in_screen_saver)}] } 840 504 1140 550
+			dui add dtoggle "measurements" 1140 330 -height 40 -width 80 -anchor ne -variable ::settings(display_time_in_screen_saver)
+			add_de1_text "measurements" 1040 318 -text [translate "clock"] -font $optionfont -width [rescale_x_skin 2400] -fill "#4e85f4" -anchor "ne"
+			add_de1_button "measurements" { set ::settings(display_time_in_screen_saver) [expr {!$::settings(display_time_in_screen_saver)}] } 840 324 1140 370
 
 
 			#if {$::android != 1} {
@@ -1351,10 +1361,10 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			#add_de1_text "measurements" 1420 704 -text [translate "Fast tap mode"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
 			#add_de1_button "measurements" { set ::settings(use_finger_down_for_tap) [expr {!$::settings(use_finger_down_for_tap)}] } 1280 704 1700 764
 
-			dui add dtoggle "measurements" 1280 704 -height 60 -anchor nw -variable ::settings(keep_scale_on) 
+			dui add dtoggle "measurements" 1280 660 -height 60 -anchor nw -variable ::settings(keep_scale_on)
 			
-			add_de1_text "measurements" 1420 704 -text [translate "Keep scale on"] -font $optionfont -width [rescale_x_skin 300] -fill "#4e85f4" -anchor "nw" 
-			add_de1_button "measurements" { set ::settings(keep_scale_on) [expr {!$::settings(keep_scale_on)}] } 1280 704 1700 764
+			add_de1_text "measurements" 1420 660 -text [translate "Keep scale on"] -font $optionfont -width [rescale_x_skin 300] -fill "#4e85f4" -anchor "nw"
+			add_de1_button "measurements" { set ::settings(keep_scale_on) [expr {!$::settings(keep_scale_on)}] } 1280 660 1700 720
 
 			#dui add dtoggle "measurements" 1280 804 -height 60 -anchor nw -variable ::settings(smart_battery_charging) 
 			#add_de1_text "measurements" 1420 804 -text [translate "Smart charging"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
@@ -1365,13 +1375,13 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 
 		# iOS: font size is auto-scaled to the native screen, so hide this control
 		if {![running_on_ios]} {
-		add_de1_text "measurements" 1300 800 -text [translate "Font size"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
-			add_de1_widget "measurements" scale 1300 850 {} -from 0.1 -to 2 -background #e4d1c1 -borderwidth 1 -bigincrement 0.05 -showvalue 0 -resolution 0.05 -length [rescale_x_skin 400] -width [rescale_x_skin 100] -variable ::settings(default_font_calibration) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0
-			add_de1_variable "measurements" 1300 950 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left" -textvariable {$::settings(default_font_calibration)}
+		add_de1_text "measurements" 1300 830 -text [translate "Font size"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
+			add_de1_widget "measurements" scale 1300 900 {} -from 0.1 -to 2 -background #e4d1c1 -borderwidth 1 -bigincrement 0.05 -showvalue 0 -resolution 0.05 -length [rescale_x_skin 400] -width [rescale_x_skin 100] -variable ::settings(default_font_calibration) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0
+			add_de1_variable "measurements" 1300 1000 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left" -textvariable {$::settings(default_font_calibration)}
 		}
 
-		add_de1_text "measurements" 1300 1020 -text [translate "Smart charging"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
-			dui add dselector "measurements" 1300 1080 -bwidth 1000 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(smart_battery_charging)  -labels [list [translate "off"] [translate "on"] [translate "night"]]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
+		add_de1_text "measurements" 1300 1160 -text [translate "Smart charging"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
+			dui add dselector "measurements" 1300 1230 -bwidth 1000 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(smart_battery_charging)  -labels [list [translate "off"] [translate "on"] [translate "night"]]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
 
 
 proc calculate_screen_flip_value {} {
@@ -1398,42 +1408,42 @@ proc calculate_screen_flip_value {} {
 
 		# iOS: screen resolution + flip are fixed by the device/OS, so hide these controls
 		if {![running_on_ios]} {
-		add_de1_text "measurements" 1800 800 -text [translate "Resolution"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
-			add_de1_widget "measurements" scale 1800 860 {} -from 320 -to 2960 -background #e4d1c1 -borderwidth 1 -bigincrement 400 -showvalue 0 -resolution 1 -length [rescale_x_skin 500] -width [rescale_x_skin 100] -variable ::settings(screen_size_width) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0  -command set_resolution_height_from_width
-			add_de1_variable "measurements" 1800 960 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left" -textvariable {$::settings(screen_size_width) x $::settings(screen_size_height)}
+		add_de1_text "measurements" 1800 830 -text [translate "Resolution"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
+			add_de1_widget "measurements" scale 1800 900 {} -from 320 -to 2960 -background #e4d1c1 -borderwidth 1 -bigincrement 400 -showvalue 0 -resolution 1 -length [rescale_x_skin 500] -width [rescale_x_skin 100] -variable ::settings(screen_size_width) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0  -command set_resolution_height_from_width
+			add_de1_variable "measurements" 1800 1000 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left" -textvariable {$::settings(screen_size_width) x $::settings(screen_size_height)}
 			calculate_screen_flip_value
 			#add_de1_widget "measurements" checkbutton 2100 1320  {} -text [translate "flip"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::globals(screen_flip)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command calculate_screen_flip_value
 
-			dui add dtoggle "measurements" 2300 814 -height 40 -width 80 -anchor ne -variable ::globals(screen_flip)
-			add_de1_text "measurements" 2210 800 -text [translate "flip"] -font $optionfont -width [rescale_x_skin 2400] -fill "#4e85f4" -anchor "ne"
-			add_de1_button "measurements" { set ::globals(screen_flip) [expr {!$::globals(screen_flip)}] ; calculate_screen_flip_value} 2010 806 2310 850
+			dui add dtoggle "measurements" 2300 844 -height 40 -width 80 -anchor ne -variable ::globals(screen_flip)
+			add_de1_text "measurements" 2210 830 -text [translate "flip"] -font $optionfont -width [rescale_x_skin 2400] -fill "#4e85f4" -anchor "ne"
+			add_de1_button "measurements" { set ::globals(screen_flip) [expr {!$::globals(screen_flip)}] ; calculate_screen_flip_value} 2010 836 2310 880
 		}
 
 
 
 			
-		add_de1_text "measurements" 340 500 -text [translate "Screen saver"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
-			add_de1_widget "measurements" scale 340 560 {} -from 0 -to 100 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 800] -width [rescale_x_skin 100] -variable ::settings(saver_brightness) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-			add_de1_variable "measurements" 340 660 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left" -textvariable {[translate "Brightness"] $::settings(saver_brightness)%}
+		add_de1_text "measurements" 340 320 -text [translate "Screen saver"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
+			add_de1_widget "measurements" scale 340 380 {} -from 0 -to 100 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 800] -width [rescale_x_skin 100] -variable ::settings(saver_brightness) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0
+			add_de1_variable "measurements" 340 480 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left" -textvariable {[translate "Brightness"] $::settings(saver_brightness)%}
 
 			add_de1_variable "measurements" 20 1540 -text "" -font Helv_6 -fill "#888888" -anchor "nw" -width [rescale_x_skin 1600] -justify "left" -textvariable {[translate "Battery"] [battery_percent]% : [battery_state] : $::de1(usb_charger_on)}
 			add_de1_button "measurements" {say [translate {USB}] $::settings(sound_button_in); toggle_usb_charger_on} 0 1400 600 1600
 
-			add_de1_widget "measurements" scale 340 740 {} -from 0 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 800] -width [rescale_x_skin 100] -variable ::settings(screen_saver_change_interval) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0
-			add_de1_variable "measurements" 340 840 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left" -textvariable {[screen_saver_change_minutes $::settings(screen_saver_change_interval)]}
+			add_de1_widget "measurements" scale 340 570 {} -from 0 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 800] -width [rescale_x_skin 100] -variable ::settings(screen_saver_change_interval) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0
+			add_de1_variable "measurements" 340 670 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left" -textvariable {[screen_saver_change_minutes $::settings(screen_saver_change_interval)]}
 
 			# App version channel (stable/beta/nightly) + auto-update toggle.
 			# Shown on ALL platforms now: de1app self-updates everywhere. iOS ships via
 			# SideStep (not the App Store), so the old App-Store-only hide is removed.
-			add_de1_text "measurements" 340 920 -text [translate "App version"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
-				dui add dselector "measurements" 340 980 -bwidth 800 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(app_updates_beta_enabled) -labels [list [translate "stable"] [translate "beta"] [translate "nightly"]]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
+			add_de1_text "measurements" 340 830 -text [translate "App version"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
+				dui add dselector "measurements" 340 910 -bwidth 800 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(app_updates_beta_enabled) -labels [list [translate "stable"] [translate "beta"] [translate "nightly"]]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
 
-			dui add dtoggle "measurements"  340 1080 -height 60 -anchor nw -variable ::settings(app_auto_update)
+			dui add dtoggle "measurements"  340 1020 -height 60 -anchor nw -variable ::settings(app_auto_update)
 
-			add_de1_text "measurements" 480 1080 -text [translate "update automatically"]  -font $optionfont -width [rescale_x_skin 700] -fill "#4e85f4" -justify left -anchor "nw"
-			add_de1_button "measurements" { set ::settings(app_auto_update) [expr {!$::settings(app_auto_update)}] } 340 1080 1200 1140
+			add_de1_text "measurements" 480 1020 -text [translate "update automatically"]  -font $optionfont -width [rescale_x_skin 700] -fill "#4e85f4" -justify left -anchor "nw"
+			add_de1_button "measurements" { set ::settings(app_auto_update) [expr {!$::settings(app_auto_update)}] } 340 1020 1200 1080
 
-	add_de1_text "settings_4" 2290 616 -text [translate "Extensions"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
+	add_de1_text "settings_4" 2290 616 -text [translate "Extensions"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 	add_de1_button "settings_4" {say [translate {Extensions}] $::settings(sound_button_in); fill_extensions_listbox; page_to_show_when_off extensions; ; set_extensions_scrollbar_dimensions}  1910 520 2530 720
 
 		add_de1_text "extensions" 1280 300 -text [translate "Extensions"] -font Helv_20_bold -width [rescale_x_skin 2400] -fill "#444444" -anchor "center" -justify "center" 
@@ -1473,9 +1483,14 @@ proc calculate_screen_flip_value {} {
 
 				#add_de1_variable "measurements" 340 1110 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Once stable for:"] [days_text $::settings(app_update_delay_notification)]}
 
-	# "done" button for all these sub-pages.
-	add_de1_text "tabletstyles languages measurements extensions" 1280 1310 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-	add_de1_button "tabletstyles languages measurements extensions" {say [translate {Ok}] $::settings(sound_button_in); page_to_show_when_off settings_4;} 980 1210 1580 1410 ""
+	# "done" button for these sub-pages (settings_message.png draws a centred Ok).
+	add_de1_text "tabletstyles languages extensions" 1280 1310 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_button "tabletstyles languages extensions" {say [translate {Ok}] $::settings(sound_button_in); page_to_show_when_off settings_4;} 980 1210 1580 1410 ""
+
+	# Misc uses the roomier settings_pages_simple.png background, whose Ok button
+	# is drawn bottom-right; put the Ok label on it + an invisible tap zone.
+	add_de1_text "measurements" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_button "measurements" {say [translate {Ok}] $::settings(sound_button_in); page_to_show_when_off settings_4;} 2010 1480 2540 1645
 ##############################################################################
 
 
@@ -1527,6 +1542,14 @@ proc fetch_possible_de1_sn {} {
 		add_de1_variable "settings_3" 400 310 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(espresso_count)]}
 		add_de1_variable "settings_3" 400 370 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(steaming_count)]}
 		add_de1_variable "settings_3" 400 430 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(water_count)]}
+
+		# Bengle-only shortcuts, stacked on the right side of the Counter box.
+		# Built always, shown only on a Bengle: is_bengle_model can be false at
+		# skin-load time (the Bengle connects afterwards), so we gate visibility
+		# at page-show rather than at build, matching the "scheduler" pattern.
+		dui add dbutton "settings_3" 760 235 -bheight 100 -style insight_ok -anchor nw -command {::led::open_picker} -label [translate "LED colors"] -tags [list bengle_counter_led bengle_counter]
+		dui add dbutton "settings_3" 760 350 -bheight 100 -style insight_ok -anchor nw -command {say [translate {Cup warmer}] $::settings(sound_button_in); page_to_show_when_off cupwarmer} -label [translate "Cup warmer"] -tags [list bengle_counter_cupwarmer bengle_counter]
+		add_de1_action "settings_3" { dui item show_or_hide [is_bengle_model] settings_3 bengle_counter }
 
 		add_de1_variable "settings_3" 1250 544 -text "" -font Helv_8 -fill "#7f879a" -anchor "ne" -width [rescale_x_skin 1000] -justify "right" -textvariable {[de1_sn_show]}
 		add_de1_button "settings_3" {show_de1_sn_page} 500 544 1250 600
@@ -1764,8 +1787,8 @@ proc scheduler_feature_hide_show_refresh {  } {
 #add_de1_widget "settings_2c" checkbutton 1538 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 -relief flat 
 # scheduled power up/down
 add_de1_text "settings_3" 180 1134 -justify left -anchor "nw" -font $optionfont -text [translate "Keep hot"]  -fill "#4e85f4" -width [rescale_x_skin 1000] 
-dui add dtoggle "settings_3" 50 1140 -height 50 -width 100 -anchor nw -variable ::settings(scheduler_enable) -command scheduler_feature_hide_show_refresh 
-add_de1_button "settings_3" { set ::settings(scheduler_enable) [expr {! $::settings(scheduler_enable)}]; scheduler_feature_hide_show_refresh } 50 1140 500 1190
+dui add dtoggle "settings_3" 50 1140 -height 50 -width 100 -anchor nw -variable ::settings(scheduler_enable) -command { scheduler_feature_hide_show_refresh; set_alarms_for_de1_wake_sleep }
+add_de1_button "settings_3" { set ::settings(scheduler_enable) [expr {! $::settings(scheduler_enable)}]; scheduler_feature_hide_show_refresh; set_alarms_for_de1_wake_sleep } 50 1140 500 1190
 scheduler_feature_hide_show_refresh
 
 
@@ -2228,9 +2251,179 @@ add_de1_text "calibrate calibrate2 calibrate3" 1280 290 -text [translate "Calibr
 	#add_de1_text "calibrate2" 2520 1510 -text [subst {\[ [translate "Page 2 of 3"] \]}] -font Helv_10_bold -fill "#666666" -anchor "ne"
 	#add_de1_text "calibrate3" 2520 1510 -text [subst {\[ [translate "Page 3 of 3"] \]}] -font Helv_10_bold -fill "#666666" -anchor "ne"
 
-	dui add dbutton "calibrate" 2050 1460 -style insight_ok -anchor nw -command show_page_calibrate_2 -label [subst {[translate "Page 1 of 3"] >}]
-	dui add dbutton "calibrate2" 2050 1460 -style insight_ok -anchor nw -command show_page_calibrate_3 -label [subst {[translate "Page 2 of 3"] >}]
-	dui add dbutton "calibrate3" 2050 1460 -style insight_ok -anchor nw -command show_page_calibrate -label [subst {[translate "Page 3 of 3"] >}]
+	dui add dbutton "calibrate" 2050 1460 -style insight_ok -anchor nw -command show_page_calibrate_2 -label [subst {[translate "Page 1"] >}]
+	dui add dbutton "calibrate2" 2050 1460 -style insight_ok -anchor nw -command show_page_calibrate_3 -label [subst {[translate "Page 2"] >}]
+	dui add dbutton "calibrate3" 2050 1460 -style insight_ok -anchor nw -command show_page_calibrate_3_next -label [subst {[translate "Page 3"] >}]
+
+proc show_page_calibrate_3_next {} {
+	# Cup Warmer is now its own standalone page (reached from the Machine tab),
+	# no longer appended to the calibration workflow.
+	say [translate {Done}] $::settings(sound_button_in)
+	set_heater_tweaks
+	page_to_show_when_off calibrate
+}
+
+# Built unconditionally: is_bengle_model reads the runtime
+# ::de1(ble_protocol_version), still 1 at skin-load time (before the Bengle
+# connects), so a build-time gate would never create this page. It is
+# unreachable on a DE1 (its entry buttons are runtime-gated), and its firmware
+# writes all early-return on non-Bengle, so building it always is harmless.
+if {1} {
+	########################################
+	# Cup warmer sub-page (Bengle only)
+	# Lives in the Calibration workflow as Page 4 of 5 (between calibrate3
+	# flow). Navigation in and out is via the
+	# "Page N >" button on the bottom right, matching the other calibrate
+	# pages.
+	#
+	# Firmware side (addresses per the firmware's MMR.def):
+	#   MatSetPoint       (0x00803874) - RWD, persisted, °C
+	#   CupWarmerMode     (0x008038AC) - RW, NOT persisted (0 on every boot)
+	#   MatHeaterDrivePct (0x008038B4) - R, 0-100 live drive
+	#   MatTempFault      (0x008038B8) - R, 0=OK / 1=OpenOrShort
+	#   MatPreheatEnable  (0x008038D0) - RWD, persisted
+	#   MatPreheatLeadMin (0x008038D4) - RWD, persisted, minutes
+	# The firmware gates the heater on API state: it runs only in
+	# Idle/SchedIdle, never in Sleep. Pre-warm timing is the firmware's too --
+	# with MatPreheatEnable set it starts the mat MatPreheatLeadMin minutes
+	# before a scheduled wake, with no tablet connected.
+	########################################
+
+	# Pushes the current UI state to firmware + persists settings.tdb.
+	# Throttled so a slider drag doesn't flood the BLE queue.
+	namespace eval ::cupwarmer {}
+	set ::cupwarmer::_commit_after ""
+	proc ::cupwarmer::_commit {} {
+		set ::cupwarmer::_commit_after ""
+		set_cupwarmer_temperature $::settings(cupwarmer_temp)
+		set_cupwarmer_mode $::settings(cupwarmer_enable)
+		# Pre-warm timing lives in the firmware (MatPreheatEnable /
+		# MatPreheatLeadMin), so the toggle and the lead slider must reach the
+		# machine, not only be saved locally.
+		set_cupwarmer_preheat [ifexists ::settings(cupwarmer_prewarm_enable) 0] \
+			[ifexists ::settings(cupwarmer_prewarm_minutes) 30]
+		set_alarms_for_de1_wake_sleep
+		after idle save_settings
+	}
+	proc ::cupwarmer::_request_commit {} {
+		if {$::cupwarmer::_commit_after ne ""} {
+			after cancel $::cupwarmer::_commit_after
+		}
+		set ::cupwarmer::_commit_after [after 250 ::cupwarmer::_commit]
+	}
+
+	proc ::cupwarmer::toggle_enable {} {
+		set ::settings(cupwarmer_enable) [expr {!$::settings(cupwarmer_enable)}]
+		::cupwarmer::_request_commit
+		::cupwarmer::_update_enable_state
+	}
+
+	# Hide the "Target temperature" controls when the warmer is off, so only the
+	# enable toggle + status show. Called on page show and when the toggle flips.
+	proc ::cupwarmer::_update_enable_state {} {
+		set on [ifexists ::settings(cupwarmer_enable) 0]
+		catch {dui item show_or_hide $on cupwarmer cw_temp_grp}
+		# The whole pre-warm group only applies when the warmer is on.
+		catch {dui item show_or_hide $on cupwarmer cw_pw_all}
+		# When shown, still collapse the "start heater" sub-section if pre-warm is off.
+		if {$on} { ::cupwarmer::_update_prewarm_state }
+	}
+
+	proc ::cupwarmer::toggle_prewarm {} {
+		set ::settings(cupwarmer_prewarm_enable) [expr {!$::settings(cupwarmer_prewarm_enable)}]
+		::cupwarmer::_request_commit
+		::cupwarmer::_update_prewarm_state
+	}
+
+	# Hide the "Start heater before wake" controls entirely when pre-warm is off,
+	# so only the toggle shows. Called on page show and when the toggle flips.
+	proc ::cupwarmer::_update_prewarm_state {} {
+		set on [ifexists ::settings(cupwarmer_prewarm_enable) 0]
+		catch {dui item show_or_hide $on cupwarmer cw_prewarm_grp}
+	}
+
+	# Live status poll — get_cupwarmer_status is otherwise only read once at
+	# connect, so the "Currently heating at: N %" readout was stale. While the
+	# page is open, re-read drive/fault every 2s; self-cancels on leaving.
+	proc ::cupwarmer::_start_poll {} {
+		if {[ifexists ::cupwarmer::_poll_after ""] ne ""} { return }
+		::cupwarmer::_poll
+	}
+	proc ::cupwarmer::_poll {} {
+		set ::cupwarmer::_poll_after ""
+		if {![is_bengle_model]} { return }
+		if {[ifexists ::de1(current_context) ""] ne "cupwarmer"} { return }
+		get_cupwarmer_status
+		set ::cupwarmer::_poll_after [after 2000 ::cupwarmer::_poll]
+	}
+
+	proc ::cupwarmer::status_text {} {
+		set fault [ifexists ::de1(mat_temp_fault) 0]
+		if {$fault == 1} { return [translate "NTC disconnected — warmer disabled"] }
+		if {[ifexists ::settings(cupwarmer_enable) 0] != 1} {
+			return [translate "Warmer is off"]
+		}
+		set pct [ifexists ::de1(mat_heater_drive) 0]
+		return "[translate "Currently heating at:"] ${pct} %"
+	}
+
+	proc ::cupwarmer::prewarm_preview {} {
+		if {[ifexists ::settings(scheduler_enable) 0] != 1} {
+			return [translate "Enable the wake schedule first"]
+		}
+		if {[ifexists ::settings(cupwarmer_prewarm_enable) 0] != 1} {
+			return ""
+		}
+		set mins [ifexists ::settings(cupwarmer_prewarm_minutes) 0]
+		set wake_at [next_alarm_time $::settings(scheduler_wake)]
+		set prewarm_at [expr {$wake_at - 60 * $mins}]
+		return "[translate "Heater turns on at"] [time_format $prewarm_at]"
+	}
+
+	# --- Page registration + layout -------------------------------------------
+	# Standalone page styled like the Misc settings page: a single white card
+	# supplied by the settings_pages_simple.png background.
+	add_de1_page "cupwarmer" "settings_pages_simple.png" "default"
+
+	# Centred title on top, matching the Misc page.
+	add_de1_text "cupwarmer" 1280 100 -text [translate "Cup Warmer"] -font Helv_20_bold -width [rescale_x_skin 2400] -fill "#444444" -anchor "center" -justify "center"
+
+	# Single column (no group frames): Warmer section, then Pre-warm below it.
+
+	# ============ Warmer ======================================================
+	# On/off — toggle left of the label (Misc style). The invisible button spans
+	# the row so a tap anywhere flips it; the dtoggle is the visual.
+	dui add dtoggle "cupwarmer" 100 250 -height 60 -width 120 -anchor nw -variable ::settings(cupwarmer_enable)
+	add_de1_text "cupwarmer" 260 280 -text [translate "Enable cup warmer"] -font Helv_8 -fill "#4e85f4" -anchor "w"
+	add_de1_button "cupwarmer" {::cupwarmer::toggle_enable} 100 245 780 325
+	add_de1_variable "cupwarmer" 100 375 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1050] -justify "left" -textvariable {[::cupwarmer::status_text]}
+
+	# "Target temperature" — the whole sub-section is hidden when the warmer is
+	# off, via ::cupwarmer::_update_enable_state toggling the cw_temp_grp tag.
+	add_de1_text "cupwarmer" 100 485 -text [translate "Target temperature"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -tags [list cw_temp_head cw_temp_grp]
+	add_de1_widget "cupwarmer" scale 100 555 {} -from 20 -to 80 -background #e4d1c1 -borderwidth 1 -bigincrement 5 -showvalue 0 -resolution 1 -length [rescale_x_skin 1000] -width [rescale_x_skin 100] -variable ::settings(cupwarmer_temp) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0 -highlightthickness 0 -command {::cupwarmer::_request_commit; list} -tags [list cw_temp_slider cw_temp_grp]
+	add_de1_variable "cupwarmer" 100 665 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1050] -justify "left" -tags [list cw_temp_val cw_temp_grp] -textvariable {[format "%d °C" [round_to_integer $::settings(cupwarmer_temp)]]}
+
+	# ============ Pre-warm on schedule (stacked below Warmer) =================
+	add_de1_text "cupwarmer" 100 785 -text [translate "Pre-warm on schedule"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -tags [list cw_pw_head cw_pw_all]
+
+	dui add dtoggle "cupwarmer" 100 850 -height 60 -width 120 -anchor nw -variable ::settings(cupwarmer_prewarm_enable) -tags [list cw_pw_toggle cw_pw_all]
+	add_de1_text "cupwarmer" 260 880 -text [translate "Pre-warm cups before wake"] -font Helv_8 -fill "#4e85f4" -anchor "w" -tags [list cw_pw_lbl cw_pw_all]
+	dui add dbutton "cupwarmer" 100 845 1050 925 -command {::cupwarmer::toggle_prewarm} -theme none -tags [list cw_pw_btn cw_pw_all]
+
+	# "Start heater before wake" — the whole sub-section (label, slider, value)
+	# is hidden while pre-warm is off, via ::cupwarmer::_update_prewarm_state
+	# toggling the shared cw_prewarm_grp tag.
+	add_de1_text "cupwarmer" 100 995 -text [translate "Start heater before wake"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -tags [list cw_prewarm_head cw_prewarm_grp cw_pw_all]
+	add_de1_widget "cupwarmer" scale 100 1065 {} -from 0 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 5 -showvalue 0 -resolution 5 -length [rescale_x_skin 1000] -width [rescale_x_skin 100] -variable ::settings(cupwarmer_prewarm_minutes) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0 -highlightthickness 0 -command {::cupwarmer::_request_commit; list} -tags [list cw_prewarm_slider cw_prewarm_grp cw_pw_all]
+	add_de1_variable "cupwarmer" 100 1175 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1120] -justify "left" -tags [list cw_prewarm_val cw_prewarm_grp cw_pw_all] -textvariable {[format "%d [translate "min"]" [round_to_integer $::settings(cupwarmer_prewarm_minutes)]]}
+	add_de1_action "cupwarmer" { ::cupwarmer::_update_enable_state; ::cupwarmer::_start_poll }
+
+	# Ok label over the background graphic's button + an invisible tap zone.
+	# Returns to the Machine tab.
+	add_de1_text "cupwarmer" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_button "cupwarmer" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3; scheduler_feature_hide_show_refresh; set ::settings(active_settings_tab) "settings_3"} 2010 1480 2540 1645
+} ;# end always-build cupwarmer page
 
 proc show_page_calibrate {} {
 	say [translate {Done}] $::settings(sound_button_in)
@@ -2542,3 +2735,509 @@ proc flush_log_loop {} {
 
 #after 2 show_settings decent_login
 #after 2 show_settings email_support
+
+# Arm the wake / prewarm timers once on app start so a tablet reboot mid-day
+# still fires the scheduled wake (and the cup-warmer pre-warm) correctly. The
+# previous version only rearmed when scheduler_wake naturally fired or when
+# the user hit OK on the settings pages (exit_settings_pages at line 40). Use
+# `after idle` to defer until the event loop is running, so this works no
+# matter the source-order of vars.tcl.
+after idle set_alarms_for_de1_wake_sleep
+########################################
+# LED colour picker sub-page (Bengle only)
+# Reached from settings_3 "Lighting" card. Lets the user set front/rear
+# strip colours independently for the awake and sleep states.
+########################################
+
+# Built unconditionally (defines ::led::open_picker + the led_picker page +
+# ::led:: procs). is_bengle_model is still false at skin-load time, so a
+# build-time gate would leave open_picker undefined and the page missing. The
+# page is unreachable on a DE1 (entry button runtime-gated) and ::led::write_*
+# early-returns on non-Bengle, so building it always is harmless.
+if {1} {
+
+	# --- ephemeral UI state ---------------------------------------------------
+	set ::led::brightness   100   ;# slider 0-100, mirrors V of currently-edited colour
+	set ::led::wheel_hue    0     ;# 0-360
+	set ::led::wheel_sat    0     ;# 0-1
+	array set ::led::swatch_item {}  ;# "awake_front" → canvas item id, etc
+	set ::led::puck_item    0
+	set ::led::wheel_cx     1900   ;# centre, canvas coords (right column)
+	set ::led::wheel_cy     620
+	set ::led::wheel_r      360
+	# Rectangular hue(x) x saturation(y) picker — fills the right column better
+	# than the round wheel. To revert to the wheel, restore the backup skin file.
+	set ::led::rect_x0      1310
+	set ::led::rect_y0      260
+	set ::led::rect_w       1145
+	set ::led::rect_h       720
+	set ::led::both_awake   0      ;# per-row "Both strips" checkbox
+	set ::led::both_sleep   0
+	# Swatch bounds (canvas coords) for the selection-highlight box.
+	array set ::led::_swatch_bounds {
+		awake_front {100 350 560 530}
+		awake_rear  {620 350 1080 530}
+		sleep_front {100 750 560 930}
+		sleep_rear  {620 750 1080 930}
+	}
+	set ::led::wheel_img    ""    ;# populated lazily on first show
+	set ::led::wheel_canvas_item ""  ;# canvas id of the image item hosting the wheel
+	set ::led::_commit_after ""
+	set ::led::_save_after ""   ;# debounce handle for save_settings
+	set ::led::_suppress_brightness_cmd 0
+	set ::led::_dirty 0         ;# 1 if any settings(...) write has happened since last save
+	set ::led::active_pair_box ""     ;# canvas id of the accent outline around the edited swatch pair
+	set ::led::edit_underline  ""     ;# pill under the selected awake/sleep label
+	set ::led::target_underline ""    ;# pill under the selected front/rear/both label
+	array set ::led::off_indicator {} ;# canvas ids of the "OFF" badges over each swatch
+	# Popular ambient-LED colours: 12 in a 6x2 grid — two whites plus an even trip
+	# around the wheel. Row 1: warm white, cool white, red, amber, yellow, lime.
+	# Row 2: green, teal, cyan, blue, purple, pink.
+	set ::led::presets [list \
+		"#FFCE9E" "#EAF2FF" "#FF3030" "#FF8A1E" "#FFD21A" "#7BE04A" \
+		"#35C759" "#1FC7B6" "#1FB6FF" "#2E7BFF" "#9B4DE0" "#FF4FA3"]
+
+	# --- rendering ------------------------------------------------------------
+
+	# Build the HSV colour wheel into a Tk photo image. Renders at V=1;
+	# brightness is applied separately via the slider. Runs once, lazily.
+	proc ::led::_build_wheel_image {} {
+		if {$::led::wheel_img ne ""} { return }
+		# Rectangular hue(x) x saturation(y) gradient at V=1. Built small then
+		# zoomed to the footprint so the ~24k hsv computations stay fast.
+		set fw [rescale_x_skin $::led::rect_w]
+		set fh [rescale_y_skin $::led::rect_h]
+		set z 3
+		set sw [expr {int($fw / $z)}]
+		set sh [expr {int($fh / $z)}]
+		if {$sw < 2} { set sw 2 }
+		if {$sh < 2} { set sh 2 }
+		set small [image create photo -width $sw -height $sh]
+		for {set y 0} {$y < $sh} {incr y} {
+			set sat [expr {1.0 - double($y) / ($sh - 1)}]   ;# top = full saturation
+			set row [list]
+			for {set x 0} {$x < $sw} {incr x} {
+				set hue [expr {double($x) / ($sw - 1) * 360.0}]
+				lappend row [::led::hsv_to_hex $hue $sat 1.0]
+			}
+			$small put [list $row] -to 0 $y
+		}
+		set img [image create photo -width [expr {$sw * $z}] -height [expr {$sh * $z}]]
+		$img copy $small -zoom $z
+		image delete $small
+		set ::led::wheel_img $img
+	}
+
+	# --- colour computations --------------------------------------------------
+
+	# Current hex being painted onto the target LEDs, based on wheel+brightness.
+	proc ::led::_current_preview_hex {} {
+		set v [expr {$::led::brightness / 100.0}]
+		return [::led::hsv_to_hex $::led::wheel_hue $::led::wheel_sat $v]
+	}
+
+	# Setting name for a given state / strip, e.g. (awake, front) → led_front_awake_colour
+	proc ::led::_setting_name {state strip} {
+		return "led_${strip}_${state}_colour"
+	}
+
+	# Write `hex` into the settings vars for the currently-edited state and
+	# the currently-selected target (front / rear / both).
+	proc ::led::_store_edited_colour {hex} {
+		set state $::led::editing_state
+		set target $::settings(led_target_mode)
+		if {$target eq "front" || $target eq "both"} {
+			set ::settings([::led::_setting_name $state front]) $hex
+		}
+		if {$target eq "rear" || $target eq "both"} {
+			set ::settings([::led::_setting_name $state rear]) $hex
+		}
+		set ::led::_dirty 1
+	}
+
+	# --- UI update helpers ----------------------------------------------------
+
+	proc ::led::_update_swatches {} {
+		foreach state {awake sleep} {
+			foreach strip {front rear} {
+				set key "${state}_${strip}"
+				set hex $::settings([::led::_setting_name $state $strip])
+				if {[info exists ::led::swatch_item($key)]} {
+					.can itemconfigure $::led::swatch_item($key) -fill $hex
+				}
+				# Show the stored #RGB value inside the swatch, in a colour that
+				# reads on that background (white on dark, black on light).
+				if {[info exists ::led::off_indicator($key)]} {
+					.can itemconfigure $::led::off_indicator($key) -text "[string toupper $strip]\n$hex" -fill [::led::_contrast_color $hex]
+				}
+			}
+		}
+	}
+
+	proc ::led::_update_puck {} {
+		if {$::led::puck_item == 0} { return }
+		set x [expr {$::led::rect_x0 + ($::led::wheel_hue / 360.0) * $::led::rect_w}]
+		set y [expr {$::led::rect_y0 + (1.0 - $::led::wheel_sat) * $::led::rect_h}]
+		set px [rescale_x_skin [expr {$x - 28}]]
+		set py [rescale_y_skin [expr {$y - 28}]]
+		set px2 [rescale_x_skin [expr {$x + 28}]]
+		set py2 [rescale_y_skin [expr {$y + 28}]]
+		.can coords $::led::puck_item $px $py $px2 $py2
+	}
+
+	# Load the currently-edited state's colour into the wheel puck + slider.
+	# Uses the "target" mode to decide which LED to track — front by default,
+	# or rear if target is rear, or the front colour if target is both.
+	proc ::led::_sync_controls_from_settings {} {
+		set state $::led::editing_state
+		set strip front
+		if {$::settings(led_target_mode) eq "rear"} { set strip rear }
+		set hex $::settings([::led::_setting_name $state $strip])
+		lassign [::led::hex_to_hsv $hex] h s v
+		# When v is 0 (black) the hex contains no hue/saturation information,
+		# so don't overwrite the puck position — let it keep wherever the user
+		# last placed it. Only the brightness slider moves to 0.
+		if {$v > 0.001} {
+			set ::led::wheel_hue $h
+			set ::led::wheel_sat $s
+		}
+		set ::led::_suppress_brightness_cmd 1
+		set ::led::brightness [expr {int(round($v * 100))}]
+		set ::led::_suppress_brightness_cmd 0
+		::led::_update_puck
+	}
+
+	# --- commit (MMR write) ---------------------------------------------------
+
+	# Push the currently-edited colour to the physical LEDs.
+	# While the picker is open we push whatever colour the user is editing,
+	# regardless of machine state, so they can judge the sleep colour while
+	# the machine is awake.
+	proc ::led::_commit_current {} {
+		set hex [::led::_current_preview_hex]
+		::led::write_target $::settings(led_target_mode) $hex
+	}
+
+	# Debounced commit — used during slider/wheel drags.
+	# Guarded on picker_active so stray events (e.g. a queued ButtonRelease
+	# landing after the user navigates away) can't arm a stale timer.
+	proc ::led::_schedule_commit {} {
+		if {!$::led::picker_active} { return }
+		if {$::led::_commit_after ne ""} {
+			after cancel $::led::_commit_after
+		}
+		# Timer body re-checks picker_active in case `after cancel` raced
+		# with dispatch and the body still fires after picker_exit.
+		set ::led::_commit_after [after 120 {
+			set ::led::_commit_after ""
+			if {$::led::picker_active} { ::led::_commit_current }
+		}]
+		::led::_schedule_save
+	}
+
+	# Debounced settings save — protects edits if the app dies before Back.
+	# Re-scheduled on every edit, so only fires after ~3s of inactivity.
+	proc ::led::_schedule_save {} {
+		if {!$::led::picker_active} { return }
+		if {$::led::_save_after ne ""} {
+			after cancel $::led::_save_after
+		}
+		set ::led::_save_after [after 3000 {set ::led::_save_after ""; save_settings; ::led::push_all_stored; set ::led::_dirty 0}]
+	}
+
+	# --- event handlers -------------------------------------------------------
+
+	# px, py: widget pixel coords (from %x %y). commit=1 on release.
+	proc ::led::on_wheel_input {px py commit} {
+		# Ignore stray events that land after the user has navigated away.
+		if {!$::led::picker_active} { return }
+		set x [dui platform unscale_x $px]
+		set y [dui platform unscale_y $py]
+		# Map into the rectangle: x -> hue (0-360), y -> saturation (top = 1).
+		set fx [expr {($x - $::led::rect_x0) / double($::led::rect_w)}]
+		set fy [expr {($y - $::led::rect_y0) / double($::led::rect_h)}]
+		if {$fx < 0} { set fx 0 } elseif {$fx > 1} { set fx 1 }
+		if {$fy < 0} { set fy 0 } elseif {$fy > 1} { set fy 1 }
+		set ::led::wheel_hue [expr {$fx * 360.0}]
+		set ::led::wheel_sat [expr {1.0 - $fy}]
+		::led::_update_puck
+		set hex [::led::_current_preview_hex]
+		::led::_store_edited_colour $hex
+		::led::_update_swatches
+		if {$commit} {
+			::led::_commit_current
+		} else {
+			::led::_schedule_commit
+		}
+	}
+
+	proc ::led::on_brightness_change {val} {
+		if {$::led::_suppress_brightness_cmd} { return }
+		# Ignore trailing Scale-widget -command callbacks that fire after
+		# the user has navigated away from the picker.
+		if {!$::led::picker_active} { return }
+		set hex [::led::_current_preview_hex]
+		::led::_store_edited_colour $hex
+		::led::_update_swatches
+		::led::_schedule_commit
+	}
+
+	proc ::led::set_editing {state} {
+		set ::led::editing_state $state
+		::led::_sync_controls_from_settings
+		::led::_update_toggle_visuals
+		::led::_commit_current   ;# preview whatever state is now being edited
+	}
+
+	proc ::led::set_target {target} {
+		set ::settings(led_target_mode) $target
+		set ::led::_dirty 1   ;# led_target_mode is persisted; ensure save runs
+		::led::_sync_controls_from_settings
+		::led::_update_toggle_visuals
+		::led::_commit_current   ;# newly-targeted LED picks up the preview
+		::led::_schedule_save
+	}
+
+	# Tap a swatch to choose which stored colour the wheel edits. With that row's
+	# "Both" box checked, tapping either swatch selects the pair.
+	proc ::led::select_swatch {state strip} {
+		set ::led::editing_state $state
+		if {[set ::led::both_$state]} {
+			set ::settings(led_target_mode) both
+		} else {
+			set ::settings(led_target_mode) $strip
+		}
+		set ::led::_dirty 1
+		::led::_sync_controls_from_settings
+		::led::_update_toggle_visuals
+		::led::_commit_current
+		::led::_schedule_save
+	}
+
+	# "Both" checkbox changed (the dtoggle has already flipped ::led::both_<state>).
+	# If that row is the one being edited, re-derive the target + highlight.
+	proc ::led::on_both_changed {state} {
+		if {$::led::editing_state ne $state} { return }
+		if {[set ::led::both_$state]} {
+			set ::settings(led_target_mode) both
+		} elseif {$::settings(led_target_mode) eq "both"} {
+			set ::settings(led_target_mode) front
+		}
+		::led::_sync_controls_from_settings
+		::led::_update_toggle_visuals
+	}
+
+	# Readable text colour for a swatch background (white on dark, black on light).
+	proc ::led::_contrast_color {hex} {
+		set h [string trimleft $hex "#"]
+		if {[string length $h] != 6 || [scan $h "%2x%2x%2x" r g b] != 3} { return "#FFFFFF" }
+		return [expr {(0.299*$r + 0.587*$g + 0.114*$b) < 128 ? "#FFFFFF" : "#000000"}]
+	}
+
+	proc ::led::apply_preset {hex} {
+		lassign [::led::hex_to_hsv $hex] h s v
+		set ::led::wheel_hue $h
+		set ::led::wheel_sat $s
+		set ::led::_suppress_brightness_cmd 1
+		set ::led::brightness [expr {int(round($v * 100))}]
+		set ::led::_suppress_brightness_cmd 0
+		::led::_update_puck
+		::led::_store_edited_colour $hex
+		::led::_update_swatches
+		::led::_commit_current
+		::led::_schedule_save
+	}
+
+	# --- toggle visuals -------------------------------------------------------
+
+	# The Awake/Sleep and Front/Rear/Both toggles are plain text items whose
+	# fill colour we flip to show which option is selected. Item IDs are
+	# captured at page creation time.
+	array set ::led::toggle_item {}
+	set ::led::_sel_fill   "#2d3046"   ;# selected (dark)
+	set ::led::_unsel_fill "#8c8d96"   ;# unselected (grey)
+
+	# Positions for the two toggle-underline pills, keyed by selection.
+	# Centred under each label at y=455-470, ±70 px wide.
+	array set ::led::_edit_pill_pos {
+		awake {190 455 330 470}
+		sleep {430 455 570 470}
+	}
+	array set ::led::_target_pill_pos {
+		front {1450 455 1590 470}
+		rear  {1690 455 1830 470}
+		both  {1930 455 2070 470}
+	}
+	# Bounds of the active-pair highlight box, keyed by editing state.
+	# Surrounds the two swatches for the edited state with a 20-px margin.
+	array set ::led::_active_box_pos {
+		awake {1485 540 2255 710}
+		sleep {1485 910 2255 1080}
+	}
+
+	# Position the blue selection highlight around the swatch(es) currently being
+	# edited: a single swatch, or the front+rear pair when the row's Both is on.
+	proc ::led::_update_toggle_visuals {} {
+		if {$::led::active_pair_box eq ""} { return }
+		set state $::led::editing_state
+		set target $::settings(led_target_mode)
+		set m 12
+		if {$target eq "both" && [info exists ::led::_swatch_bounds(${state}_front)] \
+				&& [info exists ::led::_swatch_bounds(${state}_rear)]} {
+			set a $::led::_swatch_bounds(${state}_front)
+			set b $::led::_swatch_bounds(${state}_rear)
+			set x0 [lindex $a 0]; set y0 [lindex $a 1]
+			set x1 [lindex $b 2]; set y1 [lindex $b 3]
+		} elseif {[info exists ::led::_swatch_bounds(${state}_${target})]} {
+			set s $::led::_swatch_bounds(${state}_${target})
+			set x0 [lindex $s 0]; set y0 [lindex $s 1]
+			set x1 [lindex $s 2]; set y1 [lindex $s 3]
+		} else {
+			return
+		}
+		.can coords $::led::active_pair_box \
+			[rescale_x_skin [expr {$x0 - $m}]] [rescale_y_skin [expr {$y0 - $m}]] \
+			[rescale_x_skin [expr {$x1 + $m}]] [rescale_y_skin [expr {$y1 + $m}]]
+	}
+
+	# --- page entry / exit ----------------------------------------------------
+
+	proc ::led::picker_enter {} {
+		::led::_build_wheel_image
+		if {$::led::wheel_img ne "" && $::led::wheel_canvas_item ne ""} {
+			.can itemconfigure $::led::wheel_canvas_item -image $::led::wheel_img
+			# Snap the grey frame to the image's actual pixel size — the zoom
+			# rounds the field a few px off rect_w/rect_h, which otherwise leaves
+			# the frame's right/bottom edges hanging past the colour field.
+			if {[info exists ::led::_field_frame] && $::led::_field_frame ne ""} {
+				set fx0 [rescale_x_skin $::led::rect_x0]
+				set fy0 [rescale_y_skin $::led::rect_y0]
+				catch {.can coords $::led::_field_frame $fx0 $fy0 \
+					[expr {$fx0 + [image width $::led::wheel_img]}] \
+					[expr {$fy0 + [image height $::led::wheel_img]}]}
+			}
+		}
+		# Defensive reset — if a previous session was torn down abnormally
+		# without running picker_exit, _dirty could leak as 1.
+		set ::led::_dirty 0
+		set ::led::picker_active 1
+		set ::led::editing_state "awake"
+		::led::_sync_controls_from_settings
+		::led::_update_swatches
+		::led::_update_toggle_visuals
+	}
+
+	# Idempotent — safe to call from any exit path, including tab switches
+	# and re-entry. If the picker wasn't active, does nothing.
+	proc ::led::picker_exit {} {
+		if {!$::led::picker_active} { return }
+		set ::led::picker_active 0
+		if {$::led::_commit_after ne ""} {
+			after cancel $::led::_commit_after
+			set ::led::_commit_after ""
+		}
+		if {$::led::_save_after ne ""} {
+			after cancel $::led::_save_after
+			set ::led::_save_after ""
+		}
+		# Persist edits and push all 4 stored colours to firmware. The
+		# firmware will immediately apply the correct pair for its current
+		# state, replacing any live-preview colour the picker was showing.
+		if {$::led::_dirty} {
+			set ::led::_dirty 0
+			after idle save_settings
+		}
+		::led::push_all_stored
+	}
+
+	# --- page layout ----------------------------------------------------------
+	# Single white card supplied by the settings_pages_simple.png background,
+	# matching the Misc and Cup Warmer settings pages (replaces the former
+	# hand-drawn insight_back_box / insight_front_box cards).
+	add_de1_page "led_picker" "settings_pages_simple.png" "default"
+
+	# Centred page title on top (this is a standalone sub-page reached from the
+	# Machine tab, not one of the top-level tabs, so it has no top tab bar).
+	add_de1_text "led_picker" 1280 100 -text [translate "LED Colors"] -font Helv_20_bold -width [rescale_x_skin 2400] -fill "#444444" -anchor "center" -justify "center"
+
+	# ---- left column: colour swatches (tap one to choose what the wheel edits) -
+	# Awake row
+	add_de1_text "led_picker" 100 280 -text [translate "Awake"] -font Helv_8_bold -fill "#2d3046" -anchor "nw"
+	set ::led::swatch_item(awake_front) [dui add canvas_item rect led_picker 100 350 560 530 -fill "#191919" -outline "#8c8d96" -width 2]
+	set ::led::swatch_item(awake_rear)  [dui add canvas_item rect led_picker 620 350 1080 530 -fill "#191919" -outline "#8c8d96" -width 2]
+	set ::led::off_indicator(awake_front) [add_de1_text "led_picker" 330 440 -text "" -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -justify "center"]
+	set ::led::off_indicator(awake_rear)  [add_de1_text "led_picker" 850 440 -text "" -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -justify "center"]
+	add_de1_button "led_picker" {::led::select_swatch awake front} 100 350 560 530
+	add_de1_button "led_picker" {::led::select_swatch awake rear}  620 350 1080 530
+	dui add dtoggle "led_picker" 100 560 -height 50 -width 100 -anchor nw -variable ::led::both_awake -command {::led::on_both_changed awake}
+	add_de1_text "led_picker" 240 585 -text [translate "Both"] -font Helv_8 -fill "#4e85f4" -anchor "w"
+
+	# Sleep row
+	add_de1_text "led_picker" 100 680 -text [translate "Sleep"] -font Helv_8_bold -fill "#2d3046" -anchor "nw"
+	set ::led::swatch_item(sleep_front) [dui add canvas_item rect led_picker 100 750 560 930 -fill "#000000" -outline "#8c8d96" -width 2]
+	set ::led::swatch_item(sleep_rear)  [dui add canvas_item rect led_picker 620 750 1080 930 -fill "#000000" -outline "#8c8d96" -width 2]
+	set ::led::off_indicator(sleep_front) [add_de1_text "led_picker" 330 840 -text "" -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -justify "center"]
+	set ::led::off_indicator(sleep_rear)  [add_de1_text "led_picker" 850 840 -text "" -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -justify "center"]
+	add_de1_button "led_picker" {::led::select_swatch sleep front} 100 750 560 930
+	add_de1_button "led_picker" {::led::select_swatch sleep rear}  620 750 1080 930
+	dui add dtoggle "led_picker" 100 960 -height 50 -width 100 -anchor nw -variable ::led::both_sleep -command {::led::on_both_changed sleep}
+	add_de1_text "led_picker" 240 985 -text [translate "Both"] -font Helv_8 -fill "#4e85f4" -anchor "w"
+
+	# Selection highlight — drawn last so it sits on top; -fill "" keeps swatch
+	# taps working. Positioned by _update_toggle_visuals.
+	set ::led::active_pair_box [dui add canvas_item rect led_picker 88 378 572 582 -fill "" -outline "#4e85f4" -width 4]
+
+	# ---- right column: colour wheel + presets + brightness -------------------
+	# Colour field image (rectangular hue x saturation) + drag bindings. The
+	# bitmap is built lazily in picker_enter and attached via .can itemconfigure.
+	set ::led::wheel_canvas_item [dui add canvas_item image led_picker $::led::rect_x0 $::led::rect_y0 -anchor nw]
+	.can bind $::led::wheel_canvas_item <ButtonPress-1>   {::led::on_wheel_input %x %y 0}
+	.can bind $::led::wheel_canvas_item <B1-Motion>       {::led::on_wheel_input %x %y 0}
+	.can bind $::led::wheel_canvas_item <ButtonRelease-1> {::led::on_wheel_input %x %y 1}
+	set ::led::puck_item [dui add canvas_item oval led_picker \
+		[expr {$::led::rect_x0 - 28}] [expr {$::led::rect_y0 - 28}] \
+		[expr {$::led::rect_x0 + 28}] [expr {$::led::rect_y0 + 28}] \
+		-outline "#FFFFFF" -width 4 -fill ""]
+
+	# Thin grey frame around the field — same style as the 12 preset swatch
+	# outlines, right edge aligned with them. Drawn on top so it's visible, and
+	# bound to the same handler so taps on it still pick a colour (undroidwish
+	# routes a click to the topmost item by bounding box).
+	set ::led::_field_frame [dui add canvas_item rect led_picker $::led::rect_x0 $::led::rect_y0 \
+		[expr {$::led::rect_x0 + $::led::rect_w}] [expr {$::led::rect_y0 + $::led::rect_h}] \
+		-fill "" -outline "#DDDDDD" -width 2]
+	.can bind $::led::_field_frame <ButtonPress-1>   {::led::on_wheel_input %x %y 0}
+	.can bind $::led::_field_frame <B1-Motion>       {::led::on_wheel_input %x %y 0}
+	.can bind $::led::_field_frame <ButtonRelease-1> {::led::on_wheel_input %x %y 1}
+
+	# Brightness — same width as the preset row below it.
+	add_de1_text "led_picker" 1310 1040 -text [translate "Brightness"] -font Helv_8_bold -fill "#7f879a" -anchor "nw"
+	add_de1_variable "led_picker" 2455 1040 -font Helv_8_bold -fill "#7f879a" -anchor "ne" -textvariable {$::led::brightness%}
+	add_de1_widget "led_picker" scale 1310 1100 {} -from 0 -to 100 -background #FFFFFF -borderwidth 0 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 1145] -width [rescale_y_skin 115] -variable ::led::brightness -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -highlightthickness 0 -command {::led::on_brightness_change}
+
+	# Quick-colour presets, below brightness — 12 in a 6x2 grid (same width).
+	proc ::led::_build_preset_row {} {
+		set i 0
+		foreach phex $::led::presets {
+			set x [expr {1310 + ($i % 6) * 195}]
+			set y [expr {1235 + ($i / 6) * 80}]
+			dui add canvas_item rect led_picker $x $y [expr {$x + 170}] [expr {$y + 65}] -fill $phex -outline "#DDDDDD" -width 2
+			add_de1_button "led_picker" [list ::led::apply_preset $phex] $x $y [expr {$x + 170}] [expr {$y + 65}]
+			incr i
+		}
+	}
+	::led::_build_preset_row
+
+	# Ok label over the background graphic's button + an invisible tap zone.
+	# Returns to the Machine tab.
+	add_de1_text led_picker 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_button led_picker {say [translate {Ok}] $::settings(sound_button_in); ::led::picker_exit; page_to_show_when_off settings_3} 2010 1480 2540 1645
+
+	# Single entry-point for opening the picker: initialises state before
+	# the page is shown. Called from the settings_3 "Lighting" button.
+	proc ::led::open_picker {} {
+		say [translate {Lighting}] $::settings(sound_button_in)
+		::led::picker_enter
+		page_to_show_when_off led_picker
+	}
+} ;# end is_bengle_model

@@ -376,6 +376,30 @@ proc de1_event_handler { command_name value {update_received 0}} {
 			# dupe copy, of what we receive via firmware so we can NOT let them change it if we did receive it via BLE
 			set ::de1(sn) $sn
 
+		} elseif {$mmr_id == "8038AC"} {
+			# CupWarmerMode (0=Off, 1=On). RAM only on FW side.
+			::comms::msg -INFO "MMRead: cupwarmer_mode: '$mmr_val'"
+			set ::de1(cupwarmer_mode) $mmr_val
+
+		} elseif {$mmr_id == "8038B4"} {
+			# MatHeaterDrivePct 0-100. Shown on the cup warmer page as "Heating - N%".
+			set ::de1(mat_heater_drive) $mmr_val
+
+		} elseif {$mmr_id == "8038B8"} {
+			# MatTempFault 0=OK, 1=OpenOrShort, 2=Runaway. Shown on the cup
+			# warmer page as the NTC-disconnected warning.
+			::comms::msg -INFO "MMRead: mat_temp_fault: '$mmr_val'"
+			set ::de1(mat_temp_fault) $mmr_val
+		} elseif {$mmr_id == "803890"} {
+			# FrontLEDColor. Diagnostic only — app settings are source-of-truth.
+			set led_int [ifexists arr2(Data0)]
+			::comms::msg -INFO "MMRead: FrontLEDColor: [::led::int_to_hex $led_int] (raw $led_int)"
+
+		} elseif {$mmr_id == "803894"} {
+			# RearLEDColor. Diagnostic only.
+			set led_int [ifexists arr2(Data0)]
+			::comms::msg -INFO "MMRead: RearLEDColor: [::led::int_to_hex $led_int] (raw $led_int)"
+
 		} elseif {$mmr_id == "80385C"} {
 			::comms::msg -NOTICE "MMRead: get_refill_kit_present: '$mmr_val'"
 
@@ -647,6 +671,14 @@ proc de1_disconnect_handler { handle } {
 	}
 
 	set ::de1(device_handle) 0
+
+	# Invalidate the LED write-dedup cache — if the machine is power-cycled
+	# or externally reset while we're disconnected, its MMRs may come back
+	# with different values. Forcing the next push to actually write avoids
+	# leaving the hardware in a stale state that matches our cache.
+	if {[info exists ::led::_last_written]} {
+		array set ::led::_last_written {front "" rear ""}
+	}
 
 
 	catch {
@@ -1296,6 +1328,177 @@ proc set_flush_flow_rate {rate} {
 	mmr_write "set_flush_flow_rate" "803840" "04" [zero_pad [long_to_little_endian_hex [expr {int(10 * $rate)}] ] 2]
 }
 
+# Cup warmer enable: 0=Off, 1=On. Not persisted on firmware side — must be
+# (re)sent on every BLE reconnect and whenever the user toggles it.
+proc set_cupwarmer_mode {mode} {
+	if {[is_bengle_model] != 1} {
+		return
+	}
+	set mode [expr {$mode ? 1 : 0}]
+	::comms::msg -NOTICE set_cupwarmer_mode "'$mode'"
+	remove_matching_ble_queue_entries {^MMR set_cupwarmer_mode}
+	mmr_write "set_cupwarmer_mode" "8038AC" "04" [zero_pad [long_to_little_endian_hex $mode] 2]
+}
+
+# Read the cup warmer's live status. Nothing polled these before, so the
+# warmer page's heater percentage and NTC-fault warning could never update.
+# Called on connect and whenever the cup warmer page is opened.
+proc get_cupwarmer_status {} {
+	if {[is_bengle_model] != 1} {
+		return
+	}
+	remove_matching_ble_queue_entries {^MMR get_cupwarmer_status}
+	mmr_read "get_cupwarmer_status drive" "8038B4" "00"
+	mmr_read "get_cupwarmer_status fault" "8038B8" "00"
+}
+
+# Cup-warmer pre-warm. The FIRMWARE owns the timing: with MatPreheatEnable set
+# it starts the mat MatPreheatLeadMin minutes before a scheduled wake, and it
+# does so with no tablet connected. Both registers are flash-persisted, so this
+# only needs sending on connect and when the user changes the setting.
+#
+# Write order matters and matches decentespresso/decaid: when enabling, send
+# the lead first so the firmware never acts on a stale one; when disabling,
+# clear the enable first.
+proc set_cupwarmer_preheat {enabled lead_minutes} {
+	if {[is_bengle_model] != 1} {
+		return
+	}
+	set lead [expr {int(round($lead_minutes))}]
+	if {$lead < 0}   { set lead 0 }
+	if {$lead > 120} { set lead 120 }
+	set on [expr {$enabled ? 1 : 0}]
+	::comms::msg -NOTICE set_cupwarmer_preheat "enabled=$on lead=$lead min"
+	remove_matching_ble_queue_entries {^MMR set_cupwarmer_preheat}
+	if {$on} {
+		mmr_write "set_cupwarmer_preheat lead" "8038D4" "04" [zero_pad [long_to_little_endian_hex $lead] 2]
+		mmr_write "set_cupwarmer_preheat on"   "8038D0" "04" [zero_pad [long_to_little_endian_hex 1] 2]
+	} else {
+		mmr_write "set_cupwarmer_preheat off"  "8038D0" "04" [zero_pad [long_to_little_endian_hex 0] 2]
+		mmr_write "set_cupwarmer_preheat lead" "8038D4" "04" [zero_pad [long_to_little_endian_hex $lead] 2]
+	}
+}
+
+# Send the machine's autonomous inactivity-sleep timeout (whole minutes).
+# The firmware self-sleeps after this long idle WHEN NO TABLET IS CONNECTED, so
+# the machine sleeps even if the tablet is off/disconnected. We reuse the tablet's
+# existing screen_saver_delay value (already in minutes) as the source. 0 = the
+# firmware never auto-sleeps. Firmware default (when never set) is 60.
+proc set_sleep_timeout_minutes {minutes} {
+	if {[is_bengle_model] != 1} {
+		return
+	}
+	set raw [expr {int(round($minutes))}]
+	if {$raw < 0}   { set raw 0 }
+	if {$raw > 240} { set raw 240 }
+	::comms::msg -NOTICE set_sleep_timeout_minutes "'$minutes' (raw $raw)"
+	remove_matching_ble_queue_entries {^MMR set_sleep_timeout_minutes}
+	mmr_write "set_sleep_timeout_minutes" "8038BC" "04" [zero_pad [long_to_little_endian_hex $raw] 2]
+}
+
+# ---------------------------------------------------------------------------
+# Phase 2: tablet-synced firmware clock + weekly wake schedule.
+#
+# The firmware keeps its own software wall-clock and weekly wake schedule so it
+# can wake / keep warm on schedule and self-sleep off-schedule even with NO
+# tablet connected. The tablet is just the source: it pushes the current local
+# time (re-synced periodically) and the schedule (on connect and on edit). There
+# is no battery-backed RTC, so the firmware clock is lost on a full power cut and
+# re-synced the moment a tablet reconnects; until then only the Phase-1
+# inactivity timer runs. dow convention 0 = Sunday matches Tcl %w and the firmware.
+# ---------------------------------------------------------------------------
+
+# Push the firmware's local wall-clock as seconds-since-Sunday-00:00:00 (local).
+proc set_machine_clock {} {
+	if {[is_bengle_model] != 1} {
+		return
+	}
+	set now [clock seconds]
+	set w [scan [clock format $now -format %w] %d]   ;# 0=Sun .. 6=Sat
+	set h [scan [clock format $now -format %H] %d]
+	set m [scan [clock format $now -format %M] %d]
+	set s [scan [clock format $now -format %S] %d]
+	set sow [expr {($w * 86400) + ($h * 3600) + ($m * 60) + $s}]
+	::comms::msg -NOTICE set_machine_clock "sec-of-week=$sow"
+	remove_matching_ble_queue_entries {^set_machine_clock}
+	mmr_write "set_machine_clock" "8038C0" "04" [long32_to_little_endian_hex $sow]
+}
+
+# Push the current clock now, and re-arm a periodic re-sync so the firmware clock
+# does not drift while a tablet stays connected for a long time.
+proc machine_clock_resync {} {
+	if {[info exists ::machine_clock_resync_handle]} {
+		after cancel $::machine_clock_resync_handle
+	}
+	set_machine_clock
+	set ::machine_clock_resync_handle [after [expr {30 * 60 * 1000}] machine_clock_resync]
+}
+
+proc dow_from_dayname {day} {
+	switch -- $day {
+		Sun {return 0}
+		Mon {return 1}
+		Tue {return 2}
+		Wed {return 3}
+		Thu {return 4}
+		Fri {return 5}
+		Sat {return 6}
+	}
+	return -1
+}
+
+# Build the firmware's weekly wake schedule from the app's scheduler settings and
+# push it (clear -> entries -> enable). Each firmware window is packed as
+# (dow<<22)|(startMin<<11)|endMin, minutes after local midnight, endMin exclusive.
+proc set_wake_schedule {} {
+	if {[is_bengle_model] != 1} {
+		return
+	}
+	remove_matching_ble_queue_entries {^sched_}
+	# Clear the firmware table + disable while we (re)load it.
+	mmr_write "sched_clear" "8038C8" "04" [long32_to_little_endian_hex 0]
+
+	set count 0
+
+	# D_Scheduler per-weekday WAKE times -> short wake windows [t, t+1): the
+	# firmware wakes at t, then the Phase-1 inactivity timer sleeps it.
+	foreach day {Sun Mon Tue Wed Thu Fri Sat} {
+		set dow [dow_from_dayname $day]
+		if {[info exists ::D_scheduler_minutes($day)]} {
+			foreach t $::D_scheduler_minutes($day) {
+				if {$count >= 32} { break }
+				set t [scan $t %d]
+				if {$t eq "" || $t < 0 || $t > 1439} { continue }
+				set endm [expr {$t + 1}]
+				set packed [expr {($dow << 22) | ($t << 11) | $endm}]
+				mmr_write "sched_entry" "8038C4" "04" [long32_to_little_endian_hex $packed]
+				incr count
+			}
+		}
+	}
+
+	# Built-in scheduler keep-warm window [wake,sleep) (seconds-since-midnight),
+	# same every day, only when enabled. The D_Scheduler plugin disables
+	# scheduler_enable, so in practice these two sources do not double up.
+	if {[info exists ::settings(scheduler_enable)] && $::settings(scheduler_enable) == 1} {
+		set ws [expr {int($::settings(scheduler_wake)  / 60)}]
+		set se [expr {int($::settings(scheduler_sleep) / 60)}]
+		if {$ws >= 0 && $ws < $se && $se <= 1440} {
+			foreach dow {0 1 2 3 4 5 6} {
+				if {$count >= 32} { break }
+				set packed [expr {($dow << 22) | ($ws << 11) | $se}]
+				mmr_write "sched_entry" "8038C4" "04" [long32_to_little_endian_hex $packed]
+				incr count
+			}
+		}
+	}
+
+	if {$count > 0} {
+		mmr_write "sched_enable" "8038C8" "04" [long32_to_little_endian_hex 1]
+	}
+	::comms::msg -NOTICE set_wake_schedule "pushed $count window(s)"
+}
+
 proc set_flush_timeout {seconds} {
 	::comms::msg -NOTICE set_flush_timeout "'$seconds'"
 	remove_matching_ble_queue_entries {^MMR set_flush_timeout}
@@ -1732,6 +1935,11 @@ proc de1_send_steam_hotwater_settings { {temporarily_disable_steam 0} } {
 	} else {
 		set_target_milk_temp 0
 	}
+	# CupWarmerMode is NOT persisted on the firmware side; must (re)send. On
+	# every boot and reconnect the app sends 0 here -- the mode only goes to 1
+	# after the user taps the toggle, or when the pre-warm scheduler fires.
+	# This is intentional: no auto-heat after a blackout.
+	set_cupwarmer_mode [ifexists ::settings(cupwarmer_enable) 0]
 	
 }
 
@@ -1837,3 +2045,160 @@ proc is_bengle_model {} {
 	# is_bengle_model gates.
 	return [expr {[ifexists ::de1(ble_protocol_version) 1] >= 2}]
 }
+
+
+########################################
+# LED strip colour control (Bengle only)
+#
+# Stored colours (persistent, firmware switches automatically on sleep/wake):
+#   FrontLEDAwake  0x803898   RearLEDAwake  0x80389C
+#   FrontLEDSleep  0x8038A0   RearLEDSleep  0x8038A4
+#
+# Live/preview colours (transient, for picker real-time feedback):
+#   FrontLEDColor  0x803890   RearLEDColor  0x803894
+########################################
+
+namespace eval ::led {
+	# ephemeral UI state for the picker page
+	variable editing_state  "awake"   ;# "awake" or "sleep" — which stored colour is being edited
+	variable picker_active  0         ;# 1 while the led_picker page is open (live preview mode)
+	# Per-strip last-written colour cache. Used to dedupe MMR writes.
+	variable _last_written
+	array set _last_written {front "" rear ""}
+}
+
+proc ::led::hex_to_int {hex} {
+	set hex [string trimleft $hex "#"]
+	if {[string length $hex] != 6} { return 0 }
+	scan $hex %x result
+	return $result
+}
+
+proc ::led::int_to_hex {val} {
+	return [format "#%06X" [expr {$val & 0xFFFFFF}]]
+}
+
+# HSV → "#RRGGBB". h: 0-360 (normalised), s: 0-1, v: 0-1
+proc ::led::hsv_to_hex {h s v} {
+	# Normalise h into [0, 360) so negative / out-of-range inputs don't
+	# land in the wrong hexant via the switch's default branch.
+	set h [expr {fmod($h, 360.0)}]
+	if {$h < 0} { set h [expr {$h + 360.0}] }
+	if {$s <= 0.0} {
+		set r $v; set g $v; set b $v
+	} else {
+		set hh [expr {$h / 60.0}]
+		set i  [expr {int(floor($hh))}]
+		set f  [expr {$hh - $i}]
+		set p  [expr {$v * (1.0 - $s)}]
+		set q  [expr {$v * (1.0 - $s * $f)}]
+		set t  [expr {$v * (1.0 - $s * (1.0 - $f))}]
+		switch -- $i {
+			0 { set r $v; set g $t; set b $p }
+			1 { set r $q; set g $v; set b $p }
+			2 { set r $p; set g $v; set b $t }
+			3 { set r $p; set g $q; set b $v }
+			4 { set r $t; set g $p; set b $v }
+			default { set r $v; set g $p; set b $q }
+		}
+	}
+	return [format "#%02X%02X%02X" \
+		[expr {int(round($r * 255))}] \
+		[expr {int(round($g * 255))}] \
+		[expr {int(round($b * 255))}]]
+}
+
+# "#RRGGBB" → {h s v}
+proc ::led::hex_to_hsv {hex} {
+	set hex [string trimleft $hex "#"]
+	if {[string length $hex] != 6} { return {0 0 0} }
+	scan $hex "%2x%2x%2x" ri gi bi
+	set r [expr {$ri / 255.0}]
+	set g [expr {$gi / 255.0}]
+	set b [expr {$bi / 255.0}]
+	set mx [expr {max($r, max($g, $b))}]
+	set mn [expr {min($r, min($g, $b))}]
+	set d  [expr {$mx - $mn}]
+	set v  $mx
+	set s  [expr {$mx <= 0 ? 0 : $d / $mx}]
+	if {$d <= 0} {
+		set h 0
+	} elseif {$mx == $r} {
+		set h [expr {60.0 * fmod((($g - $b) / $d), 6.0)}]
+	} elseif {$mx == $g} {
+		set h [expr {60.0 * ((($b - $r) / $d) + 2.0)}]
+	} else {
+		set h [expr {60.0 * ((($r - $g) / $d) + 4.0)}]
+	}
+	if {$h < 0} { set h [expr {$h + 360.0}] }
+	return [list $h $s $v]
+}
+
+# Write one strip's colour to the machine.
+# strip: "front" | "rear" ; hex: "#RRGGBB"
+# Writes to the live/preview registers (FrontLEDColor / RearLEDColor).
+proc ::led::write_strip {strip hex} {
+	if {![is_bengle_model]} { return }
+	switch -- $strip {
+		"front" { set addr "803890" }
+		"rear"  { set addr "803894" }
+		default { return }
+	}
+	if {![::led::_validate_hex $hex]} { return }
+	# Dedupe — skip the MMR write if this strip already has this colour.
+	if {[string equal -nocase $::led::_last_written($strip) $hex]} {
+		return
+	}
+	set ::led::_last_written($strip) $hex
+	set val [::led::hex_to_int $hex]
+	mmr_write "led_${strip} $hex" $addr "04" [long32_to_little_endian_hex $val]
+}
+
+# Write a stored awake/sleep colour to the firmware's persistent registers.
+# The firmware applies these automatically on sleep/wake transitions.
+# state: "awake" | "sleep" ; strip: "front" | "rear" ; hex: "#RRGGBB"
+proc ::led::write_stored {state strip hex} {
+	if {![is_bengle_model]} { return }
+	switch -- "${state}_${strip}" {
+		"awake_front" { set addr "803898" }
+		"awake_rear"  { set addr "80389C" }
+		"sleep_front" { set addr "8038A0" }
+		"sleep_rear"  { set addr "8038A4" }
+		default { return }
+	}
+	if {![::led::_validate_hex $hex]} { return }
+	set val [::led::hex_to_int $hex]
+	mmr_write "led_${state}_${strip} $hex" $addr "04" [long32_to_little_endian_hex $val]
+}
+
+proc ::led::_validate_hex {hex} {
+	set stripped [string trimleft $hex "#"]
+	if {[string length $stripped] != 6 || ![regexp {^[0-9A-Fa-f]{6}$} $stripped]} {
+		::comms::msg -WARNING "::led: bad hex '$hex', skipping"
+		return 0
+	}
+	return 1
+}
+
+# Write to one strip or both, per target mode.
+# target: "front" | "rear" | "both" ; hex: "#RRGGBB"
+proc ::led::write_target {target hex} {
+	switch -- $target {
+		"front" { ::led::write_strip front $hex }
+		"rear"  { ::led::write_strip rear  $hex }
+		"both"  { ::led::write_strip front $hex; ::led::write_strip rear $hex }
+	}
+}
+
+# Push all 4 stored colours to the firmware's persistent registers.
+# The firmware applies the correct pair automatically on sleep/wake.
+# Called on connect and when the picker saves changes.
+proc ::led::push_all_stored {} {
+	if {![is_bengle_model]} { return }
+	::led::write_stored awake front $::settings(led_front_awake_colour)
+	::led::write_stored awake rear  $::settings(led_rear_awake_colour)
+	::led::write_stored sleep front $::settings(led_front_sleep_colour)
+	::led::write_stored sleep rear  $::settings(led_rear_sleep_colour)
+}
+
+# No state-change listener needed — firmware switches LEDs autonomously.
