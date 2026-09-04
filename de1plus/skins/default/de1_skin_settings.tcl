@@ -2367,6 +2367,13 @@ if {1} {
 		return "[translate "Currently heating at:"] ${pct} %"
 	}
 
+	# Compact indicator shown on the target-temperature row: "Heating" while the
+	# mat is drawing power, otherwise "Hot" (at target). Updated by the live poll.
+	proc ::cupwarmer::heat_word {} {
+		if {[ifexists ::de1(mat_temp_fault) 0] == 1} { return "⚠" }
+		return [expr {[ifexists ::de1(mat_heater_drive) 0] > 0 ? [translate "Heating"] : [translate "Hot"]}]
+	}
+
 	proc ::cupwarmer::prewarm_preview {} {
 		if {[ifexists ::settings(scheduler_enable) 0] != 1} {
 			return [translate "Enable the wake schedule first"]
@@ -2396,27 +2403,28 @@ if {1} {
 	dui add dtoggle "cupwarmer" 100 250 -height 60 -width 120 -anchor nw -variable ::settings(cupwarmer_enable)
 	add_de1_text "cupwarmer" 260 280 -text [translate "Enable cup warmer"] -font Helv_8 -fill "#4e85f4" -anchor "w"
 	add_de1_button "cupwarmer" {::cupwarmer::toggle_enable} 100 245 780 325
-	add_de1_variable "cupwarmer" 100 375 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1050] -justify "left" -textvariable {[::cupwarmer::status_text]}
 
-	# "Target temperature" — the whole sub-section is hidden when the warmer is
-	# off, via ::cupwarmer::_update_enable_state toggling the cw_temp_grp tag.
-	add_de1_text "cupwarmer" 100 485 -text [translate "Target temperature"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -tags [list cw_temp_head cw_temp_grp]
-	add_de1_widget "cupwarmer" scale 100 555 {} -from 20 -to 80 -background #e4d1c1 -borderwidth 1 -bigincrement 5 -showvalue 0 -resolution 1 -length [rescale_x_skin 1000] -width [rescale_x_skin 100] -variable ::settings(cupwarmer_temp) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0 -highlightthickness 0 -command {::cupwarmer::_request_commit; list} -tags [list cw_temp_slider cw_temp_grp]
-	add_de1_variable "cupwarmer" 100 665 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1050] -justify "left" -tags [list cw_temp_val cw_temp_grp] -textvariable {[format "%d °C" [round_to_integer $::settings(cupwarmer_temp)]]}
+	# "Target temperature" — hidden when the warmer is off (cw_temp_grp). The
+	# Heating/Hot indicator sits on the °C row, right-aligned under the slider's
+	# right edge (x = 100 + length 1000).
+	add_de1_text "cupwarmer" 100 375 -text [translate "Target temperature"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -tags [list cw_temp_head cw_temp_grp]
+	add_de1_widget "cupwarmer" scale 100 445 {} -from 20 -to 80 -background #e4d1c1 -borderwidth 1 -bigincrement 5 -showvalue 0 -resolution 1 -length [rescale_x_skin 1000] -width [rescale_x_skin 100] -variable ::settings(cupwarmer_temp) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0 -highlightthickness 0 -command {::cupwarmer::_request_commit; list} -tags [list cw_temp_slider cw_temp_grp]
+	add_de1_variable "cupwarmer" 100 555 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1050] -justify "left" -tags [list cw_temp_val cw_temp_grp] -textvariable {[format "%d °C" [round_to_integer $::settings(cupwarmer_temp)]]}
+	add_de1_variable "cupwarmer" 1100 555 -text "" -font Helv_8_bold -fill "#7f879a" -anchor "ne" -tags [list cw_temp_heatword cw_temp_grp] -textvariable {[::cupwarmer::heat_word]}
 
 	# ============ Pre-warm on schedule (stacked below Warmer) =================
-	add_de1_text "cupwarmer" 100 785 -text [translate "Pre-warm on schedule"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -tags [list cw_pw_head cw_pw_all]
+	add_de1_text "cupwarmer" 100 675 -text [translate "Pre-warm on schedule"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -tags [list cw_pw_head cw_pw_all]
 
-	dui add dtoggle "cupwarmer" 100 850 -height 60 -width 120 -anchor nw -variable ::settings(cupwarmer_prewarm_enable) -tags [list cw_pw_toggle cw_pw_all]
-	add_de1_text "cupwarmer" 260 880 -text [translate "Pre-warm cups before wake"] -font Helv_8 -fill "#4e85f4" -anchor "w" -tags [list cw_pw_lbl cw_pw_all]
-	dui add dbutton "cupwarmer" 100 845 1050 925 -command {::cupwarmer::toggle_prewarm} -theme none -tags [list cw_pw_btn cw_pw_all]
+	dui add dtoggle "cupwarmer" 100 740 -height 60 -width 120 -anchor nw -variable ::settings(cupwarmer_prewarm_enable) -tags [list cw_pw_toggle cw_pw_all]
+	add_de1_text "cupwarmer" 260 770 -text [translate "Pre-warm cups before wake"] -font Helv_8 -fill "#4e85f4" -anchor "w" -tags [list cw_pw_lbl cw_pw_all]
+	dui add dbutton "cupwarmer" 100 735 1050 815 -command {::cupwarmer::toggle_prewarm} -theme none -tags [list cw_pw_btn cw_pw_all]
 
 	# "Start heater before wake" — the whole sub-section (label, slider, value)
 	# is hidden while pre-warm is off, via ::cupwarmer::_update_prewarm_state
 	# toggling the shared cw_prewarm_grp tag.
-	add_de1_text "cupwarmer" 100 995 -text [translate "Start heater before wake"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -tags [list cw_prewarm_head cw_prewarm_grp cw_pw_all]
-	add_de1_widget "cupwarmer" scale 100 1065 {} -from 0 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 5 -showvalue 0 -resolution 5 -length [rescale_x_skin 1000] -width [rescale_x_skin 100] -variable ::settings(cupwarmer_prewarm_minutes) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0 -highlightthickness 0 -command {::cupwarmer::_request_commit; list} -tags [list cw_prewarm_slider cw_prewarm_grp cw_pw_all]
-	add_de1_variable "cupwarmer" 100 1175 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1120] -justify "left" -tags [list cw_prewarm_val cw_prewarm_grp cw_pw_all] -textvariable {[format "%d [translate "min"]" [round_to_integer $::settings(cupwarmer_prewarm_minutes)]]}
+	add_de1_text "cupwarmer" 100 885 -text [translate "Start heater before wake"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -tags [list cw_prewarm_head cw_prewarm_grp cw_pw_all]
+	add_de1_widget "cupwarmer" scale 100 955 {} -from 0 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 5 -showvalue 0 -resolution 5 -length [rescale_x_skin 1000] -width [rescale_x_skin 100] -variable ::settings(cupwarmer_prewarm_minutes) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0 -highlightthickness 0 -command {::cupwarmer::_request_commit; list} -tags [list cw_prewarm_slider cw_prewarm_grp cw_pw_all]
+	add_de1_variable "cupwarmer" 100 1065 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1120] -justify "left" -tags [list cw_prewarm_val cw_prewarm_grp cw_pw_all] -textvariable {[format "%d [translate "min"]" [round_to_integer $::settings(cupwarmer_prewarm_minutes)]]}
 	add_de1_action "cupwarmer" { ::cupwarmer::_update_enable_state; ::cupwarmer::_start_poll }
 
 	# Ok label over the background graphic's button + an invisible tap zone.
