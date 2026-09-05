@@ -1439,8 +1439,13 @@ proc load_settings {} {
     set settings_file_contents [encoding convertfrom utf-8 [read_binary_file [settings_filename]]]    
 
 
-    if {[string length $settings_file_contents] == 0} {
-       
+    # A fresh install has no settings.tdb yet. We use this to apply one-time
+    # auto-detected defaults (e.g. Samsung resolution/font) ONLY on new installs,
+    # and never when an existing user merely upgrades their app.
+    set fresh_install [expr {[string length $settings_file_contents] == 0}]
+
+    if {$fresh_install} {
+
         # if there are no settings, then set some based on what we know about this machine's settings
         # nb : we could 
         if {[ifexists osbuildinfo(product)] == "P80X_EEA"} {
@@ -1469,10 +1474,18 @@ proc load_settings {} {
         set ::has_bluetooth 1
     }
 
-    if {[ifexists ::settings(tablet_model)] != $tablet_model} {
-    	# tablet model has changed, so potentially reset settings.
-
-    	# save this tablet model in the settings, so we can detect if the tablet model changes in the future
+    # Samsung tablets get one-time smart defaults (screen resolution + font
+    # scaling, and smart-charging off) auto-detected on a FRESH INSTALL only.
+    # This was previously gated on tablet_model changing, but an existing user
+    # upgrading from any app version that never stored tablet_model had an empty
+    # stored value -- which counted as "changed" and made the upgrade rewrite
+    # their resolution/font. That is the cause of the Samsung "huge/unreadable
+    # fonts after a nightly update" reports. John's intent: auto-detect on new
+    # installs, and never touch an existing install's settings on upgrade.
+    # (A genuine tablet swap still has its screen_size handled separately by
+    # create_de1app_icon.tcl.)
+    if {$fresh_install} {
+    	# record the tablet model for reference
     	set ::settings(tablet_model) $tablet_model
 
 		
