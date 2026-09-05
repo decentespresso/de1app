@@ -244,7 +244,14 @@ proc check_battery_charger {} {
 
     set percent [battery_percent]
 
-    msg -INFO "Battery percent is: $percent %, smart charging = $::settings(smart_battery_charging)"
+    # Only log when the reading actually changes. This proc runs on a timer, so
+    # logging every pass floods log.txt with identical "100 %" lines; we only
+    # need to know when the battery level or the smart-charging setting moves.
+    set battery_snapshot "$percent|$::settings(smart_battery_charging)"
+    if {![info exists ::last_battery_log] || $::last_battery_log ne $battery_snapshot} {
+        set ::last_battery_log $battery_snapshot
+        msg -INFO "Battery percent is: $percent %, smart charging = $::settings(smart_battery_charging)"
+    }
 
     #####################
 

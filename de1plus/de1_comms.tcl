@@ -58,7 +58,13 @@ proc userdata_append {comment cmd {vital 0} } {
 
 	::comms::msg -INFO "ENQ ($qlen): $comment"
 
-	if {$qlen >= 50} {
+	# A long BLE queue means commands are enqueuing faster than they drain -
+	# typically because no DE1 is connected (run_next_userdata_cmd early-returns
+	# when device_handle is 0/1), so the stack grows unbounded. We used to warn
+	# on EVERY append past 50, which floods log.txt with hundreds of near-identical
+	# lines. Warn only at setpoints (50, 100, then every 500) so the growth is
+	# still visible without the spam.
+	if {$qlen == 50 || $qlen == 100 || ($qlen >= 500 && $qlen % 500 == 0)} {
 		::comms::msg -WARNING "Warning, BLE queue is $qlen long"
 	}
 	run_next_userdata_cmd

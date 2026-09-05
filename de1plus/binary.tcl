@@ -2114,9 +2114,16 @@ proc update_de1_state {statechar} {
 		### Substate change only
 		###
 
-		msg -INFO [format "DE1 substate change: %s, %s => %s, %s" \
-				   $previous_state $previous_substate \
-				   $this_state $this_substate]
+		# Skip logging the idle ready<->UserNotPresent oscillation: with a
+		# presence sensor the DE1 toggles between these two substates every
+		# couple of minutes forever while idle, which floods log.txt. The
+		# state-change callbacks still fire below; we only suppress the log line.
+		if {!([lsearch -exact {ready UserNotPresent} $previous_substate] >= 0 \
+		   && [lsearch -exact {ready UserNotPresent} $this_substate] >= 0)} {
+			msg -INFO [format "DE1 substate change: %s, %s => %s, %s" \
+					   $previous_state $previous_substate \
+					   $this_state $this_substate]
+		}
 
 		::de1::event::apply::on_all_state_change_callbacks $event_dict
 
