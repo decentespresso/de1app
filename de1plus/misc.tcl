@@ -4,6 +4,7 @@ proc make_de1_dir {srcdir destdirs} {
     set files {
         binary.tcl *
         bluetooth.tcl *
+        bengle.tcl *
         translation.tcl *
         de1plus.tcl *
         de1.tcl *

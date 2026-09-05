@@ -857,6 +857,14 @@ namespace eval ::de1::packet {
 	proc set_ble_protocol_version {v} {
 		if {[ifexists ::de1(ble_protocol_version) 0] == $v} { return }
 		set ::de1(ble_protocol_version) $v
+		# A Bengle (v2) has an integrated scale. If a separate BLE scale is
+		# already connected when we discover we are on a Bengle, drop it so we
+		# don't run two scales at once (ble_connect_to_scale then refuses to
+		# reconnect it while the Bengle is active).
+		if {$v >= 2 && [ifexists ::de1(scale_device_handle) 0] != 0} {
+			::msg -NOTICE "Bengle detected: disconnecting separate BLE scale (integrated scale used)"
+			catch { scale_disconnect_now }
+		}
 		# Flow ceiling is uniform 20 mL/s for every machine (John's decision),
 		# so max_flowrate_v11 is NOT switched by protocol -- it stays at its
 		# machine.tcl default of 20 for both DE1 (v1) and Bengle (v2). This proc

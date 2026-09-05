@@ -862,55 +862,77 @@ add_de1_text "espresso espresso_zoomed espresso_zoomed_temperature" $column1_pos
 
 #######################
 # weight
-add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (12.5 * $spacer)}] -justify right -anchor "nw" -font Helv_7_bold -fill $dark -width [rescale_x_skin 520] -textvariable {[waterweight_label_text]}
-	#add_de1_variable "" $column1_pos [expr {$pos_top + (14 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $::lighter -width [rescale_x_skin 520] -textvariable {[drink_weight_text]}
-	add_de1_variable "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (13.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $::lighter -width [rescale_x_skin 520] -textvariable {[if {$::de1(scale_sensor_weight) == ""} { return "" } elseif {$::settings(scale_bluetooth_address) != "" && $::settings(final_desired_shot_weight) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
-			return "[finalwaterweight_text] < [return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]"
-		} elseif {$::settings(scale_bluetooth_address) != "" && $::settings(final_desired_shot_weight_advanced) > 0 && $::settings(settings_profile_type) == "settings_2c"} {
-			return "[drink_weight_text] < [return_stop_at_weight_measurement $::settings(final_desired_shot_weight_advanced)]"			
-		} else {
-			return "[drink_weight_text]"
-		}]}  
+# Idle (shot not running): "Weight" header, then two lines under it --
+#   Current: XXg    + [tare]  (tare / scale reconnect)
+#   Stop at: XXg    + [edit]  (opens the stop-weight editor)
+# [tare]/[edit] right-aligned at column3_pos (under the "0 mL" column).
+add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (12.5 * $spacer)}] -justify left -anchor "nw" -font Helv_7_bold -fill $dark -width [rescale_x_skin 520] -textvariable {[waterweight_label_text]}
+	add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (13.5 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill $::lighter -width [rescale_x_skin 520] -textvariable {[::stopweight::current_line]}
+	add_de1_text "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" $column3_pos [expr {$pos_top + (12.5 * $spacer)}] -justify right -anchor "ne" -font Helv_7 -fill "#4e85f4" -text "\[[translate {tare}]\]"
+	add_de1_variable "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (14.5 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill $::lighter -width [rescale_x_skin 520] -textvariable {[::stopweight::stop_line]}
+	add_de1_text "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" $column3_pos [expr {$pos_top + (14.5 * $spacer)}] -justify right -anchor "ne" -font Helv_7 -fill "#4e85f4" -text "\[[translate {edit}]\]"
 
 
 	add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" $column1_pos [expr {$pos_top + (17.5 * $spacer)}] -justify right -anchor "nw" -font Helv_7_bold -fill $dark -width [rescale_x_skin 520] -textvariable {[waterweight_label_text]}
+		# [tare] opposite "Weight" on the live espresso page (see button below).
+		add_de1_text "espresso espresso_zoomed espresso_zoomed_temperature" $column3_pos [expr {$pos_top + (17.5 * $spacer)}] -justify right -anchor "ne" -font Helv_7 -fill "#4e85f4" -text "\[[translate {tare}]\]"
 		add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" $column1_pos [expr {$pos_top + (18.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $::lighter -width [rescale_x_skin 520] -textvariable {[waterweightflow_text]} 
 	
-		add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" $column1_pos [expr {$pos_top + (19.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $::lighter -width [rescale_x_skin 520] -textvariable {[if {$::de1(scale_sensor_weight) == ""} { return "" } elseif {$::settings(scale_bluetooth_address) != "" && $::settings(final_desired_shot_weight) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
-			return "[waterweight_text] < [return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]"			
-		} elseif {$::settings(scale_bluetooth_address) != "" && $::settings(final_desired_shot_weight_advanced) > 0 && $::settings(settings_profile_type) == "settings_2c"} {
-			return "[waterweight_text] < [return_stop_at_weight_measurement $::settings(final_desired_shot_weight_advanced)]"			
-		} else {
-			return "[waterweight_text]"
-		}]}  
+		add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" $column1_pos [expr {$pos_top + (19.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $::lighter -width [rescale_x_skin 520] -textvariable {[::stopweight::weight_display espresso]}
 
+	# Tap the Weight area to edit the profile's stop-at-weight in the full-screen
+	# number editor (advanced -> final_desired_shot_weight_advanced, simple ->
+	# final_desired_shot_weight; see ::stopweight in de1_skin_settings.tcl).
+	# Two invisible tap rects over the Weight header+value: one for the idle
+	# pages, one for the live espresso pages, matching the two blocks above.
+	# Stop-at-weight zone: idle = the whole ROW 2 ("Stop at weight ... [edit]");
+	# live espresso = the Weight area left of the [tare] word (unchanged).
+	add_de1_button "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" {::stopweight::open_editor} 2040 [expr {$pos_top + (14 * $spacer)}] 2560 1319
+	add_de1_button "espresso espresso_zoomed espresso_zoomed_temperature" {::stopweight::open_editor} [expr {$column1_pos - 10}] [expr {$pos_top + (17 * $spacer)}] [expr {$column1_pos + 300}] [expr {$pos_top + (20 * $spacer)}]
 
-			
 
 		add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (2 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7  -fill $::lighter -width [rescale_x_skin 520] -textvariable {[pouring_timer_text]}  
 
 
 		# progress bar docs http://npg.dl.ac.uk/MIDAS/manual/ActiveTcl8.5.7.0.290198-html/bwidget/ProgressBar.html
-		add_de1_widget "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" ProgressBar $column1_pos 1310 {} -relief "flat" -troughcolor $chart_background -width [rescale_x_skin 420] -height [rescale_x_skin 2] -type normal  -variable ::de1(scale_weight_rate) -fg #a2693d -bg $chart_background -maximum 6 -borderwidth 0 -relief flat
+		# Removed: the scale weight-rate ProgressBar (2px, white trough) at y1310.
+		# The taller Weight card (Weight header + Current + Stop at) now reaches
+		# this y, so the empty white trough drew a line through "Stop at:" / [edit].
+		# It never showed shot data on the ready pages anyway (the live shot is the
+		# separate espresso page, which keeps its own activity bar), and the new
+		# "Current:" readout makes it redundant.
+		#add_de1_widget "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" ProgressBar $column1_pos 1310 {} -relief "flat" -troughcolor $chart_background -width [rescale_x_skin 420] -height [rescale_x_skin 2] -type normal  -variable ::de1(scale_weight_rate) -fg #a2693d -bg $chart_background -maximum 6 -borderwidth 0 -relief flat
 	
 	if {$::settings(scale_bluetooth_address) != ""} {
 		set ::de1(scale_weight_rate) -1
-		
-		if {$::settings(insight_skin_show_weight_activity_bar) == 1} {
-			add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2390 [expr {$pos_top + (12.3 * $spacer)}] {} -width [rescale_x_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::de1(scale_weight_rate) -fg #a2693d -bg $chart_background -maximum 6 -borderwidth 0 -relief flat
-		}
-	
-		# scale ble reconnection button
-		add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" { say [translate {connect}] $::settings(sound_button_in); catch {
 
-			if {$::de1(scale_sensor_weight) == ""} { 
-				set ::de1(bluetooth_scale_connection_attempts_tried) 0; 
-				ble_connect_to_scale
-			} else {
-				scale_tare
-			}
-		} } 2040 1190 2400 1400
+		# Weight-rate activity bar removed: the live "Current: Xg" / "Weight" readout
+		# makes it redundant. (Kept the setting gate for reference.)
+		if {$::settings(insight_skin_show_weight_activity_bar) == 1} {
+			#add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2390 [expr {$pos_top + (12.3 * $spacer)}] {} -width [rescale_x_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::de1(scale_weight_rate) -fg #a2693d -bg $chart_background -maximum 6 -borderwidth 0 -relief flat
+		}
 	}
+
+	# Tare — the [tare] word (idle row 1) and the live-espresso Weight header row.
+	# Created unconditionally (NOT gated on scale_bluetooth_address) so it also
+	# works with the Bengle's integrated scale, which has no bluetooth address.
+	# ::device::scale::tare is scale-type aware and tares the Bengle over MMR;
+	# with no scale available at all, offer to (re)connect a BLE scale instead.
+	proc ::stopweight::tare_or_connect {} {
+		say [translate {tare}] $::settings(sound_button_in)
+		catch {
+			if {[::device::scale::is_connected]} {
+				::device::scale::tare
+			} else {
+				set ::de1(bluetooth_scale_connection_attempts_tried) 0
+				ble_connect_to_scale
+			}
+		}
+	}
+	# Idle pages (row 1, the [tare] word):
+	add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {::stopweight::tare_or_connect} 2040 [expr {$pos_top + (12 * $spacer)}] 2560 [expr {$pos_top + (14 * $spacer) - 1}]
+	# Live espresso pages (Weight header row):
+	add_de1_button "espresso espresso_zoomed espresso_zoomed_temperature" {::stopweight::tare_or_connect} [expr {$column1_pos + 300}] [expr {$pos_top + (17 * $spacer)}] 2560 [expr {$pos_top + (20 * $spacer)}]
 
 #######################
 
@@ -954,7 +976,9 @@ add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperatu
 # this heart icon feature is always on now
 set ::settings(display_rate_espresso) 1
 if {$::settings(display_rate_espresso) == 1} {
-	add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {describe}] $::settings(sound_button_in); backup_settings; set_next_page off describe_espresso0; page_show off; set_god_shot_scrollbar_dimensions; } 2420 1200 2560 1400
+	# Heart / rate-espresso tap zone shrunk to just the heart icon (was 1200-1400,
+	# which reached up over the Weight card and captured the [tare]/[edit] taps).
+	add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {describe}] $::settings(sound_button_in); backup_settings; set_next_page off describe_espresso0; page_show off; set_god_shot_scrollbar_dimensions; } 2420 1320 2560 1420
 	source "[homedir]/skins/Insight/scentone.tcl"
 }
 

@@ -2266,6 +2266,14 @@ proc ble_connect_to_scale {} {
 		return
 	}
 
+	# A Bengle has an integrated scale (BLE protocol v2). Do not also connect a
+	# separate BLE scale, or the app runs two scales at once. The saved scale is
+	# left in settings so it still connects when a plain DE1 is used later.
+	if {[is_bengle_model]} {
+		::bt::msg -NOTICE "Bengle integrated scale active; not connecting a separate BLE scale"
+		return
+	}
+
 
 	if {$::settings(scale_bluetooth_address) == ""} {
 		::bt::msg -INFO "No Scale BLE address in settings, so not connecting to it"

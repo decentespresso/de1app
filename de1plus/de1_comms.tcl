@@ -2219,3 +2219,10 @@ proc ::led::push_all_stored {} {
 }
 
 # No state-change listener needed — firmware switches LEDs autonomously.
+
+
+# Bengle-specific UI logic (cup warmer / LED picker / firmware update procs),
+# extracted from the Insight skin so all Bengle behaviour lives in one file.
+# Sourced here (loaded early) so the procs exist before the skin builds the pages
+# that reference them. Page/widget construction stays in the skin.
+source "[homedir]/bengle.tcl"
