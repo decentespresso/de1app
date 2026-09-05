@@ -1133,11 +1133,25 @@ add_de1_text "settings_3" 1304 750 -text [translate "Firmware"] -font Helv_10_bo
 	# Firmware update — full-width card (matches the single wide card drawn in
 	# settings_3.png). Lighting now lives on the Counter box (LED colours), so
 	# there is no card split here.
+	# Shared label — check_firmware_update_is_available()/fwfile are model-aware,
+	# so the same text ("Firmware update available" / "Up to date") is correct for
+	# both a DE1 and a Bengle. Only the tap target below differs by model.
 	add_de1_variable "settings_3" 1960 926 -text "" -width [rescale_x_skin 1000] -font Helv_10_bold -fill "#FFFFFF" -justify "center" -anchor "center" -textvariable {[check_firmware_update_is_available][translate $::de1(firmware_update_button_label)]}
-	add_de1_button "settings_3" {set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1} 1280 850 2540 1020
 
+	# DE1 firmware button: the classic power-off / power-on reboot flow.
+	dui add dbutton "settings_3" 1280 850 2540 1020 -theme none -tags {de1_fw_btn} \
+		-command {set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1}
 	# hidden button to force a firmware update even if it is currently disabled.
-	add_de1_button "settings_3" {set ::settings(force_fw_update) 1; set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1} 1280 750 1800 810
+	dui add dbutton "settings_3" 1280 750 1800 810 -theme none -tags {de1_fw_force} \
+		-command {set ::settings(force_fw_update) 1; set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1}
+
+	# Bengle firmware button: live update over the connection, no physical power
+	# cycle. Same card location; shown only on a Bengle (gated in the settings_3
+	# page-show action, alongside the Counter-box buttons).
+	dui add dbutton "settings_3" 1280 850 2540 1020 -theme none -tags {bengle_fw_btn} \
+		-command {::bengle_fw::open}
+	dui add dbutton "settings_3" 1280 750 1800 810 -theme none -tags {bengle_fw_force} \
+		-command {set ::settings(force_fw_update) 1; ::bengle_fw::open}
 
 
 # app update
@@ -1550,6 +1564,17 @@ proc fetch_possible_de1_sn {} {
 		dui add dbutton "settings_3" 760 235 -bheight 100 -style insight_ok -anchor nw -command {::led::open_picker} -label [translate "LED colors"] -tags [list bengle_counter_led bengle_counter]
 		dui add dbutton "settings_3" 760 350 -bheight 100 -style insight_ok -anchor nw -command {say [translate {Cup warmer}] $::settings(sound_button_in); page_to_show_when_off cupwarmer} -label [translate "Cup warmer"] -tags [list bengle_counter_cupwarmer bengle_counter]
 		add_de1_action "settings_3" { dui item show_or_hide [is_bengle_model] settings_3 bengle_counter }
+
+		# Firmware tap target is model-aware: the Bengle gets the live (no
+		# power-cycle) flow, the DE1 keeps its reboot flow. The shared label
+		# stays visible for both.
+		add_de1_action "settings_3" {
+			set _is_bengle [is_bengle_model]
+			dui item show_or_hide $_is_bengle          settings_3 bengle_fw_btn
+			dui item show_or_hide $_is_bengle          settings_3 bengle_fw_force
+			dui item show_or_hide [expr {!$_is_bengle}] settings_3 de1_fw_btn
+			dui item show_or_hide [expr {!$_is_bengle}] settings_3 de1_fw_force
+		}
 
 		add_de1_variable "settings_3" 1250 544 -text "" -font Helv_8 -fill "#7f879a" -anchor "ne" -width [rescale_x_skin 1000] -justify "right" -textvariable {[de1_sn_show]}
 		add_de1_button "settings_3" {show_de1_sn_page} 500 544 1250 600
@@ -3249,3 +3274,247 @@ if {1} {
 		page_to_show_when_off led_picker
 	}
 } ;# end is_bengle_model
+
+
+#############################################################################
+# Bengle firmware update — live, no physical power cycle.
+#
+# The DE1 firmware flow (firmware_update_1..5) asks the customer to physically
+# power the machine off, detects the disconnect, asks them to power it back on,
+# and only then flashes. On a Bengle we can skip that: put the machine to sleep,
+# drive it into the fwUpgrade (0x16) sub-state, and flash over the existing
+# connection — the same sequence decaid's Bengle uses (requestState(Sleeping) →
+# requestState(fwUpgrade) → erase/upload/verify).
+#
+# fwfile() is already model-aware (returns fw/benglefw.dat on a Bengle), so
+# start_firmware_update() uploads the correct image. These pages are built
+# unconditionally; the settings_3 button that opens them is shown only on a
+# Bengle (is_bengle_model is false at skin-load time).
+#############################################################################
+
+namespace eval ::bengle_fw {
+	variable _probed 0
+	variable apply_result ""
+	variable _saw_disconnect 0
+	variable from_version ""
+	variable _card1 ""
+	variable _card2 ""
+}
+
+# Auto-fit a card rect to its text. Keeps the rect's top and sides fixed and
+# sets the bottom so the gap below the last line equals the gap above the first
+# line (symmetric vertical padding). Recomputed as the text changes, so the box
+# grows/shrinks with longer or shorter translations rather than clipping. All of
+# a card's text carries the shared tag <text_tag>; buttons are tagged separately
+# and excluded.
+proc ::bengle_fw::_fit_card {rect_id text_tag} {
+	if {$rect_id eq ""} return
+	set can [dui canvas]
+	if {[catch {$can bbox $text_tag} bb] || $bb eq ""} return
+	if {[catch {$can coords $rect_id} rc] || [llength $rc] < 4} return
+	lassign $bb tx0 ty0 tx1 ty1
+	lassign $rc rx0 ry0 rx1 ry1
+	set toppad [expr {$ty0 - $ry0}]
+	if {$toppad < 0} { set toppad 0 }
+	$can coords $rect_id $rx0 $ry0 $rx1 [expr {$ty1 + $toppad}]
+}
+
+# "v<from> → v<to> (upgrade|downgrade|no version change)" for the running machine
+# vs the firmware file. On page 1 (before an update) from_version is empty, so it
+# uses the live installed version; during/after an update it uses the version
+# captured at begin(), so the "from" doesn't change once the machine reflashes.
+proc ::bengle_fw::version_change_label {} {
+	set from $::bengle_fw::from_version
+	if {$from eq ""} { set from [ifexists ::settings(firmware_version_number) ""] }
+	set to [ifexists ::de1(Firmware_file_Version) ""]
+	if {$to eq ""} { catch { fwfile }; set to [ifexists ::de1(Firmware_file_Version) ""] }
+	if {$from eq "" || $to eq ""} { return "" }
+	if {$to > $from} {
+		set kind [translate "upgrade"]
+	} elseif {$to < $from} {
+		set kind [translate "downgrade"]
+	} else {
+		set kind [translate "no version change"]
+	}
+	return "v$from ➜ v$to ($kind)"
+}
+
+# Open the confirmation page. Reachable only via the Bengle firmware button.
+proc ::bengle_fw::open {} {
+	say [translate {Firmware}] $::settings(sound_button_in)
+	page_to_show_when_off bengle_firmware_update_1
+}
+
+# Kick off the live update: sleep → fwUpgrade (0x16) → erase/upload/verify.
+proc ::bengle_fw::begin {} {
+	if {[ifexists ::de1(device_handle) 0] == 0 && $::has_bluetooth} {
+		::comms::msg -NOTICE "bengle_fw: not connected, cannot start firmware update"
+		return
+	}
+	if {[ifexists ::de1(currently_updating_firmware) 0] == 1 \
+			|| [ifexists ::de1(currently_erasing_firmware) 0] == 1} {
+		::comms::msg -INFO "bengle_fw: firmware update already in progress"
+		page_show bengle_firmware_update_2
+		return
+	}
+
+	::comms::msg -NOTICE "bengle_fw: starting live firmware update (no power cycle)"
+	# Explicitly NOT setting ::de1(in_fw_update_mode): that flag drives the DE1
+	# reboot/reconnect path. We stay connected and drive the states live.
+	set ::de1(in_fw_update_mode) 0
+
+	# Reset the post-apply version probe for this run, and capture the currently
+	# installed version as the "from" for the from→to display.
+	set ::bengle_fw::_probed 0
+	set ::bengle_fw::_saw_disconnect 0
+	set ::bengle_fw::apply_result ""
+	set ::bengle_fw::from_version [ifexists ::settings(firmware_version_number) ""]
+
+	page_show bengle_firmware_update_2
+
+	# 1) sleep, 2) enter the fwUpgrade sub-state, 3) erase + upload + verify.
+	de1_send_state "go to sleep" $::de1_state(Sleep)
+	after 700  { de1_send_state "firmware upgrade" $::de1_state(FWUpgrade) }
+	after 1500 { start_firmware_update }
+}
+
+# Completion monitor, driven by an off-screen variable on page 2. Reveals the
+# "Done" button once the upload has finished and been verified.
+proc ::bengle_fw::_tick {} {
+	# Keep the inactivity screen saver at bay during the (minute-long) upload.
+	catch { delay_screen_saver }
+	# Keep the card fitted to the (changing) text -- the status/verdict lines grow
+	# and shrink, so re-fit each refresh for symmetric top/bottom padding.
+	catch { ::bengle_fw::_fit_card $::bengle_fw::_card2 bfw2_body }
+	set b   [ifexists ::de1(firmware_bytes_uploaded) 0]
+	set sz  [ifexists ::de1(firmware_update_size) 0]
+	set upd [ifexists ::de1(currently_updating_firmware) 0]
+	set era [ifexists ::de1(currently_erasing_firmware) 0]
+	set done [expr {$b > 0 && $sz > 0 && $b >= $sz && $upd == 0 && $era == 0}]
+	# Drive the Done button's canvas state directly by the compound page/tag
+	# selector (what dui's own get() uses). This is more reliable than
+	# dui item show_or_hide here, which was leaving the button visible mid-update.
+	catch { [dui canvas] itemconfigure "p:bengle_firmware_update_2&&bfw_done" -state [expr {$done ? "normal" : "hidden"}] }
+
+	# Edge-triggered on completion: the upload is flashed but the machine is still
+	# running the OLD firmware -- it must be power-cycled to apply it. Tell the
+	# user to do that, then poll until the machine reconnects reporting the new
+	# version, which validates the update.
+	if {$done && !$::bengle_fw::_probed} {
+		set ::bengle_fw::_probed 1
+		set ::bengle_fw::apply_result [translate "Firmware uploaded. Turn your machine OFF, wait a few seconds, then turn it back ON to finish the update."]
+		after 3000 { ::bengle_fw::_monitor 0 }
+	}
+	return ""
+}
+
+# Ask the machine for its running firmware build number (BLE Version + MMR
+# 0x800010, both land in ::settings(firmware_version_number)).
+proc ::bengle_fw::_read_version {} {
+	catch { read_de1_version }
+	catch { get_firmware_version_number }
+}
+
+# Post-upload monitor. The image is flashed but not yet applied: the machine
+# must be power-cycled. Poll until it reconnects reporting the new version, which
+# validates the update. Settling states:
+#   * connected + reports the new version  -> validated (power cycle worked)
+#   * disconnected                         -> machine is off mid power-cycle
+#   * connected + still the old version     -> waiting for the user to power-cycle
+# Auto-reconnect is left enabled, so the app re-links on its own when it powers on.
+proc ::bengle_fw::_monitor {{elapsed 0}} {
+	catch { delay_screen_saver }
+	set expected  [ifexists ::de1(Firmware_file_Version) ""]
+	set connected [expr {[ifexists ::de1(device_handle) 0] != 0 || !$::has_bluetooth}]
+	set timeout   600000 ;# 10 minutes, to allow a manual power cycle
+
+	if {!$connected} {
+		# Machine is off (mid power-cycle). Record that we saw it drop -- this is
+		# how we confirm the power cycle actually happened, which is the only
+		# reliable signal when the version number does not change (reflash of the
+		# same version).
+		set ::bengle_fw::_saw_disconnect 1
+		if {$elapsed >= $timeout} {
+			set ::bengle_fw::apply_result [translate "Waiting for the machine to power back on and reconnect…"]
+			return
+		}
+		set ::bengle_fw::apply_result [translate "Turn your machine back ON to finish the update…"]
+	} elseif {$::bengle_fw::_saw_disconnect} {
+		# The machine dropped and is back: the power cycle applied the firmware.
+		set running [ifexists ::settings(firmware_version_number) ""]
+		if {$running ne "" && $expected ne "" && $running >= $expected} {
+			set ::bengle_fw::apply_result "[translate {Update complete.}] [translate {Machine now reports firmware}] v$running."
+		} else {
+			set ::bengle_fw::apply_result "[translate {Machine reconnected but reports firmware}] v$running ([translate {expected}] v$expected)."
+		}
+		return
+	} else {
+		# Uploaded, still on the pre-power-cycle connection: wait for the user to
+		# power-cycle. A flash always needs a power cycle, even reflashing the same
+		# version, so we do NOT short-circuit on the version number here.
+		::bengle_fw::_read_version
+		if {$elapsed >= $timeout} {
+			set ::bengle_fw::apply_result [translate "Still waiting. Please turn the machine off and on to finish the update."]
+			return
+		}
+		set ::bengle_fw::apply_result [translate "Firmware uploaded. Turn your machine OFF, wait a few seconds, then turn it back ON to finish the update."]
+	}
+	after 3000 [list ::bengle_fw::_monitor [expr {$elapsed + 3000}]]
+}
+
+# ---- Page 1: confirmation -------------------------------------------------
+# A soft card sits behind the copy so dark text stays legible over the busy
+# photo, kept left of the machine (its left edge is ~x1040 in design space) so
+# the product stays visible. Text/vars are added after the rect so they draw on
+# top; the action buttons carry their own insight_ok chrome and sit on the wood.
+set ::bengle_fw::_card1 [dui add canvas_item rect "bengle_firmware_update_1" 80 80 820 640 -fill "#F6F1E9" -outline "#E2DACB" -width 2]
+
+	add_de1_text "bengle_firmware_update_1" 140 130 -text [translate "Update Bengle firmware"] -font Helv_16_bold -width [rescale_x_skin 640] -fill "#2b2b2b" -anchor "nw" -justify "left" -tags {bfw1_title bfw1_body}
+
+	# Installed → new version, with direction (upgrade / downgrade / no change).
+	# This replaces the old "Firmware update available" line -- it says the same
+	# thing and more. Larger/bold so the arrow reads clearly.
+	add_de1_variable "bengle_firmware_update_1" 140 385 -text "" -font Helv_10 -width [rescale_x_skin 640] -fill "#2b2b2b" -anchor "nw" -justify "left" -tags {bfw1_ver bfw1_body} -textvariable {[::bengle_fw::version_change_label]}
+
+	add_de1_text "bengle_firmware_update_1" 140 500 -text [translate "Please keep this app open until the update finishes."] -font Helv_10 -width [rescale_x_skin 640] -fill "#2b2b2b" -anchor "nw" -justify "left" -tags {bfw1_keep bfw1_body}
+
+	# On entry, clear the captured "from" so the version line reflects the live
+	# installed version until an update actually starts, then fit the card to the
+	# text (symmetric top/bottom padding, robust to translation length).
+	add_de1_action "bengle_firmware_update_1" { set ::bengle_fw::from_version ""; after 50 { ::bengle_fw::_fit_card $::bengle_fw::_card1 bfw1_body } }
+
+	# Cancel bottom-left, left edge flush with the card (x80); primary "Update
+	# now" bottom-right. Both share y1402 and leave equal 80px margins to the
+	# screen edges below/beside them (insight_ok is 480 wide, 118 tall).
+	dui add dbutton "bengle_firmware_update_1" 80 1402 -bheight 118 -style insight_ok -anchor nw -command {say [translate {Cancel}] $::settings(sound_button_in); page_to_show_when_off settings_3} -label [translate "Cancel"]
+	dui add dbutton "bengle_firmware_update_1" 2000 1402 -bheight 118 -style insight_ok -anchor nw -command {::bengle_fw::begin} -label [translate "Update now"]
+
+# ---- Page 2: progress -----------------------------------------------------
+set ::bengle_fw::_card2 [dui add canvas_item rect "bengle_firmware_update_2" 80 80 820 1090 -fill "#F6F1E9" -outline "#E2DACB" -width 2]
+
+	add_de1_text "bengle_firmware_update_2" 140 130 -text [translate "Updating Bengle firmware…"] -font Helv_16_bold -width [rescale_x_skin 640] -fill "#2b2b2b" -anchor "nw" -justify "left" -tags {bfw2_title bfw2_body}
+
+	# Installed → new version, with direction (upgrade / downgrade / no change).
+	add_de1_variable "bengle_firmware_update_2" 140 385 -text "" -font Helv_10 -width [rescale_x_skin 640] -fill "#2b2b2b" -anchor "nw" -justify "left" -tags {bfw2_ver bfw2_body} -textvariable {[::bengle_fw::version_change_label]}
+
+	# Big percentage read-out (one line below the version).
+	add_de1_variable "bengle_firmware_update_2" 140 480 -text "" -font Helv_16_bold -width [rescale_x_skin 640] -fill "#2b2b2b" -anchor "nw" -justify "left" -tags {bfw2_pct bfw2_body} -textvariable {[firmware_uploaded_label]}
+	# Estimated time remaining.
+	add_de1_variable "bengle_firmware_update_2" 140 565 -text "" -font Helv_10 -width [rescale_x_skin 640] -fill "#2b2b2b" -anchor "nw" -justify "left" -tags {bfw2_eta bfw2_body} -textvariable {[firmware_update_eta_label]}
+	# Status word (Starting / Updating / Testing / Updated / Update failed). Its
+	# textvariable also drives ::bengle_fw::_tick as a side effect (the same
+	# pattern the DE1 firmware pages use), toggling the Done button on completion.
+	add_de1_variable "bengle_firmware_update_2" 140 665 -text "" -font Helv_10_bold -width [rescale_x_skin 640] -fill "#2b2b2b" -anchor "nw" -justify "left" -tags {bfw2_status bfw2_body} -textvariable {[::bengle_fw::_tick][translate $::de1(firmware_update_button_label)]}
+
+	add_de1_text "bengle_firmware_update_2" 140 765 -text [translate "Please keep this app open until the update finishes."] -font Helv_10 -width [rescale_x_skin 640] -fill "#2b2b2b" -anchor "nw" -justify "left" -tags {bfw2_keep bfw2_body}
+
+	# Post-upload verdict: power-cycle instruction, then the validated version.
+	add_de1_variable "bengle_firmware_update_2" 140 955 -text "" -font Helv_10_bold -width [rescale_x_skin 640] -fill "#2b2b2b" -anchor "nw" -justify "left" -tags {bfw2_result bfw2_body} -textvariable {$::bengle_fw::apply_result}
+
+	# Done button — bottom-right (same position as page 1's "Update now"), hidden
+	# until the upload has finished and verified. Driven directly by canvas tag in
+	# ::bengle_fw::_tick.
+	dui add dbutton "bengle_firmware_update_2" 2000 1402 -bheight 118 -style insight_ok -anchor nw -command {say [translate {Done}] $::settings(sound_button_in); page_to_show_when_off settings_3} -label [translate "Done"] -tags {bfw_done_main bfw_done}
+
+	# Hide the Done button on entry so it does not flash before the first tick.
+	add_de1_action "bengle_firmware_update_2" { catch { [dui canvas] itemconfigure "p:bengle_firmware_update_2&&bfw_done" -state hidden } }

@@ -47,6 +47,14 @@ proc strip_crlf {in} {
 }
 
 proc page_change_due_to_de1_state_change {textstate} {
+	# The Bengle live firmware update deliberately drives the machine to Sleep
+	# and then into the fwUpgrade sub-state over the live connection. Those
+	# state notifications would otherwise navigate us to the "saver" page and
+	# abandon the update UI. Pin the firmware pages: the flow drives its own
+	# navigation (progress -> Done), so ignore machine-state page changes here.
+	if {[ifexists ::de1(current_context)] in {bengle_firmware_update_1 bengle_firmware_update_2}} {
+		return
+	}
 	# While the ultra-minimal first-run message is up, idle DE1 state-polls would
 	# otherwise re-show the 'off' page every few seconds and clobber it. Hold the
 	# page on the message until the user taps Ok (which clears the flag). If the

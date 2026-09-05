@@ -3635,7 +3635,7 @@ proc ghc_required {} {
 
 proc start_text_if_espresso_ready {} {
 	set num $::de1(substate)
-	set substate_txt $::de1_substate_types($num)
+	set substate_txt [ifexists ::de1_substate_types($num) ""]
 
 	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
 		
@@ -3658,7 +3658,7 @@ proc start_text_if_steam_ready {} {
 	}
 
 	set num $::de1(substate)
-	set substate_txt $::de1_substate_types($num)
+	set substate_txt [ifexists ::de1_substate_types($num) ""]
 
 	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
 		
@@ -3673,7 +3673,7 @@ proc start_text_if_steam_ready {} {
 
 proc restart_text_if_espresso_ready {} {
 	set num $::de1(substate)
-	set substate_txt $::de1_substate_types($num)
+	set substate_txt [ifexists ::de1_substate_types($num) ""]
 	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
 		if {[ghc_required]} {
 			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
@@ -3697,7 +3697,7 @@ proc restart_text_if_steam_ready {} {
 	}
 
 	set num $::de1(substate)
-	set substate_txt $::de1_substate_types($num)
+	set substate_txt [ifexists ::de1_substate_types($num) ""]
 	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
 		if {[ghc_required]} {
 			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
@@ -3710,7 +3710,7 @@ proc restart_text_if_steam_ready {} {
 }
 proc stop_text_if_espresso_stoppable {} {
 	set num $::de1(substate)
-	set substate_txt $::de1_substate_types($num)
+	set substate_txt [ifexists ::de1_substate_types($num) ""]
 	if {$substate_txt != "ending"} {
 		return [translate "STOP"]
 	}
@@ -3722,7 +3722,7 @@ proc stop_text_if_espresso_stoppable {} {
 # TODO: this should probably be renamed.
 proc espresso_history_save_from_gui {} {
 	set num $::de1(substate)
-	set substate_txt $::de1_substate_types($num)
+	set substate_txt [ifexists ::de1_substate_types($num) ""]
 	if {$substate_txt != "ready"} {
 		set state [translate "WAIT"]
 	} else {

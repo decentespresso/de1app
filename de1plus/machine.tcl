@@ -551,6 +551,7 @@ array set ::de1_state {
     InBootLoader \x13
     AirPurge \x14
 	SchedIdle \x15
+	FWUpgrade \x16
 }
 
 
@@ -577,6 +578,7 @@ array set ::de1_num_state {
   19 InBootLoader
   20 AirPurge
   21 SchedIdle
+  22 FWUpgrade
 }
 
 
@@ -690,7 +692,10 @@ if {[catch {
 
 proc de1_substate_text {} {
 	set num $::de1(substate)
-	set substate_txt $::de1_substate_types($num)
+	# Graceful fallback for substates the app does not map (e.g. the Bengle
+	# reports 21/0x15 while in SchedIdle) -- matches decaid, which returns its
+	# "noState" for any unknown value rather than throwing.
+	set substate_txt [ifexists ::de1_substate_types($num) ""]
 	return [translate $substate_txt]
 }
 
@@ -1029,8 +1034,8 @@ proc start_next_step {} {
 	}
 
 
-	if {$::de1_substate_types($::de1(substate)) != "preinfusion" \
-	 && $::de1_substate_types($::de1(substate)) != "pouring" } {
+	if {[ifexists ::de1_substate_types($::de1(substate)) ""] != "preinfusion" \
+	 && [ifexists ::de1_substate_types($::de1(substate)) ""] != "pouring" } {
 		msg -INFO "Espresso heating, skipping moving on"
 	}
 

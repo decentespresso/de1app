@@ -12,5 +12,5 @@ cd "$(dirname "$0")"
 
 #export SDL_VIDEODRIVER=jsmpeg
 #export SDL_VIDEO_JSMPEG_OUTFILE=~/Desktop/decent.mpg
-undroidwish-arm64 de1plus.tcl -sdlheight 801 -sdlwidth 1280 -sdlrootheight 800 -sdlrootwidth 1280 -name Decent
+undroidwish-arm64 de1plus.tcl -sdlheight 800 -sdlwidth 1280 -sdlrootheight 800 -sdlrootwidth 1280 -name Decent
 #undroidwish-arm64 de1plus.tcl -sdlheight 1600 -sdlwidth 2560 -sdlrootheight 1600 -sdlrootwidth 2560 -name Decent -sdlresizable

@@ -1348,6 +1348,27 @@ proc get_cupwarmer_status {} {
 	mmr_read "get_cupwarmer_status fault" "8038B8" "00"
 }
 
+# Verification test: the cup warmer must not be heating while it is disabled in
+# the app. Called with the live MatHeaterDrivePct (0x8038B4) each time we read
+# it. If the machine reports drive > 0 while ::settings(cupwarmer_enable) is 0,
+# that is a bug (the machine kept an old CupWarmerMode=1, or firmware pre-warm
+# fired) -- surface it as a toast so it is caught in the field. Detection only:
+# it deliberately does NOT correct the state, so the underlying bug stays
+# visible. Throttled to at most one toast per 30 s to avoid spamming the poll.
+proc check_cupwarmer_not_heating_while_disabled {drive} {
+	if {[is_bengle_model] != 1} { return }
+	if {[ifexists ::settings(cupwarmer_enable) 0] != 0} { return }
+	if {![string is integer -strict $drive] || $drive <= 0} { return }
+
+	::comms::msg -ERROR "CUP WARMER BUG: heating at ${drive}% while disabled (cupwarmer_enable=0)"
+
+	set now [clock seconds]
+	if {[ifexists ::de1(_cupwarmer_bug_toast_at) 0] + 30 <= $now} {
+		set ::de1(_cupwarmer_bug_toast_at) $now
+		catch { popup "[translate_toast {Cup warmer is heating while OFF — this is a bug}] (${drive}%)" }
+	}
+}
+
 # Cup-warmer pre-warm. The FIRMWARE owns the timing: with MatPreheatEnable set
 # it starts the mat MatPreheatLeadMin minutes before a scheduled wake, and it
 # does so with no tablet connected. Both registers are flash-persisted, so this

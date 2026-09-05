@@ -2380,6 +2380,20 @@ proc later_new_de1_connection_setup {} {
 	set_cupwarmer_preheat [ifexists ::settings(cupwarmer_prewarm_enable) 0] \
 		[ifexists ::settings(cupwarmer_prewarm_minutes) 30]
 	get_cupwarmer_status
+	# The connect-time cup-warmer commands above (set_cupwarmer_mode inside
+	# de1_send_steam_hotwater_settings, and get_cupwarmer_status) no-op until
+	# is_bengle_model flips true -- which only happens after the v13Model MMR
+	# read / first 0xA013 sample lands, a few seconds into the connection. So
+	# the authoritative on/off never reaches the machine on the initial pass,
+	# and a warmer left heating by a prior session (RAM-only CupWarmerMode=1)
+	# stays hot. Reconcile once detection has settled: (re)send the app's
+	# enable state, then read status so the verification test still runs.
+	after 9000 {
+		if {[is_bengle_model]} {
+			set_cupwarmer_mode [ifexists ::settings(cupwarmer_enable) 0]
+			get_cupwarmer_status
+		}
+	}
 
 	get_refill_kit_present
 	get_sn
@@ -2981,6 +2995,8 @@ proc de1_ble_handler { event data } {
 							} elseif {$mmr_id == "8038B4"} {
 								# MatHeaterDrivePct 0-100. Shown on the cup warmer page as "Heating - N%".
 								set ::de1(mat_heater_drive) $mmr_val
+								# Verify the warmer is not heating while disabled in the app.
+								check_cupwarmer_not_heating_while_disabled $mmr_val
 
 							} elseif {$mmr_id == "8038B8"} {
 								# MatTempFault 0=OK, 1=OpenOrShort, 2=Runaway. Shown on the cup
