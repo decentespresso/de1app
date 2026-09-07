@@ -3490,10 +3490,32 @@ proc scanning_state_text {} {
 	return [translate "Search"]
 }
 
+# Android: BLE scanning requires BLUETOOTH_SCAN (Android 12+) / ACCESS_FINE_LOCATION.
+# Returns the list of scan-critical permissions the user has NOT granted (empty on
+# non-Android, or when all are granted).
+proc android_scan_permission_missing {} {
+	if {!$::android} { return {} }
+	set missing {}
+	foreach perm {android.permission.BLUETOOTH_SCAN android.permission.ACCESS_FINE_LOCATION} {
+		catch { if {[borg checkpermission $perm] != 1} { lappend missing $perm } }
+	}
+	return $missing
+}
+
 proc scanning_restart {} {
 	::bt::msg -NOTICE scanning_restart
 	if {$::scanning == 1} {
 		return
+	}
+
+	# If the user denied the Bluetooth/Location permission, Android 12+ no longer
+	# re-prompts, so a scan silently finds nothing forever and the app looks broken
+	# with no explanation. Tell the user how to fix it, and re-request in case the
+	# OS will still ask. Non-Android returns early (android_scan_permission_missing
+	# is empty), so this is a no-op everywhere else.
+	if {[llength [android_scan_permission_missing]] > 0} {
+		catch { foreach p [android_scan_permission_missing] { borg checkpermission $p 1 } }
+		catch { popup [subst {[translate "Decent needs the Nearby devices / Location permission to find your DE1 over Bluetooth. Please enable it in Android Settings, Apps, Decent, Permissions, then tap Search again."]}] }
 	}
 	if {!$::has_bluetooth} {
 
