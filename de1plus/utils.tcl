@@ -907,12 +907,15 @@ proc load_ble_command {} {
     return [expr {[llength [info commands ble]] > 0}]
 }
 
-# USB(-C) sibling of load_ble_command. No USB driver ships yet -- this is the seam:
-# add its `package require`/`source` here when it lands and $::has_usb fills in on
-# every OS with no OS branching. Expected to create a `usb` command, like `ble`.
+# USB(-C) sibling of load_ble_command. Sources the bundled pure-Tcl serial
+# driver (usb/usb.tcl), which creates the `usb` command -- the transport peer of
+# `ble` -- and $::has_usb fills in from [info commands usb], on every OS with no
+# OS branching. macOS/desktop is supported today (CDC-ACM via open+fconfigure);
+# a native Android USB-host driver would slot in here later.
 proc load_usb_command {} {
     if {[llength [info commands usb]]} { return 1 }
-    # TODO(usb-c): add the USB transport driver here.
+    set drv [file join [file dirname [info script]] usb usb.tcl]
+    if {[file exists $drv]} { catch { uplevel #0 [list source $drv] } }
     return [expr {[llength [info commands usb]] > 0}]
 }
 
@@ -1459,6 +1462,17 @@ proc load_settings {} {
 
         msg -NOTICE "OS build info: $osbuildinfo_string"
 
+    }
+
+    # Invariant: a machine is paired over exactly ONE transport, so at most one of
+    # bluetooth_address / usb_address is ever set (this is what keeps a single
+    # checkbox ticked on the pairing screen). An older build could persist BOTH to
+    # settings.tdb; clean that up here, right after load, favouring the BLE
+    # address (the historical default). A clean USB pairing clears
+    # bluetooth_address, so this never drops a legitimately USB-only pairing.
+    if {[ifexists ::settings(bluetooth_address)] ne "" && [ifexists ::settings(usb_address)] ne ""} {
+        msg -NOTICE "load_settings: both bluetooth_address and usb_address set; clearing usb_address (transports are mutually exclusive)"
+        set ::settings(usb_address) ""
     }
 
     # ::has_bluetooth is computed at source time (determine_if_android in

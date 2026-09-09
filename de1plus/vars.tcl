@@ -2100,14 +2100,21 @@ proc fill_ble_listbox {} {
 			set icon "?${type}?"
 		}
 
-		if {$addr_raw == [ifexists ::settings(bluetooth_address)]} {
+		# The paired DE1 is the one whose address matches the configured
+		# transport address: bluetooth_address for BLE, usb_address for USB-C
+		# serial. Match either so a USB device shows checked just like a BLE one.
+		set is_paired [expr {$addr_raw ne "" \
+			&& ($addr_raw eq [ifexists ::settings(bluetooth_address)] \
+				|| $addr_raw eq [ifexists ::settings(usb_address)])}]
+
+		if {$is_paired} {
 			$widget insert $cnt " \[[checkboxchar]\] $icon $name ($display_addr)"
 			set one_selected 1
 		} else {
 			$widget insert $cnt " \[   \] $icon $name ($display_addr)"
 		}
 
-		if {[ifexists ::settings(bluetooth_address)] == $addr_raw} {
+		if {$is_paired} {
 			set current_ble_number $cnt
 		}
 		incr cnt
@@ -2861,10 +2868,21 @@ proc change_bluetooth_device {} {
 	set dic [lindex $::de1_device_list $selection_index]
 	set addr [dict get $dic address]
 
-	if {$addr == $::settings(bluetooth_address)} {
-		# if no change in setting, then disconnect/reconnect.
-		#return
+	# USB-C serial DE1: different transport, different connect path.
+	if {[dict exists $dic type] && [dict get $dic type] eq "usb"} {
+		change_usb_device $dic
+		return
+	}
 
+	# The currently-paired machine is identified by whichever transport address
+	# is set -- bluetooth_address (BLE) or usb_address (USB-C serial). Only ONE
+	# is ever non-empty, which is what keeps exactly one checkbox ticked.
+	set current_paired [expr {$::settings(bluetooth_address) ne "" \
+		? $::settings(bluetooth_address) : [ifexists ::settings(usb_address)]}]
+	set same_device [expr {$addr eq $current_paired}]
+
+	if {$same_device} {
+		# if no change in setting, then disconnect/reconnect.
 		################################################################################################################
 		# prevent rapid changing of DE1 bluetooth setting, because that can cause multiple connections to be made to the same DE1
 		if {[ifexists ::globals(changing_bluetooth_device)] == 1} {
@@ -2873,36 +2891,87 @@ proc change_bluetooth_device {} {
 		}
 
 		msg -NOTICE "change_bluetooth_device: reconnecting to DE1"
-
 	}
 
 	set ::globals(changing_bluetooth_device) 1
 	after 5000 {set ::globals(changing_bluetooth_device) 0}
 
-	if {$addr != $::settings(bluetooth_address)} {
-		set previous_de1_address $::settings(bluetooth_address)
+	# Commit this BLE device as the sole paired machine: set bluetooth_address and
+	# clear any usb_address, so exactly one transport is paired at a time. (Also
+	# runs on a re-tap if a stale usb_address is present, to self-heal.)
+	if {!$same_device || $::settings(bluetooth_address) eq "" || [ifexists ::settings(usb_address)] ne ""} {
 		set ::settings(bluetooth_address) $addr
+		set ::settings(usb_address) ""
 		save_settings
-
-		if {$previous_de1_address ne ""} {
-			# Switching to a DIFFERENT espresso machine. Its machine-specific state
-			# (model number, BLE protocol version, GHC-installed status, cup-warmer
-			# gating, firmware version) can't be swapped in live, which is why
-			# switching machines "doesn't work right". Don't connect live and don't
-			# prompt here -- just record the new address. On Settings exit the
-			# array_item_difference check (which now includes bluetooth_address)
-			# shows the "please quit and restart" prompt, and the app reconnects
-			# fresh to the newly-selected machine on relaunch.
-			fill_ble_listbox
-			return
-		}
-
-		# first machine ever selected (was none): just connect, no restart needed
 	}
 
-	# disconnect (if necessary) and reconnect to the DE1 now
+	if {!$same_device && $current_paired ne ""} {
+		# Switching to a DIFFERENT espresso machine (BLE or USB). Its machine-
+		# specific state (model number, BLE protocol version, GHC-installed
+		# status, cup-warmer gating, firmware version) can't be swapped in live,
+		# which is why switching machines "doesn't work right". Don't connect live
+		# and don't prompt here -- just record the new address. On Settings exit
+		# the array_item_difference check (which includes bluetooth_address and
+		# usb_address) shows the "please quit and restart" prompt, and the app
+		# reconnects fresh to the newly-selected machine on relaunch.
+		fill_ble_listbox
+		return
+	}
+
+	# first machine ever selected (was none), or a re-tap: just connect now.
+	# disconnect (if necessary) and reconnect to the DE1
 	ble_connect_to_de1
 
+	fill_ble_listbox
+}
+
+# Pair with a USB-C serial DE1 selected from the pairing list. USB and BLE are
+# mutually exclusive (a machine is reached over one transport at a time), so
+# selecting a USB device clears the BLE pairing. Like change_bluetooth_device,
+# switching to a DIFFERENT already-configured machine only records the choice
+# and lets the Settings-exit restart prompt handle the machine swap (its state
+# -- model, protocol version, GHC, firmware -- can't be swapped in live); a
+# first selection connects immediately.
+proc change_usb_device {dic} {
+	set addr [dict get $dic address]
+
+	if {[ifexists ::globals(changing_bluetooth_device)] == 1} {
+		msg -DEBUG "change_usb_device: already changing device"
+		return
+	}
+	set ::globals(changing_bluetooth_device) 1
+	after 5000 {set ::globals(changing_bluetooth_device) 0}
+
+	# What (if anything) was paired before -- either transport, only one at a time.
+	set current_paired [expr {$::settings(bluetooth_address) ne "" \
+		? $::settings(bluetooth_address) : [ifexists ::settings(usb_address)]}]
+
+	# already connected to this exact USB device (and it is the sole pairing)?
+	# nothing to do.
+	if {$addr eq $current_paired \
+			&& $::de1(connectivity) eq "usb" \
+			&& $::de1(device_handle) ni {0 1}} {
+		msg -NOTICE "change_usb_device: already connected to $addr"
+		fill_ble_listbox
+		return
+	}
+
+	# Commit this USB device as the sole paired machine: set usb_address and clear
+	# any bluetooth_address, so exactly one transport is paired at a time.
+	set ::settings(bluetooth_address) ""
+	set ::settings(usb_address) $addr
+	save_settings
+
+	if {$current_paired ne "" && $current_paired ne $addr} {
+		# switching machines: record only; the restart prompt on Settings exit
+		# (array_item_difference, which includes bluetooth_address and usb_address)
+		# handles the swap. Machine-specific state can't be swapped in live.
+		fill_ble_listbox
+		return
+	}
+
+	# first machine ever selected: connect live now.
+	de1_usb_connect $addr
 	fill_ble_listbox
 }
 

@@ -230,6 +230,8 @@ proc de1_comm {action command_name {data 0}} {
 	comms_msg -DEBUG "de1_comm sending action $action command $command_name data \"$data\""
 	if {$::de1(connectivity) == "ble"} {
 		return [de1_ble $action $command_name $data]
+	} elseif {$::de1(connectivity) == "usb"} {
+		return [de1_usb $action $command_name $data]
 	} else {
 		error "Unknown connectivity: $::de1(connectivity)"
 	}
@@ -2232,3 +2234,7 @@ proc ::led::push_all_stored {} {
 # Sourced here (loaded early) so the procs exist before the skin builds the pages
 # that reference them. Page/widget construction stays in the skin.
 source "[homedir]/bengle.tcl"
+
+# USB-C serial transport glue (de1_usb / de1_usb_handler / de1_usb_connect).
+# Sourced here so the transport-neutral de1_comm "usb" branch resolves at runtime.
+source "[homedir]/de1_usb.tcl"

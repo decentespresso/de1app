@@ -247,9 +247,15 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 723 {
 		$widget element create line_espresso_flow_delta  -xdata espresso_elapsed -ydata espresso_flow_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #98c5ff -pixels 0 -smooth $::settings(live_graph_smoothing_technique) 
 	}
 
-	if {$::settings(scale_bluetooth_address) != ""} {
-		$widget element create line_espresso_flow_weight  -xdata espresso_elapsed -ydata espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 6] -color #a2693d -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
-		$widget element create god_line_espresso_flow_weight  -xdata espresso_elapsed -ydata god_espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 12] -color $::weightlinecolor_god -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
+	# Weight-line elements are created UNCONDITIONALLY. A Bengle's integrated
+	# scale has no scale_bluetooth_address (and is_bengle_model/use_ble_v2 is
+	# still false at skin-load), so gating creation on a paired BLE scale hid the
+	# weight line for the integrated scale. A BLT element with an empty data
+	# vector simply doesn't draw, so this is harmless for a scale-less DE1 -- the
+	# line appears only once weight data arrives (BLE scale or Bengle integrated).
+	if {1} {
+		$widget element create line_espresso_flow_weight  -xdata espresso_elapsed -ydata espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 6] -color #a2693d -smooth $::settings(live_graph_smoothing_technique) -pixels 0;
+		$widget element create god_line_espresso_flow_weight  -xdata espresso_elapsed -ydata god_espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 12] -color $::weightlinecolor_god -smooth $::settings(live_graph_smoothing_technique) -pixels 0;
 
 		if {$::settings(chart_total_shot_weight) == 2} {
 			$widget element create line_espresso_weight  -xdata espresso_elapsed -ydata espresso_weight_chartable -symbol none -label "" -linewidth [rescale_x_skin 4] -color #a2693d -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_espresso_weight);  
@@ -393,10 +399,12 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 78 {
 		$widget element create line_espresso_flow_delta_1  -xdata espresso_elapsed -ydata espresso_flow_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color $::flow_line_color -pixels 0 -smooth $::settings(live_graph_smoothing_technique) 
 	}
 
-	if {$::settings(scale_bluetooth_address) != ""} {
-		$widget element create line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 8] -color #a2693d -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
-		$widget element create line_espresso_flow_weight_raw_2x  -xdata espresso_elapsed -ydata espresso_flow_weight_raw -symbol none -label "" -linewidth [rescale_x_skin 2] -color #f8b888 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -hide yes; 
-		$widget element create god_line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata god_espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 16] -color $::weightlinecolor_god -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
+	# Created unconditionally -- see the matching note on the main espresso graph
+	# above (the Bengle integrated scale has no scale_bluetooth_address).
+	if {1} {
+		$widget element create line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 8] -color #a2693d -smooth $::settings(live_graph_smoothing_technique) -pixels 0;
+		$widget element create line_espresso_flow_weight_raw_2x  -xdata espresso_elapsed -ydata espresso_flow_weight_raw -symbol none -label "" -linewidth [rescale_x_skin 2] -color #f8b888 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -hide yes;
+		$widget element create god_line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata god_espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 16] -color $::weightlinecolor_god -smooth $::settings(live_graph_smoothing_technique) -pixels 0;
 
 		if {$::settings(chart_total_shot_weight) == 1 || $::settings(chart_total_shot_weight) == 2} {
 			$widget element create line_espresso_weight_2x  -xdata espresso_elapsed -ydata espresso_weight_chartable -symbol none -label "" -linewidth [rescale_x_skin 6] -color #f8b888 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_espresso_weight);  
@@ -465,7 +473,9 @@ should_hide_show_puck_resistance_line
 
 
 proc should_hide_show_weight_detail_line {} {
-	if {$::settings(scale_bluetooth_address) != ""} {
+	# A scale is present if a BLE scale is paired OR the machine has an integrated
+	# scale (Bengle v2) -- ::device::scale::is_connected covers both.
+	if {$::settings(scale_bluetooth_address) != "" || [::device::scale::is_connected]} {
 		if {[ifexists ::settings(weight_detail_curve)] == 1} {
 			catch {
 				$::espresso_zoomed_graph element configure line_espresso_flow_weight_raw_2x -hide no

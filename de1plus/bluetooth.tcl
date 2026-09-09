@@ -2140,6 +2140,13 @@ proc bluetooth_connect_to_devices {} {
 		ble_connect_to_de1
 	}
 
+	# USB-C serial DE1: if a usb_address is configured, connect over serial
+	# instead of BLE (mutually exclusive with a bluetooth_address in practice).
+	if {[ifexists ::settings(usb_address)] ne "" && $::has_usb} {
+		de1_usb_connect $::settings(usb_address)
+		return
+	}
+
 	if {$::settings(bluetooth_address) != ""} {
 
 		if {[android_8_or_newer] == 1} {
@@ -2660,6 +2667,12 @@ proc de1_ble_handler { event data } {
 						} else {
 							msg -INFO "No scan entry for $address; preserving persisted model='[ifexists ::settings(model)]'"
 						}
+
+						# A BLE connection is now the live DE1 link: keep the
+						# transport router in sync with the handle, so de1_comm
+						# routes to de1_ble (not a stale de1_usb from a prior USB
+						# session, which would write to this ble* handle and spin).
+						set ::de1(connectivity) "ble"
 
 						de1_connect_handler $handle $address $espresso_machine_name
 
@@ -3525,6 +3538,8 @@ proc scanning_restart {} {
 		set ::de1_device_list [list [dict create address "12:32:16:18:90" name "ble3" type "ble"] [dict create address "10.1.1.20" name "wifi1" type "wifi"] [dict create address "12:32:56:78:91" name "dummy_ble2" type "ble"] [dict create address "12:32:56:78:92" name "dummy_ble3" type "ble"] [dict create address "ttyS0" name "dummy_usb" type "usb"] [dict create address "192.168.0.1" name "dummy_wifi2" type "wifi"]]
 		set ::peripheral_device_list [list [dict create address "51:32:56:78:90" name "ACAIAxxx" connectiontype "ble" devicetype "scale" devicefamily "acaiascale"] [dict create address "12:32:56:78:93" name "Dummy123" connectiontype "ble" devicetype "scale" devicefamily "unknown"] ]
 
+		catch { add_usb_devices_to_list }
+
 		after 200 fill_peripheral_listbox
 		after 400 fill_ble_listbox
 
@@ -3532,6 +3547,10 @@ proc scanning_restart {} {
 		after 3000 { set scanning 0 }
 		return
 	} else {
+		# A real BLE scanner is running; also enumerate USB-C serial DE1s (a
+		# quick synchronous ioreg probe) so they show up in the same list.
+		catch { add_usb_devices_to_list }
+		after 500 fill_ble_listbox
 		# only scan for a few seconds
 		after 10000 { stop_scanner }
 	}

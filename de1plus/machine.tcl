@@ -405,6 +405,7 @@ array set ::settings {
 	scale_bluetooth_name {}
 	skale_bluetooth_address {}
 	bluetooth_address {}
+	usb_address {}
 	water_max_vol 500
 	water_temperature 85
 	final_desired_shot_weight 36
@@ -526,6 +527,9 @@ set ::settings(skin) "Insight"
 set ::de1_device_list {}
 if { $settings(bluetooth_address) != ""} {
 	append_to_de1_list $settings(bluetooth_address) $settings(model) "ble"
+}
+if { [ifexists ::settings(usb_address)] ne ""} {
+	append_to_de1_list $::settings(usb_address) $settings(model) "usb"
 }
 
 array set ::de1_state {
