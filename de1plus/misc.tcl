@@ -10,6 +10,7 @@ proc make_de1_dir {srcdir destdirs} {
         de1.tcl *
         de1app.tcl *
         de1_comms.tcl *
+        de1_usb.tcl *
         gui.tcl *
         history_viewer.tcl *
         dui.tcl *
@@ -50,6 +51,8 @@ proc make_de1_dir {srcdir destdirs} {
         ble/pkgIndex.tcl *
         ble/ble.tcl *
         ble/bin/ble_helper.bin *
+
+        usb/usb.tcl *
 
         blz/pkgIndex.tcl *
         blz/blz_ble_shim.tcl *
