@@ -914,6 +914,11 @@ proc load_ble_command {} {
 # a native Android USB-host driver would slot in here later.
 proc load_usb_command {} {
     if {[llength [info commands usb]]} { return 1 }
+    # iOS/iPadOS sandboxes forbid opening arbitrary USB-CDC serial devices, so
+    # the transport can never work there -- don't even load it, leaving
+    # ::has_usb 0 (identical to pre-USB behavior on Apple mobile). Desktop
+    # (macOS/Linux undroid) and a future Android native driver still load.
+    if {[ifexists ::ios] == 1} { return 0 }
     set drv [file join [file dirname [info script]] usb usb.tcl]
     if {[file exists $drv]} { catch { uplevel #0 [list source $drv] } }
     return [expr {[llength [info commands usb]] > 0}]

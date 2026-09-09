@@ -2237,4 +2237,9 @@ source "[homedir]/bengle.tcl"
 
 # USB-C serial transport glue (de1_usb / de1_usb_handler / de1_usb_connect).
 # Sourced here so the transport-neutral de1_comm "usb" branch resolves at runtime.
-source "[homedir]/de1_usb.tcl"
+# Guard with file-exists so a partial OTA update that has not yet fetched this
+# new file degrades to "USB unavailable" instead of crashing the app on load
+# (the "usb" branch is only ever taken when a USB DE1 is actually connected).
+if {[file exists "[homedir]/de1_usb.tcl"]} {
+	source "[homedir]/de1_usb.tcl"
+}
