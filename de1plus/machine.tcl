@@ -203,6 +203,17 @@ if {$android == 0 && $undroid == 0} {
 if {$android == 0 || $undroid == 1} {
 	# no 'borg' or 'ble' commands, so emulate
     android_specific_stubs
+} else {
+	# Real Android: borg/ble are native, so android_specific_stubs (which ALSO
+	# loads the transport drivers on desktop) is skipped here -- but the USB-C
+	# transport still needs sourcing. AndroWish bundles the `usbserial` command,
+	# so load our `usb` wrapper (usb/usb.tcl auto-selects its androwish backend)
+	# and enable USB if it took. load_usb_command is idempotent and returns 0 on
+	# any platform without a usb transport, so this is safe if usbserial is absent.
+	if {![ifexists ::has_usb 0]} {
+		catch { set ::has_usb [load_usb_command] }
+		set ::can_connect_de1 [expr {[ifexists ::has_bluetooth 0] || [ifexists ::has_usb 0]}]
+	}
 }
 
 array set ::de1_cuuids_to_command_names {

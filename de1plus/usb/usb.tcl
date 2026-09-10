@@ -23,6 +23,18 @@
 package provide de1_usb_transport 1.0
 
 namespace eval ::usb {
+	# Which primitive layer to use for enumerate + open. Only these two operations
+	# are platform-specific; once a channel is open, all framing / probe / read /
+	# write / close code below is identical on every platform.
+	#   posix     -- desktop undroidwish (macOS / Linux): enumerate by globbing
+	#                /dev/cu.*|/dev/tty* and open with [open $dev {RDWR NONBLOCK}].
+	#   androwish -- AndroWish on Android: enumerate with the bundled [usbserial]
+	#                command (no arg -> a list of /dev/bus/usb/MMM/NNN names for
+	#                supported converters, incl. CDC = DE1/Bengle and CH34x = Decent
+	#                Scale) and open with [usbserial $dev], which returns a Tcl
+	#                channel supporting the same fconfigure -mode/-ttycontrol.
+	variable backend "posix"
+
 	variable ports_cache {}
 	# per-handle read buffers, keyed by channel name
 	variable buffers
@@ -48,6 +60,49 @@ proc ::usb::log {severity args} {
 	}
 }
 
+# Pick the enumerate/open backend once, at load. AndroWish bundles the `usbserial`
+# command; if it's present (Android) use it, otherwise fall back to POSIX serial
+# nodes (desktop macOS/Linux undroidwish). package require is the authoritative
+# probe -- the package simply isn't there on desktop, so this can't false-positive.
+if {![catch { package require Usbserial }]} {
+	set ::usb::backend "androwish"
+	::usb::log -NOTICE "usb transport: AndroWish usbserial backend"
+} else {
+	set ::usb::backend "posix"
+}
+
+# ::usb::_list_device_nodes -- the platform's list of candidate serial device
+# names (each is then probed by ::usb::ports to see if a DE1/Bengle/scale is on it).
+proc ::usb::_list_device_nodes {} {
+	variable backend
+	if {$backend eq "androwish"} {
+		# [usbserial] with no arg lists supported converters as /dev/bus/usb/MMM/NNN.
+		if {[catch { set nodes [usbserial] } err]} {
+			::usb::log -DEBUG "usbserial enumerate failed: $err"
+			return {}
+		}
+		return [lsort -unique $nodes]
+	}
+	# macOS names a USB-serial callout by chipset: usbmodem (CDC-ACM, the DE1/
+	# Bengle), usbserial (FTDI), wchusbserial (WCH CH34x, the Decent Scale),
+	# SLAB_USBtoUART (SiLabs CP210x). Linux uses ttyACM*/ttyUSB*.
+	return [lsort -unique [glob -nocomplain \
+		/dev/cu.usbmodem* /dev/cu.*usbserial* /dev/cu.SLAB_USBtoUART* \
+		/dev/ttyACM* /dev/ttyUSB*]]
+}
+
+# ::usb::_open_channel -- open one device node and return a Tcl channel. The
+# channel is configured identically by callers afterwards (fconfigure -mode ...).
+proc ::usb::_open_channel {device} {
+	variable backend
+	if {$backend eq "androwish"} {
+		# May pop the Android USB-permission dialog the first time this device is
+		# opened; usbserial returns the channel once the user grants access.
+		return [usbserial $device]
+	}
+	return [open $device {RDWR NONBLOCK}]
+}
+
 # ::usb::ports -- enumerate connected DE1/Bengle serial ports.
 #
 # Returns a list of dicts: {device <path> product <name> vendor <name> serial <sn>}.
@@ -70,13 +125,7 @@ proc ::usb::ports {} {
 	variable opened
 	variable probed
 	set result {}
-	# macOS names a USB-serial callout device by its chipset: usbmodem (CDC-ACM,
-	# the DE1/Bengle), usbserial (FTDI), wchusbserial (WCH CH34x, the Decent
-	# Scale), SLAB_USBtoUART (Silicon Labs CP210x). Linux uses ttyACM*/ttyUSB*.
-	# Match the '*usbserial*' wildcard so wchusbserial is included.
-	set nodes [lsort -unique [glob -nocomplain \
-		/dev/cu.usbmodem* /dev/cu.*usbserial* /dev/cu.SLAB_USBtoUART* \
-		/dev/ttyACM* /dev/ttyUSB*]]
+	set nodes [::usb::_list_device_nodes]
 
 	# prune cache entries whose node is gone, so a re-plug re-probes
 	foreach n [array names probed] {
@@ -118,7 +167,7 @@ proc ::usb::ports {} {
 # confirms a DE1; a BengleShotSample [S] or model value >= 128 means a Bengle.
 # Returns a dict {product <DE1|Bengle>} on success, or "" if nothing answered.
 proc ::usb::_probe {device} {
-	if {[catch { set ch [open $device {RDWR NONBLOCK}] }]} { return "" }
+	if {[catch { set ch [::usb::_open_channel $device] }]} { return "" }
 	fconfigure $ch -mode 115200,n,8,1 -translation binary -buffering none -blocking 0
 	catch { fconfigure $ch -handshake none }
 	catch { fconfigure $ch -ttycontrol {DTR 0 RTS 0} }
@@ -211,7 +260,7 @@ proc ::usb::connect {device callback} {
 	variable buffers
 	variable callbacks
 
-	set ch [open $device {RDWR NONBLOCK}]
+	set ch [::usb::_open_channel $device]
 	# 115200 8N1, binary, unbuffered. Flow control off; DTR/RTS forced low to
 	# match decaid (harmless if the platform rejects -ttycontrol).
 	fconfigure $ch -mode 115200,n,8,1 -translation binary -buffering none -blocking 0
@@ -232,7 +281,7 @@ proc ::usb::connect {device callback} {
 #   callback is invoked as:  {*}$callback $rawbytes
 proc ::usb::connect_raw {device callback} {
 	variable callbacks
-	set ch [open $device {RDWR NONBLOCK}]
+	set ch [::usb::_open_channel $device]
 	fconfigure $ch -mode 115200,n,8,1 -translation binary -buffering none -blocking 0
 	catch { fconfigure $ch -handshake none }
 	catch { fconfigure $ch -ttycontrol {DTR 0 RTS 0} }
