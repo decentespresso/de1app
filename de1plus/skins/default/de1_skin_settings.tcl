@@ -78,11 +78,13 @@ proc exit_settings_pages {args} {
             set_next_page off message; page_show message
             after 200 app_exit
 
-        } elseif {[ifexists ::settings_backup(scale_bluetooth_address)] != [ifexists ::settings(scale_bluetooth_address)]} {
+        } elseif {[ifexists ::settings_backup(scale_bluetooth_address)] != [ifexists ::settings(scale_bluetooth_address)] \
+                || [ifexists ::settings_backup(usb_scale_address)] != [ifexists ::settings(usb_scale_address)]} {
 
             # john 21-1-25 if scale changes, for app restart when existing the SETTINGS section
             # this is because often the live changing of the scale doesn't work reliably, and
             # the bugginess can frustrate the end user, making them think the scale is not working
+            # (usb_scale_address covers a USB-C scale selection/unpair, which is also apply-on-restart)
 
             # if no scale was previously defined, and there is one now, then force an app restart
             # but if there was a scale previously, and now there is a new one, let that be w/o an app restart

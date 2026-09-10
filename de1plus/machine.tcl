@@ -404,6 +404,7 @@ array set ::settings {
 	scale_bluetooth_address {}
 	scale_bluetooth_name {}
 	skale_bluetooth_address {}
+	usb_scale_address {}
 	bluetooth_address {}
 	usb_address {}
 	water_max_vol 500

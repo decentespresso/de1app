@@ -1121,7 +1121,7 @@ proc pouring_timer_text {} {
 
 		# Volume-based fallback only when there's no scale AT ALL
 		# (no external BLE scale AND no Bengle integrated scale).
-		if {$::settings(scale_bluetooth_address) == "" && ![::de1::packet::use_ble_v2] && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
+		if {![::device::scale::expecting_present] && ![::de1::packet::use_ble_v2] && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
 			return "[translate {s}][espresso_pour_timer] [translate {pouring}] < [return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume)]]"
 
 		} else {
@@ -1133,7 +1133,7 @@ proc pouring_timer_text {} {
 		return "[espresso_elapsed_timer][translate {s}] [translate {pouring}] < [return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume_advanced)]]"
 	}
 
-	if {$::settings(scale_bluetooth_address) == "" && ![::de1::packet::use_ble_v2] && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
+	if {![::device::scale::expecting_present] && ![::de1::packet::use_ble_v2] && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
 		return "[espresso_pour_timer][translate {s}] [translate {pouring}] < [return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume)]]"
 	}
 	return "[espresso_pour_timer][translate {s}] [translate {pouring}]"
@@ -1206,14 +1206,14 @@ proc waterweightflow_text {} {
 			#return [return_flow_weight_measurement [expr {(rand() * 6)}]]
 	}
 
-	if {$::de1(scale_weight) == "" || ([ifexists ::settings(scale_bluetooth_address)] == "" && ![::de1::packet::use_ble_v2])} {
+	if {$::de1(scale_weight) == "" || (![::device::scale::expecting_present] && ![::de1::packet::use_ble_v2])} {
 		return ""
 	}
 	return [return_flow_weight_measurement $::de1(scale_weight_rate)]
 }
 
 proc finalwaterweight_text {} {
-	if {$::de1(scale_weight) == "" || ([ifexists ::settings(scale_bluetooth_address)] == "" && ![::de1::packet::use_ble_v2])} {
+	if {$::de1(scale_weight) == "" || (![::device::scale::expecting_present] && ![::de1::packet::use_ble_v2])} {
 		return ""
 	}
 
@@ -1244,7 +1244,7 @@ proc dump_stack {args} {
 #trace add variable de1(final_water_weight) write dump_stack
 
 proc waterweight_text {} {
-	if {$::de1(scale_weight) == "" || ([ifexists ::settings(scale_bluetooth_address)] == "" && ![::de1::packet::use_ble_v2])} {
+	if {$::de1(scale_weight) == "" || (![::device::scale::expecting_present] && ![::de1::packet::use_ble_v2])} {
 		return ""
 	}
 
@@ -1282,7 +1282,10 @@ proc waterweight_label_text {} {
 	if {[::de1::packet::use_ble_v2]} {
 		return [translate "Weight"]
 	}
-	if {[ifexists ::settings(scale_bluetooth_address)] == ""} {
+	# A scale is paired if EITHER transport has an address (BLE scale_bluetooth_address
+	# or USB-C usb_scale_address). Testing only the BLE address hid the "Weight" header
+	# for a USB-connected scale.
+	if {![::device::scale::expecting_present]} {
 		return ""
 	}
 
@@ -2077,13 +2080,28 @@ proc wifi_character {} {
 #set de1_device_list {}
 proc fill_ble_listbox {} {
 
+	# Suppress the <<ListboxSelect>> handler (change_bluetooth_device) across this
+	# redraw AND the synthetic select event that "$widget selection set" posts. In
+	# this Tk build that event is delivered AFTER this proc returns (before the loop
+	# next goes idle), so we must NOT clear the flag synchronously at the end -- we
+	# clear it at the next idle, which runs after that queued event. Scheduling the
+	# reset up-front also makes it crash-safe: the flag can never stick at 1 if the
+	# body below errors. Without this the synthetic event re-enters the handler and
+	# the "select item 0" fallback drags the checkbox to the first row.
+	set ::_suppress_ble_listbox_select 1
+	after idle {set ::_suppress_ble_listbox_select 0}
+
 	set widget $::ble_listbox_widget
 	$widget delete 0 99999
 	set cnt 0
 	set current_ble_number 0
 
+	# Iterate in the SAME order as $::de1_device_list itself: change_bluetooth_device
+	# maps the tapped row back to a device with [lindex $::de1_device_list <row>], so
+	# the listbox must be filled in that exact order. (A previous lsort here reordered
+	# the display but not the lookup, so tapping one machine selected a different one.)
 	set one_selected 0
-	foreach d [lsort -dictionary -increasing $::de1_device_list] {
+	foreach d $::de1_device_list {
 		set addr_raw [dict get $d address]
 		set name [dict get $d name]
 		set type [dict get $d type]
@@ -2127,6 +2145,8 @@ proc fill_ble_listbox {} {
 
 	# john - probably makes sense for "pair" to occur on item tap
 	make_current_listbox_item_blue $widget
+	# NB: do NOT clear ::_suppress_ble_listbox_select here -- the reset is the
+	# after-idle scheduled at the top, so it runs AFTER the queued synthetic event.
 }
 
 proc remove_peripheral {address} {
@@ -2141,6 +2161,12 @@ proc remove_peripheral {address} {
 }
 
 proc fill_peripheral_listbox {} {
+
+	# Suppress change_scale_bluetooth_device across this redraw and the queued
+	# synthetic <<ListboxSelect>> it posts. Cleared only at the next idle (after
+	# that event), scheduled up-front so it is crash-safe. See fill_ble_listbox.
+	set ::_suppress_peripheral_listbox_select 1
+	after idle {set ::_suppress_peripheral_listbox_select 0}
 
 	set widget $::ble_scale_listbox_widget
 
@@ -2168,12 +2194,14 @@ proc fill_peripheral_listbox {} {
 		set family [dict get $d devicefamily]
 		set icon "UNKN:"
 
-		if {$devicetype eq "thermometer"} {
-			set icon [thermometer_character]
-		} elseif {$devicetype eq "scale"} {
-			set icon [scale_character]
+		# Show the TRANSPORT (USB or Bluetooth) as the icon, not a device graphic,
+		# so a scale reachable over USB-C vs BLE is distinguishable at a glance.
+		if {$connectiontype eq "usb"} {
+			set icon [usb_character]
 		} elseif {$connectiontype eq "ble"} {
 			set icon [bluetooth_character]
+		} elseif {$devicetype eq "thermometer"} {
+			set icon [thermometer_character]
 		}
 
 		if { $name eq "" } { set name $family }
@@ -2183,14 +2211,20 @@ proc fill_peripheral_listbox {} {
 			set name "[string range $addr end-1 end]-$name"
 		}
 
-		if {$addr == [ifexists ::settings(scale_bluetooth_address)]} {
+		# The paired scale matches either the BLE address or the USB address
+		# (one scale, one transport), so a USB scale shows checked like a BLE one.
+		set scale_paired [expr {$addr ne "" \
+			&& ($addr eq [ifexists ::settings(scale_bluetooth_address)] \
+				|| $addr eq [ifexists ::settings(usb_scale_address)])}]
+
+		if {$scale_paired} {
 			$widget insert $cnt " \[[checkboxchar]\] $icon $name"
 			set one_selected 1
 		} else {
 			$widget insert $cnt " \[   \] $icon $name"
 		}
 
-		if {[ifexists ::settings(scale_bluetooth_address)] == $addr} {
+		if {$scale_paired} {
 			set current_ble_number $cnt
 		}
 
@@ -2205,6 +2239,7 @@ proc fill_peripheral_listbox {} {
 	}
 
 	make_current_listbox_item_blue $widget
+	# reset is the after-idle scheduled at the top (runs after the queued event)
 }
 
 proc profile_type_text {} {
@@ -2856,6 +2891,13 @@ proc change_bluetooth_device {} {
 
 	################################################################################################################
 
+	# Ignore the synthetic <<ListboxSelect>> that fill_ble_listbox's programmatic
+	# "$widget selection set" fires (this SDL Tk build DOES emit it). Without this,
+	# a single user tap cascades into many re-entrant calls -- each redraw re-fires
+	# the handler, the "select item 0" fallback in make_current_listbox_item_blue
+	# drags the selection to row 0, and the tap ends up choosing the wrong machine.
+	if {[ifexists ::_suppress_ble_listbox_select]} { return }
+
 	set w $::ble_listbox_widget
 	#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
 	if {[$w curselection] == ""} {
@@ -2874,108 +2916,93 @@ proc change_bluetooth_device {} {
 		return
 	}
 
-	# The currently-paired machine is identified by whichever transport address
-	# is set -- bluetooth_address (BLE) or usb_address (USB-C serial). Only ONE
-	# is ever non-empty, which is what keeps exactly one checkbox ticked.
-	set current_paired [expr {$::settings(bluetooth_address) ne "" \
-		? $::settings(bluetooth_address) : [ifexists ::settings(usb_address)]}]
-	set same_device [expr {$addr eq $current_paired}]
-
-	if {$same_device} {
-		# if no change in setting, then disconnect/reconnect.
-		################################################################################################################
-		# prevent rapid changing of DE1 bluetooth setting, because that can cause multiple connections to be made to the same DE1
-		if {[ifexists ::globals(changing_bluetooth_device)] == 1} {
-			msg -DEBUG "change_bluetooth_device: already changing_bluetooth_device"
-			return
-		}
-
-		msg -NOTICE "change_bluetooth_device: reconnecting to DE1"
-	}
-
-	set ::globals(changing_bluetooth_device) 1
-	after 5000 {set ::globals(changing_bluetooth_device) 0}
-
-	# Commit this BLE device as the sole paired machine: set bluetooth_address and
-	# clear any usb_address, so exactly one transport is paired at a time. (Also
-	# runs on a re-tap if a stale usb_address is present, to self-heal.)
-	if {!$same_device || $::settings(bluetooth_address) eq "" || [ifexists ::settings(usb_address)] ne ""} {
-		set ::settings(bluetooth_address) $addr
-		set ::settings(usb_address) ""
-		save_settings
-	}
-
-	if {!$same_device && $current_paired ne ""} {
-		# Switching to a DIFFERENT espresso machine (BLE or USB). Its machine-
-		# specific state (model number, BLE protocol version, GHC-installed
-		# status, cup-warmer gating, firmware version) can't be swapped in live,
-		# which is why switching machines "doesn't work right". Don't connect live
-		# and don't prompt here -- just record the new address. On Settings exit
-		# the array_item_difference check (which includes bluetooth_address and
-		# usb_address) shows the "please quit and restart" prompt, and the app
-		# reconnects fresh to the newly-selected machine on relaunch.
-		fill_ble_listbox
+	# A machine is paired over exactly one transport: bluetooth_address (BLE) or
+	# usb_address (USB-C serial), never both. If this BLE device is already the
+	# sole pairing, nothing changed -- do nothing.
+	if {$addr eq [ifexists ::settings(bluetooth_address)] \
+			&& [ifexists ::settings(usb_address)] eq ""} {
 		return
 	}
 
-	# first machine ever selected (was none), or a re-tap: just connect now.
-	# disconnect (if necessary) and reconnect to the DE1
-	ble_connect_to_de1
-
+	# Record this BLE device as the sole paired machine and STOP. We never connect
+	# or reconnect live from the Connect screen: a machine's state (model, BLE
+	# protocol version, GHC, firmware) can't be hot-swapped, so ANY device change
+	# is applied only on a fresh launch. Just record + save here; the restart
+	# happens naturally when the user taps OK to leave Settings (the
+	# array_item_difference check on bluetooth_address/usb_address).
+	set ::settings(bluetooth_address) $addr
+	set ::settings(usb_address) ""
+	forget_external_scale_for_bengle [dict get $dic name]
+	save_settings
 	fill_ble_listbox
+}
+
+# A Bengle DE1 has its own integrated scale, so no external (BLE or USB) scale is
+# used with it. Selecting a Bengle as the machine therefore clears any external
+# scale pairing. We key on the device NAME shown in the pairing list ("Bengle"),
+# because the authoritative is_bengle_model flag isn't known until after the
+# machine connects (post-MMR) -- too late for a selection-time decision.
+# Clear any external-scale selection (both transports) and redraw the scale list.
+# No live disconnect -- selections apply on restart, like everything in Connect.
+proc clear_scale_selection {} {
+	set ::settings(scale_bluetooth_address) ""
+	set ::settings(scale_bluetooth_name) ""
+	set ::settings(usb_scale_address) ""
+	set ::settings(scale_type) ""
+	catch { fill_peripheral_listbox }
+}
+
+proc forget_external_scale_for_bengle {name} {
+	if {![string match -nocase "*bengle*" $name]} { return }
+	clear_scale_selection
+}
+
+# True if the currently-SELECTED espresso machine is a Bengle (which has its own
+# integrated scale, so no external scale is used with it). This must reflect the
+# machine the user just PICKED in the Connect list, not the one currently
+# connected -- so it keys ONLY on the paired address's name in the device list.
+# (is_bengle_model / settings(model) describe the connected machine and stay
+# "Bengle" even after the user selects a DE1, which would wrongly block scales.)
+proc selected_machine_is_bengle {} {
+	set paired [expr {$::settings(bluetooth_address) ne "" \
+		? $::settings(bluetooth_address) : [ifexists ::settings(usb_address)]}]
+	if {$paired eq ""} { return 0 }
+	foreach d $::de1_device_list {
+		if {[dict get $d address] eq $paired} {
+			return [string match -nocase "*bengle*" [dict get $d name]]
+		}
+	}
+	return 0
 }
 
 # Pair with a USB-C serial DE1 selected from the pairing list. USB and BLE are
 # mutually exclusive (a machine is reached over one transport at a time), so
 # selecting a USB device clears the BLE pairing. Like change_bluetooth_device,
-# switching to a DIFFERENT already-configured machine only records the choice
-# and lets the Settings-exit restart prompt handle the machine swap (its state
-# -- model, protocol version, GHC, firmware -- can't be swapped in live); a
-# first selection connects immediately.
+# this only RECORDS the choice -- it never connects live (machine state can't be
+# hot-swapped, so the change is applied on relaunch). The restart happens when the
+# user taps OK to leave Settings (array_item_difference on usb_address).
 proc change_usb_device {dic} {
 	set addr [dict get $dic address]
 
-	if {[ifexists ::globals(changing_bluetooth_device)] == 1} {
-		msg -DEBUG "change_usb_device: already changing device"
-		return
-	}
-	set ::globals(changing_bluetooth_device) 1
-	after 5000 {set ::globals(changing_bluetooth_device) 0}
-
-	# What (if anything) was paired before -- either transport, only one at a time.
-	set current_paired [expr {$::settings(bluetooth_address) ne "" \
-		? $::settings(bluetooth_address) : [ifexists ::settings(usb_address)]}]
-
-	# already connected to this exact USB device (and it is the sole pairing)?
-	# nothing to do.
-	if {$addr eq $current_paired \
-			&& $::de1(connectivity) eq "usb" \
-			&& $::de1(device_handle) ni {0 1}} {
-		msg -NOTICE "change_usb_device: already connected to $addr"
-		fill_ble_listbox
+	# Already the sole pairing? nothing changed.
+	if {$addr eq [ifexists ::settings(usb_address)] \
+			&& [ifexists ::settings(bluetooth_address)] eq ""} {
 		return
 	}
 
-	# Commit this USB device as the sole paired machine: set usb_address and clear
-	# any bluetooth_address, so exactly one transport is paired at a time.
+	# Record this USB-C serial machine as the sole pairing and STOP -- no live connect.
 	set ::settings(bluetooth_address) ""
 	set ::settings(usb_address) $addr
+	forget_external_scale_for_bengle [dict get $dic name]
 	save_settings
-
-	if {$current_paired ne "" && $current_paired ne $addr} {
-		# switching machines: record only; the restart prompt on Settings exit
-		# (array_item_difference, which includes bluetooth_address and usb_address)
-		# handles the swap. Machine-specific state can't be swapped in live.
-		fill_ble_listbox
-		return
-	}
-
-	# first machine ever selected: connect live now.
-	de1_usb_connect $addr
 	fill_ble_listbox
 }
 
 proc change_scale_bluetooth_device {} {
+	# Ignore the synthetic <<ListboxSelect>> fired by fill_peripheral_listbox's
+	# programmatic selection (see the matching note in change_bluetooth_device).
+	if {[ifexists ::_suppress_peripheral_listbox_select]} { return }
+
 	set w $::ble_scale_listbox_widget
 
 	if {$w == ""} {
@@ -3001,39 +3028,64 @@ proc change_scale_bluetooth_device {} {
 		set name $devicefamily
 	}
 
+	# One scale is used at a time, over one transport. Selecting a scale only
+	# RECORDS it as the sole pairing (its address set, the other transport's
+	# cleared) -- we never connect/reconnect a scale live from the Connect screen,
+	# matching the espresso-machine behaviour. The recorded scale is connected
+	# fresh on the next launch; the restart happens when the user taps OK to leave
+	# Settings (array_item_difference on scale_bluetooth_address/usb_scale_address).
+	# Re-tapping the already-selected USB scale turns it off (the only way to end
+	# up with no scale).
+	if {$devicetype ne "scale"} {
+		msg -WARNING "Non scale peripheral requested for connect. Damn!"
+		return
+	}
+
+	# The selected espresso machine is a Bengle, which has its own integrated
+	# scale -- an external scale is never used with it. So a scale tap here does
+	# not pair the scale; it clears any scale selection instead.
+	if {[selected_machine_is_bengle]} {
+		msg -INFO "selected machine is a Bengle (built-in scale); ignoring external scale tap"
+		clear_scale_selection
+		return
+	}
+
+	# --- USB-C serial Decent Scale ---
+	if {$connectiontyte eq "usb"} {
+		if {$addr eq [ifexists ::settings(usb_scale_address)]} {
+			# re-tap of the selected USB scale => unpair (turn the scale off)
+			msg -INFO "un-pairing USB scale $name @ $addr"
+			set ::settings(usb_scale_address) ""
+			if {[ifexists ::settings(scale_type)] eq "decentscale"} { set ::settings(scale_type) "" }
+		} else {
+			msg -INFO "selected USB scale $name @ $addr"
+			set ::settings(scale_bluetooth_address) ""
+			set ::settings(usb_scale_address) $addr
+			set ::settings(scale_type) $devicefamily
+		}
+		save_settings
+		fill_peripheral_listbox
+		return
+	}
+
 	if {$connectiontyte ne "ble"} {
 		msg -WARNING "Non BLE peripheral requested for connect. Damn!"
 		return
 	}
 
-	msg -INFO  "selected $devicetype $name @ $addr"
-
-	if {$devicetype eq "scale"} {
-		set ::settings(scale_bluetooth_address) $addr
-		set ::settings(scale_bluetooth_name) $name
-		set ::settings(scale_type) $devicefamily
-		msg "set scale type to: '$::settings(scale_type)' $addr"
-
-		set handle $::de1(scale_device_handle)
-		if {$handle != "" && $handle != 0} {
-			set ::de1(scale_device_handle) 0
-			#set ::de1(cmdstack) {};
-			#set ::currently_connecting_scale_handle 0
-			ble close $handle
-			ble_connect_to_scale
-		}  else {
-			ble_connect_to_scale
-		}
-
-		#after 500 
-
-	} else {
-		msg -WARNING "Non scale peripheral requested for connect. Damn!"
+	# --- BLE scale ---
+	# Already the sole scale? nothing changed.
+	if {$addr eq [ifexists ::settings(scale_bluetooth_address)] \
+			&& [ifexists ::settings(usb_scale_address)] eq ""} {
+		return
 	}
-
+	msg -INFO "selected BLE scale $name @ $addr"
+	set ::settings(usb_scale_address) ""
+	set ::settings(scale_bluetooth_address) $addr
+	set ::settings(scale_bluetooth_name) $name
+	set ::settings(scale_type) $devicefamily
 	save_settings
 	fill_peripheral_listbox
-
 }
 
 

@@ -143,6 +143,14 @@ proc scale_tare {} {
 
 proc scale_enable_weight_notifications {} {
 
+	# A scale on USB-C serial re-enables via its own transport; the BLE
+	# decentscale_enable_notifications below would no-op (no BLE handle) over USB.
+	# This is the path the scale watchdog uses to revive a stalled stream.
+	if {[ifexists ::de1(scale_connectivity)] eq "usb"} {
+		if {[llength [info commands de1_usb_scale_enable]]} { de1_usb_scale_enable }
+		return
+	}
+
 	if {$::settings(scale_type) == "atomaxskale"} {
 		skale_enable_weight_notifications
 	} elseif {$::settings(scale_type) == "decentscale"} {
@@ -2140,6 +2148,20 @@ proc bluetooth_connect_to_devices {} {
 		ble_connect_to_de1
 	}
 
+	# USB-C serial Decent Scale: auto-connect if one was paired. Independent of
+	# the DE1 transport, and done before the DE1 usb-connect return below so it
+	# still happens when the DE1 is also on USB.
+	#
+	# Seed it into the peripheral (scale) list FIRST so it shows up checked on the
+	# Connect page without needing a Search -- exactly like the paired DE1 is
+	# seeded into the machine list at startup (machine.tcl). Otherwise the scale
+	# would be wired in while the Connect UI shows nothing selected, which reads as
+	# "connected a scale I never chose". Now "wired in" always == "shown checked".
+	if {[ifexists ::settings(usb_scale_address)] ne "" && $::has_usb} {
+		catch { append_to_peripheral_list $::settings(usb_scale_address) "Decent Scale (USB)" "usb" "scale" "decentscale" }
+		catch { de1_usb_scale_connect $::settings(usb_scale_address) }
+	}
+
 	# USB-C serial DE1: if a usb_address is configured, connect over serial
 	# instead of BLE (mutually exclusive with a bluetooth_address in practice).
 	if {[ifexists ::settings(usb_address)] ne "" && $::has_usb} {
@@ -3521,6 +3543,13 @@ proc scanning_restart {} {
 		return
 	}
 
+	# Show the "Searching" state immediately. The USB-serial enumeration below
+	# actively probes each port (open + arm + wait) and can take a few seconds; run
+	# inline it blocks the event loop and the Search button looks hung with no
+	# feedback. Set the scanning flag NOW and defer the probe (below) so the
+	# "Searching" label paints on the next event-loop pass, before the probe runs.
+	set ::scanning 1
+
 	# If the user denied the Bluetooth/Location permission, Android 12+ no longer
 	# re-prompts, so a scan silently finds nothing forever and the app looks broken
 	# with no explanation. Tell the user how to fix it, and re-request in case the
@@ -3538,24 +3567,28 @@ proc scanning_restart {} {
 		set ::de1_device_list [list [dict create address "12:32:16:18:90" name "ble3" type "ble"] [dict create address "10.1.1.20" name "wifi1" type "wifi"] [dict create address "12:32:56:78:91" name "dummy_ble2" type "ble"] [dict create address "12:32:56:78:92" name "dummy_ble3" type "ble"] [dict create address "ttyS0" name "dummy_usb" type "usb"] [dict create address "192.168.0.1" name "dummy_wifi2" type "wifi"]]
 		set ::peripheral_device_list [list [dict create address "51:32:56:78:90" name "ACAIAxxx" connectiontype "ble" devicetype "scale" devicefamily "acaiascale"] [dict create address "12:32:56:78:93" name "Dummy123" connectiontype "ble" devicetype "scale" devicefamily "unknown"] ]
 
-		catch { add_usb_devices_to_list }
-
-		after 200 fill_peripheral_listbox
-		after 400 fill_ble_listbox
-
-		set ::scanning 1
+		# Defer the (blocking) USB probe so "Searching" paints first.
+		after 100 {
+			catch { add_usb_devices_to_list }
+			catch { add_usb_scales_to_list }
+			catch { fill_peripheral_listbox }
+			catch { fill_ble_listbox }
+		}
 		after 3000 { set scanning 0 }
 		return
 	} else {
-		# A real BLE scanner is running; also enumerate USB-C serial DE1s (a
-		# quick synchronous ioreg probe) so they show up in the same list.
-		catch { add_usb_devices_to_list }
-		after 500 fill_ble_listbox
+		# A real BLE scanner runs below; also enumerate USB-C serial DE1s and
+		# scales. That probe is synchronous and can take a few seconds, so defer it
+		# to the next event-loop pass -- run inline it blocks the "Searching" repaint.
+		after 100 {
+			catch { add_usb_devices_to_list }
+			catch { add_usb_scales_to_list }
+			catch { fill_ble_listbox }
+		}
 		# only scan for a few seconds
 		after 10000 { stop_scanner }
 	}
 
-	set ::scanning 1
 	::bt::msg -NOTICE "Starting ble_scanner from ::scanning_restart"
 
 	if {$::ble_scanner == ""} {

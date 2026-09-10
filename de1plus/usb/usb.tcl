@@ -70,8 +70,13 @@ proc ::usb::ports {} {
 	variable opened
 	variable probed
 	set result {}
+	# macOS names a USB-serial callout device by its chipset: usbmodem (CDC-ACM,
+	# the DE1/Bengle), usbserial (FTDI), wchusbserial (WCH CH34x, the Decent
+	# Scale), SLAB_USBtoUART (Silicon Labs CP210x). Linux uses ttyACM*/ttyUSB*.
+	# Match the '*usbserial*' wildcard so wchusbserial is included.
 	set nodes [lsort -unique [glob -nocomplain \
-		/dev/cu.usbmodem* /dev/cu.usbserial* /dev/ttyACM* /dev/ttyUSB*]]
+		/dev/cu.usbmodem* /dev/cu.*usbserial* /dev/cu.SLAB_USBtoUART* \
+		/dev/ttyACM* /dev/ttyUSB*]]
 
 	# prune cache entries whose node is gone, so a re-plug re-probes
 	foreach n [array names probed] {
@@ -119,12 +124,28 @@ proc ::usb::_probe {device} {
 	catch { fconfigure $ch -ttycontrol {DTR 0 RTS 0} }
 
 	set ::usb::_probe_buf ""
+	set ::usb::_probe_raw ""
 	array unset ::usb::_probe_seen
 	array set ::usb::_probe_seen {}
+	catch { unset ::usb::_probe_mmr8000C }
 	fileevent $ch readable [list ::usb::_probe_read $ch]
 
-	catch { puts -nonewline $ch "<+N>\n<+M>\n<+S>\n<B>02\n<E>0480000c00000000000000000000000000000000\n"; flush $ch }
+	# PASS 1 -- passive listen (send nothing). A Decent Scale / HDS chatters on
+	# its own: human-readable "<n> Weight: ..." text lines and/or binary
+	# "03 CE .. .. 00 00" weight frames. A DE1/Bengle stays silent until armed.
+	set ::usb::_probe_done 0
+	set aid [after 700 { set ::usb::_probe_done 1 }]
+	vwait ::usb::_probe_done
+	catch { after cancel $aid }
 
+	if {[::usb::_looks_like_decent_scale $::usb::_probe_raw]} {
+		catch { fileevent $ch readable {} }
+		catch { ::close $ch }
+		return [dict create product decentscale]
+	}
+
+	# PASS 2 -- active DE1 probe: arm streams + read the v13 model MMR.
+	catch { puts -nonewline $ch "<+N>\n<+M>\n<+S>\n<B>02\n<E>0480000c00000000000000000000000000000000\n"; flush $ch }
 	set ::usb::_probe_done 0
 	set aid [after 900 { set ::usb::_probe_done 1 }]
 	vwait ::usb::_probe_done
@@ -132,8 +153,11 @@ proc ::usb::_probe {device} {
 	catch { fileevent $ch readable {} }
 	catch { ::close $ch }
 
-	set letters [array names ::usb::_probe_seen]
-	if {[llength $letters] == 0} { return "" }
+	# a late-arriving scale signature still wins over a non-answering DE1
+	if {[::usb::_looks_like_decent_scale $::usb::_probe_raw]} {
+		return [dict create product decentscale]
+	}
+	if {[llength [array names ::usb::_probe_seen]] == 0} { return "" }
 	# Bengle if it streams the high-res superset [S], or the v13Model reply >= 128.
 	set is_bengle 0
 	if {[info exists ::usb::_probe_seen(S)]} { set is_bengle 1 }
@@ -141,9 +165,21 @@ proc ::usb::_probe {device} {
 	return [dict create product [expr {$is_bengle ? "Bengle" : "DE1"}]]
 }
 
+# Decent Scale / HDS signature (decaid's isDecentScale): a raw weight frame
+# 03 CE xx xx 00 00 (bytes 4 and 5 zero), or a "<digits> Weight:" text line.
+proc ::usb::_looks_like_decent_scale {raw} {
+	if {[regexp {[0-9]+ Weight:} $raw]} { return 1 }
+	if {[regexp {03ce[0-9a-f]{4}0000} [string tolower [binary encode hex $raw]]]} { return 1 }
+	return 0
+}
+
 proc ::usb::_probe_read {ch} {
 	if {[catch { set d [read $ch] }]} { return }
 	if {$d eq ""} { return }
+	append ::usb::_probe_raw $d
+	if {[string length $::usb::_probe_raw] > 8192} {
+		set ::usb::_probe_raw [string range $::usb::_probe_raw end-4096 end]
+	}
 	append ::usb::_probe_buf $d
 	while {[regexp -indices {(\[[A-Z]\][0-9A-Fa-f]*?)(?=\[|\n|\r)} $::usb::_probe_buf whole]} {
 		set s [lindex $whole 0]; set e [lindex $whole 1]
@@ -188,6 +224,44 @@ proc ::usb::connect {device callback} {
 	fileevent $ch readable [list ::usb::_on_readable $ch]
 	::usb::log -NOTICE "opened $device as $ch ([fconfigure $ch -mode])"
 	return $ch
+}
+
+# ::usb::connect_raw -- open a serial port and deliver RAW inbound bytes to the
+# callback (no [X] framing). Used by devices whose protocol isn't the DE1 letter
+# protocol -- e.g. the Decent Scale, which speaks its own 03..xor binary frames.
+#   callback is invoked as:  {*}$callback $rawbytes
+proc ::usb::connect_raw {device callback} {
+	variable callbacks
+	set ch [open $device {RDWR NONBLOCK}]
+	fconfigure $ch -mode 115200,n,8,1 -translation binary -buffering none -blocking 0
+	catch { fconfigure $ch -handshake none }
+	catch { fconfigure $ch -ttycontrol {DTR 0 RTS 0} }
+	set callbacks($ch) $callback
+	set ::usb::opened($ch) $device
+	fileevent $ch readable [list ::usb::_on_readable_raw $ch]
+	::usb::log -NOTICE "opened(raw) $device as $ch"
+	return $ch
+}
+
+proc ::usb::_on_readable_raw {ch} {
+	variable callbacks
+	if {[catch { set chunk [read $ch] } err]} { ::usb::log -ERROR "read error on $ch: $err"; return }
+	if {$chunk eq ""} { if {[eof $ch]} { ::usb::log -ERROR "eof on $ch" }; return }
+	if {[info exists callbacks($ch)] && $callbacks($ch) ne ""} {
+		if {[catch { uplevel #0 [list {*}$callbacks($ch) $chunk] } e]} {
+			::usb::log -ERROR "raw callback error on $ch: $e"
+		}
+	}
+}
+
+# ::usb::write_raw -- write raw bytes (no newline). For the Decent Scale's
+# 03..xor command frames. Returns 1 on success (like write), 0 on failure.
+proc ::usb::write_raw {ch bytes} {
+	if {[catch { puts -nonewline $ch $bytes; flush $ch } err]} {
+		::usb::log -ERROR "write_raw error on $ch: $err"
+		return 0
+	}
+	return 1
 }
 
 # ::usb::_on_readable -- drain the channel, split complete [X]hex frames, and
@@ -267,10 +341,12 @@ proc ::usb::close {ch} {
 # public subcommands are dispatched; helpers (_on_readable, log) stay private.
 proc usb {subcmd args} {
 	switch -- $subcmd {
-		ports   { return [::usb::ports] }
-		connect { return [::usb::connect {*}$args] }
-		write   { return [::usb::write {*}$args] }
-		close   { return [::usb::close {*}$args] }
-		default { error "usb: unknown subcommand \"$subcmd\" (ports|connect|write|close)" }
+		ports       { return [::usb::ports] }
+		connect     { return [::usb::connect {*}$args] }
+		connect_raw { return [::usb::connect_raw {*}$args] }
+		write       { return [::usb::write {*}$args] }
+		write_raw   { return [::usb::write_raw {*}$args] }
+		close       { return [::usb::close {*}$args] }
+		default { error "usb: unknown subcommand \"$subcmd\" (ports|connect|connect_raw|write|write_raw|close)" }
 	}
 }

@@ -311,22 +311,6 @@ if {[lsearch -exact $::argv "--ble-test"] >= 0} {
 		exit
 	}
 
-} elseif {[lsearch -exact $::argv "--usb-connect"] >= 0} {
-
-	# Full GUI, then connect to a DE1/Bengle over USB-C serial (auto-detected
-	# via `usb ports`) and log decoded state. Diagnostic sibling of
-	# --ble-search-and-exit for the USB transport. Stays running so a shot can
-	# be pulled over USB.
-	after 4000 usb_connect_and_report
-	try {
-		de1_ui_startup
-	} on error {result ropts} {
-		msg -CRIT "Untrapped error running de1_ui_startup with result: $result"
-		msg -CRIT "$ropts"
-		msg -CRIT "Exiting"
-		exit
-	}
-
 } elseif {[lsearch -exact $::argv "--sim-screenshot"] >= 0} {
 
 	# Full GUI, then auto-start a simulated espresso and snapshot the chart.

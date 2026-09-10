@@ -144,9 +144,12 @@ namespace eval ::device::scale {
 	# Boolean to determine if should be a "problem" that the scale isn't connected and reporting
 
 	proc expecting_present {} {
-		# True if a BLE scale address is paired (no v2 special case
-		# needed -- is_connected handles that).
-		expr { [::device::scale::bluetooth_address] != "" }
+		# True if a scale is paired over EITHER transport: a BLE scale address, or
+		# a USB-C serial scale address (is_connected handles the v2 special case).
+		# Skins gate the whole scale UI -- including the live weight readout -- on
+		# this, so a USB-only pairing must count or the weight display never shows.
+		expr { [::device::scale::bluetooth_address] != "" \
+			|| [ifexists ::settings(usb_scale_address)] != "" }
 	}
 
 	proc is_reporting {} {
@@ -355,7 +358,13 @@ namespace eval ::device::scale {
 		# the switch below cannot reach it. Tare over MMR instead. Without
 		# this the auto-tare before every pour silently does nothing while
 		# still arming _tare_awaiting_zero.
-		if { [::de1::packet::use_ble_v2] && $::de1(scale_device_handle) == 0 } {
+		if { [ifexists ::de1(scale_connectivity)] eq "usb" } {
+
+			# USB-C serial Decent Scale: send the raw tare command directly
+			# (the BLE decentscale_tare path early-returns over USB).
+			de1_usb_scale_tare
+
+		} elseif { [::de1::packet::use_ble_v2] && $::de1(scale_device_handle) == 0 } {
 
 			set_bengle_scale_tare
 
@@ -470,6 +479,19 @@ namespace eval ::device::scale {
 	}
 
 	proc _watchdog_fire {} {
+
+		# Guard against a spurious wake-up: if a weight update actually arrived
+		# within the tickle window, the stream is alive and this fire is stale
+		# (e.g. an `after cancel` that didn't take on some event-loop builds --
+		# seen with the 10 Hz USB serial scale under SDL). Don't cry "Check scale"
+		# while weight is still flowing; just re-arm. Only toast a real stall.
+		set since [expr { ([clock milliseconds] / 1000.0) \
+			- $::device::scale::_last_weight_update_time }]
+		if { $since < ($::device::scale::_watchdog_tickle_timeout / 1000.0) } {
+			set ::device::scale::_watchdog_id [ after $::device::scale::_watchdog_tickle_timeout \
+					  [list ::device::scale::_watchdog_fire] ]
+			return
+		}
 
 		msg -WARNING "Scale watchdog TIMEOUT"
 		::gui::notify::scale_event timeout_updates

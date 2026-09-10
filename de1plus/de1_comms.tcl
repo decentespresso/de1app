@@ -239,25 +239,49 @@ proc de1_comm {action command_name {data 0}} {
 
 proc append_to_de1_list {address name type} {
 
-	# Replace any existing entry for the same address rather than
-	# early-returning -- the legacy "duplicate skip" behaviour caused
-	# stale names to persist across firmware swaps (e.g. the Bengle_BLE
-	# Mynewt port renamed the advertised device "DE1" -> "Bengle", but
-	# the list was seeded from settings.tdb at startup with the old
-	# name and the scan never overwrote it, so settings(model) stayed
-	# "DE1" -> use_ble_v2 returned false -> v1 protocol decoding was
-	# applied to v2-encoded ShotSample fields).
+	# Keep the list in STABLE order: the FIRST sighting of an address fixes its
+	# position and it never moves again, so rows don't shuffle under the user's
+	# finger while a scan keeps re-seeing the same devices. (The old code removed
+	# the entry and re-appended it at the end on every repeat advertisement, which
+	# reordered the list mid-scan -- a tap then landed on a different machine.)
+	#
+	# We still UPDATE the existing entry IN PLACE (same position) if its name/type
+	# changed, rather than simply discarding repeat sightings -- a device seeded
+	# from settings.tdb with a stale name (e.g. "DE1" for what is really a "Bengle")
+	# must still be re-labelled by the scan, or use_ble_v2 stays wrong. And we only
+	# redraw the listbox when something ACTUALLY changed, so a plain repeat sighting
+	# causes no rebuild (and no selection disturbance) at all.
 	set newlist {}
+	set found 0
+	set changed 0
 	foreach { entry } $::de1_device_list {
-		if { [dict get $entry address] ne $address} {
+		if { [dict get $entry address] eq $address } {
+			set found 1
+			set newname $name
+			# Never DOWNGRADE a known "Bengle" to the generic "DE1": "DE1" is the
+			# fallback the USB probe returns when it could not positively identify
+			# the model, so it must not clobber a Bengle we already detected (by
+			# scan name, seed, or a prior probe). Bengle -> DE1 would flip
+			# use_ble_v2 off and mis-decode v2 ShotSample fields.
+			if { $newname eq "DE1" && [string match -nocase "*bengle*" [dict get $entry name]] } {
+				set newname [dict get $entry name]
+			}
+			if { [dict get $entry name] ne $newname || [dict get $entry type] ne $type } {
+				set changed 1
+			}
+			lappend newlist [dict create address $address name $newname type $type]
+		} else {
 			lappend newlist $entry
 		}
 	}
-	lappend newlist [dict create address $address name $name type $type]
-	::comms::msg -NOTICE "Scan found DE1: $address ($name)"
+	if { !$found } {
+		lappend newlist [dict create address $address name $name type $type]
+		set changed 1
+	}
 	set ::de1_device_list $newlist
-	catch {
-		fill_ble_listbox
+	if { $changed } {
+		::comms::msg -NOTICE "Scan found DE1: $address ($name)"
+		catch { fill_ble_listbox }
 	}
 }
 
@@ -2242,4 +2266,10 @@ source "[homedir]/bengle.tcl"
 # (the "usb" branch is only ever taken when a USB DE1 is actually connected).
 if {[file exists "[homedir]/de1_usb.tcl"]} {
 	source "[homedir]/de1_usb.tcl"
+}
+
+# USB-C serial Decent Scale glue. File-exists guarded for the same OTA-safety
+# reason as de1_usb.tcl above.
+if {[file exists "[homedir]/de1_usb_scale.tcl"]} {
+	source "[homedir]/de1_usb_scale.tcl"
 }

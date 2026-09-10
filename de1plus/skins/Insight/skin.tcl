@@ -322,7 +322,7 @@ add_de1_text "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoom
 add_de1_text "off espresso espresso_3" 40 220 -text [translate "Pressure (bar)"] -font Helv_7_bold -fill $::pressurelabelcolor -justify "left" -anchor "nw"
 
 add_de1_text "off espresso espresso_3" 40 677 -text [translate "Flow (mL/s)"] -font Helv_7_bold -fill $::flow_label_color -justify "left" -anchor "nw"
-if {$::settings(scale_bluetooth_address) != ""} {
+if {[::device::scale::expecting_present]} {
 	add_de1_text "off espresso espresso_3" 1970 677 -text [translate "Weight (g/s)"] -font Helv_7_bold -fill "#a2693d" -justify "left" -anchor "ne" 
 
 
@@ -912,7 +912,7 @@ add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_tempera
 		# "Current:" readout makes it redundant.
 		#add_de1_widget "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" ProgressBar $column1_pos 1310 {} -relief "flat" -troughcolor $chart_background -width [rescale_x_skin 420] -height [rescale_x_skin 2] -type normal  -variable ::de1(scale_weight_rate) -fg #a2693d -bg $chart_background -maximum 6 -borderwidth 0 -relief flat
 	
-	if {$::settings(scale_bluetooth_address) != ""} {
+	if {[::device::scale::expecting_present]} {
 		set ::de1(scale_weight_rate) -1
 
 		# Weight-rate activity bar removed: the live "Current: Xg" / "Weight" readout
@@ -1166,7 +1166,7 @@ add_de1_text "water_3" 1070 250 -text [translate "2) Hot water will pour"] -font
 
 
 
-if {$::settings(scale_bluetooth_address) != ""} {
+if {[::device::scale::expecting_present]} {
 	# hot water - stop on weight, optional feature when scale is connected
 	add_de1_text "water_1" 300 1300  -text [translate "WEIGHT"] -font Helv_7 -fill $tappable_text_color -anchor "center" 
 	add_de1_variable "water_1" 300 1250 -text "" -font Helv_10_bold -fill $tappable_text_color -anchor "center"  -textvariable {[return_weight_measurement $::settings(water_volume)]}
@@ -1193,7 +1193,7 @@ add_de1_text "water water_1 water_3" 1100 1300 -justify right -anchor "nw" -text
 	add_de1_variable "water" 1700 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable  {[return_flow_measurement $::settings(hotwater_flow)] }
 
 
-if {$::settings(scale_bluetooth_address) != ""} {
+if {[::device::scale::expecting_present]} {
 	# hot water - stop on weight, optional feature when scale is connected
 	add_de1_text "water water_3" 300 1300  -text [translate "WEIGHT"] -font Helv_7 -fill $noprogress_text_color -anchor "center" 
 	add_de1_variable "water water_3" 300 1250 -text "" -font Helv_10_bold -fill "#7f879a" -anchor "center"  -textvariable {[return_weight_measurement $::settings(water_volume)]}
@@ -1229,7 +1229,7 @@ add_de1_variable "water_3" 2470 1200 -justify left -anchor "ne" -font Helv_8 -te
 	#add_de1_variable "water_3" 2470 400 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[watertemp_text]} 
 	#add_de1_text "water" 1870 250 -justify right -anchor "nw" -text [translate "Information"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 
-if {$::settings(scale_bluetooth_address) != ""} {
+if {[::device::scale::expecting_present]} {
 	# hot water - optional feature when scale is connected
 	add_de1_text "water " 1870 1200 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 	add_de1_variable "water" 2470 1200 -justify left -anchor "ne" -text "-" -font Helv_8 -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[waterweightflow_text]} 

@@ -11,6 +11,7 @@ proc make_de1_dir {srcdir destdirs} {
         de1app.tcl *
         de1_comms.tcl *
         de1_usb.tcl *
+        de1_usb_scale.tcl *
         gui.tcl *
         history_viewer.tcl *
         dui.tcl *

@@ -170,12 +170,17 @@ proc de1_usb_connect {device} {
 		return 1
 	}
 
+	# Preliminary product label for the connect handler + device-list entry. The
+	# AUTHORITATIVE model (DE1 vs Bengle) is determined later from the MMR v13Model
+	# read (is_bengle_model), so this is only an initial label. Take it from the
+	# already-known device-list entry rather than calling ::usb::ports here, which
+	# actively opens/arms EVERY serial port and blocks the UI for several seconds
+	# at startup (the connect runs in the startup path when a USB machine is paired).
 	set product "DE1"
-	set serial ""
-	foreach p [::usb::ports] {
-		if {[dict get $p device] eq $device} {
-			set product [dict get $p product]
-			set serial  [dict get $p serial]
+	foreach d $::de1_device_list {
+		if {[dict get $d address] eq $device && [dict get $d name] ne ""} {
+			set product [dict get $d name]
+			break
 		}
 	}
 
@@ -257,64 +262,12 @@ proc add_usb_devices_to_list {} {
 		return
 	}
 	foreach p $ports {
-		append_to_de1_list [dict get $p device] [dict get $p product] "usb"
-	}
-}
-
-# --- diagnostic (invoked by the --usb-connect command-line flag) ------------
-
-proc ::_usb_report {m} {
-	catch { msg -NOTICE "USBTEST $m" }
-	catch { puts stderr "USBTEST $m" ; flush stderr }
-}
-
-# Auto-detect a DE1/Bengle serial port, connect over USB, and log decoded state
-# every 2s for a while so a connection can be verified (and a shot pulled) from
-# the running GUI. Scheduled from de1app.tcl when --usb-connect is passed.
-proc usb_connect_and_report {} {
-	::_usb_report "==================== USB connect test start ===================="
-	::_usb_report "has_usb=[ifexists ::has_usb] has_bluetooth=[ifexists ::has_bluetooth] can_connect_de1=[ifexists ::can_connect_de1]"
-	if {[llength [info commands usb]] == 0} {
-		::_usb_report "ERROR: usb command not loaded; aborting"
-		return
-	}
-	set ports [usb ports]
-	::_usb_report "usb ports: $ports"
-	if {$ports eq ""} {
-		::_usb_report "ERROR: no DE1/Bengle serial port found; aborting"
-		return
-	}
-	set dev [dict get [lindex $ports 0] device]
-
-	# Force the USB transport (overriding any BLE pairing) for this test.
-	set ::settings(bluetooth_address) ""
-	set ::settings(usb_address) $dev
-
-	::_usb_report "connecting to $dev ..."
-	if {[catch { de1_usb_connect $dev } err]} {
-		::_usb_report "ERROR: de1_usb_connect failed: $err"
-		return
-	}
-	after 2000 [list ::_usb_report_state 0]
-}
-
-proc ::_usb_report_state {n} {
-	set st [ifexists ::de1(state)]
-	set sub [ifexists ::de1(substate)]
-	::_usb_report [format "t=%2ds  handle=%s  state=%s/%s  water=%s%%  sn=%s  fw=%s  ghc=%s  head_temp=%s  pressure=%s" \
-		[expr {$n*2}] \
-		[ifexists ::de1(device_handle)] \
-		$st $sub \
-		[ifexists ::de1(water_level)] \
-		[ifexists ::de1(sn)] \
-		[ifexists ::settings(firmware_version_number)] \
-		[ifexists ::settings(ghc_is_installed)] \
-		[ifexists ::de1(head_temperature)] \
-		[ifexists ::de1(pressure)] ]
-	if {$n < 20} {
-		after 2000 [list ::_usb_report_state [expr {$n+1}]]
-	} else {
-		::_usb_report "==================== USB connect test steady state ===================="
+		# Only espresso machines belong in the DE1 list -- a Decent Scale (also
+		# returned by `usb ports`) goes in the scale/peripheral list instead
+		# (add_usb_scales_to_list).
+		if {[dict get $p product] in {DE1 Bengle}} {
+			append_to_de1_list [dict get $p device] [dict get $p product] "usb"
+		}
 	}
 }
 
