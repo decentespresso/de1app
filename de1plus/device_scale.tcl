@@ -144,12 +144,17 @@ namespace eval ::device::scale {
 	# Boolean to determine if should be a "problem" that the scale isn't connected and reporting
 
 	proc expecting_present {} {
-		# True if a scale is paired over EITHER transport: a BLE scale address, or
-		# a USB-C serial scale address (is_connected handles the v2 special case).
-		# Skins gate the whole scale UI -- including the live weight readout -- on
-		# this, so a USB-only pairing must count or the weight display never shows.
+		# True if a scale is present: paired over EITHER transport (a BLE scale
+		# address or a USB-C serial scale address), OR a Bengle's integrated v2
+		# scale is active. The Bengle integrated scale has no BLE/USB address, so
+		# without the use_ble_v2 case this returned false for a Bengle and every
+		# skin that gates its weight UI on expecting_present (Insight, DSx, ...)
+		# hid the weight line/readout even though the scale was reporting. This
+		# now matches is_connected's v2 special-case, so expecting_present and
+		# is_connected agree for a Bengle and both skins detect it identically.
 		expr { [::device::scale::bluetooth_address] != "" \
-			|| [ifexists ::settings(usb_scale_address)] != "" }
+			|| [ifexists ::settings(usb_scale_address)] != "" \
+			|| [::de1::packet::use_ble_v2] }
 	}
 
 	proc is_reporting {} {

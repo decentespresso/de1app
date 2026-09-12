@@ -741,7 +741,7 @@ if { [plugins enabled Graphical_Flow_Calibrator] } {
 }
 
 
-if {$::settings(scale_bluetooth_address) != "" || [::device::scale::is_connected]} {
+if {[::device::scale::expecting_present]} {
 	lappend btns [list -text "    " -font "Inter-Bold16"] 
 	lappend btns [list -text {$::streamline_dataline_weight_label_red} -font "Inter-Bold18" -foreground $::progress_bar_red  -exec "scale_tare_or_reconnect" ]
 	lappend btns [list -text {$::streamline_dataline_weight_label_blue} -font "Inter-Bold18" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
@@ -786,7 +786,7 @@ lappend water_btns \
 	[list -text {[round_to_integer $::settings(water_volume)]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text [translate "ml"] -font "mono8"  -foreground $::dataline_data_color ] 
 
-if {$::settings(scale_bluetooth_address) != "" || [::device::scale::is_connected]} {
+if {[::device::scale::expecting_present]} {
 	lappend water_btns [list -text "    " -font "Inter-Bold16"] 
 	lappend water_btns [list -text {$::streamline_dataline_weight_label_red} -font "Inter-Bold18" -foreground $::progress_bar_red  -exec "scale_tare_or_reconnect" ]
 	lappend water_btns [list -text {$::streamline_dataline_weight_label_blue} -font "Inter-Bold18" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
@@ -1038,7 +1038,7 @@ proc update_streamline_status_message {} {
 
 			set final_target [determine_final_weight]
 			
-			if {$::settings(scale_bluetooth_address) != "" || [::device::scale::is_connected]} {
+			if {[::device::scale::expecting_present]} {
 				set current_weight $::streamline_extraction_weight
 			} else {
 				set current_weight $::streamline_extraction_volume

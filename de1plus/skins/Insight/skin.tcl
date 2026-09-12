@@ -474,8 +474,8 @@ should_hide_show_puck_resistance_line
 
 proc should_hide_show_weight_detail_line {} {
 	# A scale is present if a BLE scale is paired OR the machine has an integrated
-	# scale (Bengle v2) -- ::device::scale::is_connected covers both.
-	if {$::settings(scale_bluetooth_address) != "" || [::device::scale::is_connected]} {
+	# scale (Bengle v2) -- ::device::scale::expecting_present covers both.
+	if {[::device::scale::expecting_present]} {
 		if {[ifexists ::settings(weight_detail_curve)] == 1} {
 			catch {
 				$::espresso_zoomed_graph element configure line_espresso_flow_weight_raw_2x -hide no
