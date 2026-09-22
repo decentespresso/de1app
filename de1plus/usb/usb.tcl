@@ -60,11 +60,15 @@ proc ::usb::log {severity args} {
 	}
 }
 
-# Pick the enumerate/open backend once, at load. AndroWish bundles the `usbserial`
-# command; if it's present (Android) use it, otherwise fall back to POSIX serial
-# nodes (desktop macOS/Linux undroidwish). package require is the authoritative
-# probe -- the package simply isn't there on desktop, so this can't false-positive.
-if {![catch { package require Usbserial }]} {
+# Pick the enumerate/open backend once, at load. AndroWish (Android) provides the
+# `usbserial` command; desktop undroidwish does not. Detect by the COMMAND's
+# presence, not just `package require` -- the command may be auto-loaded or the
+# package registered under a name that `package require Usbserial` doesn't resolve,
+# and we must not silently fall back to the desktop glob on Android (that finds no
+# /dev/cu.* -> "no device found from Search"). Try the package require too, in case
+# it's needed to define the command, but let the command check decide.
+catch { package require Usbserial }
+if {[llength [info commands usbserial]]} {
 	set ::usb::backend "androwish"
 	::usb::log -NOTICE "usb transport: AndroWish usbserial backend"
 } else {
@@ -78,9 +82,13 @@ proc ::usb::_list_device_nodes {} {
 	if {$backend eq "androwish"} {
 		# [usbserial] with no arg lists supported converters as /dev/bus/usb/MMM/NNN.
 		if {[catch { set nodes [usbserial] } err]} {
-			::usb::log -DEBUG "usbserial enumerate failed: $err"
+			::usb::log -NOTICE "usbserial enumerate failed: $err"
 			return {}
 		}
+		# Logged so we can see on-device whether usbserial even recognises the DE1/
+		# Bengle (RP2040 CDC-ACM) -- if this is empty with hardware plugged in, the
+		# device isn't in usb-serial-for-android's probe table (needs a custom probe).
+		::usb::log -NOTICE "usbserial enumerate -> [llength $nodes] node(s): $nodes"
 		return [lsort -unique $nodes]
 	}
 	# macOS names a USB-serial callout by chipset: usbmodem (CDC-ACM, the DE1/
