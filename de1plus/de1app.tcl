@@ -26,6 +26,38 @@ cd "[file dirname [info script]]"
 # it can never wedge boot. $tag is only used to label stderr diagnostics.
 proc ::de1_redirect_data_root {bundle wdir tag} {
     set _done [file join $wdir ".complete"]
+    # Records WHICH bundle build last populated/refreshed the copy. The
+    # newer-build refresh below keys on this, NOT on the copy's own current build:
+    # a self-update legitimately makes the copy newer than the (frozen) bundle, and
+    # comparing bundle-vs-copy would then refresh on EVERY launch, copying the old
+    # bundle code back over the self-update -- pinning the app to the bundled
+    # version and silently defeating in-app self-update.
+    set _seed [file join $wdir ".seeded_build_id"]
+
+    # Build identity of a tree. Prefer an explicit build_id.txt, fall back to
+    # build-info.txt's version_string: build-info.txt is in the misc.tcl manifest
+    # so EVERY read-only build (ipa, apk, appimage, osx) ships it, giving them all
+    # a refresh trigger even without a separate build_id.txt file.
+    proc ::_de1_build_id {_dir} {
+        set _p [file join $_dir "build_id.txt"]
+        if {[file exists $_p] \
+                && ![catch { set _h [open $_p r]; set _v [string trim [read $_h]]; close $_h }] \
+                && $_v ne ""} {
+            return $_v
+        }
+        set _bi [file join $_dir "build-info.txt"]
+        if {[file exists $_bi] \
+                && ![catch { set _h [open $_bi r]; set _t [read $_h]; close $_h }]} {
+            foreach _ln [split $_t "\n"] {
+                if {[regexp {^\s*version_string\s+(.+?)\s*$} $_ln -> _vs]} { return [string trim $_vs] }
+            }
+        }
+        return ""
+    }
+    proc ::_de1_write_seed {seedfile val} {
+        catch { set _fh [open $seedfile w]; puts -nonewline $_fh $val; close $_fh }
+    }
+
     set _firstrun 0
     if {![file exists $_done]} {
         # First run (or a previously-interrupted one): copy to a temp dir, drop the
@@ -43,33 +75,29 @@ proc ::de1_redirect_data_root {bundle wdir tag} {
             set _firstrun 1
         }
     }
-    # Refresh the CODE in an existing copy when this bundle is a newer build, so a
-    # rebuilt package actually takes effect instead of the copy staying frozen.
+    # Record the seeding bundle's build id on the fresh copy.
+    if {$_firstrun} {
+        ::_de1_write_seed $_seed [::_de1_build_id $bundle]
+    }
+    # Refresh the CODE in an existing copy ONLY when a genuinely NEWER BUNDLE has
+    # been installed since we last seeded/refreshed -- i.e. the app binary itself
+    # was replaced (new IPA/APK/.app), whose build id differs from the recorded
+    # seed. We deliberately do NOT compare against the copy's live build id, so a
+    # self-update that advanced the copy past the bundle is preserved rather than
+    # clobbered on the next launch.
     if {!$_firstrun && [file exists $_done]} {
-        # Build identity for the "refresh code on a newer build" check. Prefer an
-        # explicit build_id.txt, but fall back to build-info.txt's version_string:
-        # build-info.txt is in the misc.tcl manifest so EVERY read-only build (ipa,
-        # apk, appimage, osx) ships it, giving them all a refresh trigger even
-        # without a separate build_id.txt file.
-        proc ::_de1_build_id {_dir} {
-            set _p [file join $_dir "build_id.txt"]
-            if {[file exists $_p] \
-                    && ![catch { set _h [open $_p r]; set _v [string trim [read $_h]]; close $_h }] \
-                    && $_v ne ""} {
-                return $_v
-            }
-            set _bi [file join $_dir "build-info.txt"]
-            if {[file exists $_bi] \
-                    && ![catch { set _h [open $_bi r]; set _t [read $_h]; close $_h }]} {
-                foreach _ln [split $_t "\n"] {
-                    if {[regexp {^\s*version_string\s+(.+?)\s*$} $_ln -> _vs]} { return [string trim $_vs] }
-                }
-            }
-            return ""
-        }
         set _vb [::_de1_build_id $bundle]
-        set _vc [::_de1_build_id $wdir]
-        if {$_vb ne "" && $_vb ne $_vc} {
+        set _seeded ""
+        catch { set _fh [open $_seed r]; set _seeded [string trim [read $_fh]]; close $_fh }
+        # Back-compat: a copy created before the seed marker existed. Adopt the
+        # copy's current build as the seed so we do NOT spuriously refresh (and
+        # clobber a self-update) on the first launch after this fix ships. A truly
+        # newer bundle install still differs from this adopted value and refreshes.
+        if {$_seeded eq ""} {
+            set _seeded [::_de1_build_id $wdir]
+            ::_de1_write_seed $_seed $_seeded
+        }
+        if {$_vb ne "" && $_vb ne $_seeded} {
             proc ::_de1_refresh_tree {src dst} {
                 foreach _f [glob -nocomplain -directory $src -- *] {
                     set _t [file join $dst [file tail $_f]]
@@ -95,6 +123,9 @@ proc ::de1_redirect_data_root {bundle wdir tag} {
                 set _s2 [file join $bundle $_idf]
                 if {[file exists $_s2]} { catch { file copy -force -- $_s2 [file join $wdir $_idf] } }
             }
+            # Remember the bundle we just refreshed from, so we do not refresh
+            # again (and clobber later self-updates) until a newer bundle installs.
+            ::_de1_write_seed $_seed $_vb
             catch { puts stderr "$tag: refreshed code in copy to build $_vb" }
         }
     }

@@ -628,12 +628,18 @@ namespace eval ::de1::state::update {
 		# Skipped when an external BLE scale is connected -- that scale is
 		# already driving the same pipeline and must keep priority.
 		#
-		# NOTE: the pipeline derives flow from the weight history, so the
-		# firmware's own gravimetric GFlow is NOT used for
-		# ::de1(scale_weight_rate). GFlow is kept on
-		# ::de1(integrated_scale_flow) above for the comparison chart
-		# series. Switching the app to the firmware estimate is a separate
-		# change and needs a bench comparison first.
+		# The pipeline still owns the weight history, the filtered weight, the
+		# two-cup scaling, tare-completion detection, the watchdog, the app-side
+		# stop-at-weight check (which uses its own ::saw::flow_now, NOT
+		# scale_weight_rate) and drink-weight recording. But for the weight FLOW
+		# RATE we match decaid and use the Bengle firmware's gravimetric GFlow
+		# (::de1(integrated_scale_flow)) instead of the app's weight-history
+		# slope. The slope estimate spikes when its regression window straddles
+		# the firmware's pour-start tare (a weight discontinuity): it drives the
+		# brown weight line sharply negative, so it clips below the chart's zero
+		# floor and appears to vanish at the end of preinfusion. GFlow is
+		# continuous across the tare. Applied only on v2 (Bengle); v1 (DE1 with a
+		# BLE scale) keeps the derived rate. See John-todo 10291990186.
 		if {[info exists ShotSample(Weight)] && $::de1(scale_device_handle) == 0} {
 			# The integrated scale never fires a BLE-scale connect event, so the
 			# period estimator (::device::scale::period::_estimate_state) is never
@@ -644,6 +650,17 @@ namespace eval ::de1::state::update {
 				::device::scale::init
 			}
 			::device::scale::process_weight_update $ShotSample(Weight) $update_received
+
+			# Override the history-slope flow rate with the firmware's GFlow.
+			# Keep the same two-cup scaling process_weight_update applies to its
+			# flow estimate (scale_stop_at_half_shot => *2), so the chart series
+			# stays consistent between the two rate sources.
+			if {[info exists ShotSample(GFlow)]} {
+				set _gflow_cups [expr {$::settings(scale_stop_at_half_shot) == 1 ? 2 : 1}]
+				set _gflow [round_to_two_digits [expr {$ShotSample(GFlow) * $_gflow_cups}]]
+				set ::de1(scale_weight_rate) $_gflow
+				set ::de1(scale_weight_rate_raw) $_gflow
+			}
 		}
 
 
