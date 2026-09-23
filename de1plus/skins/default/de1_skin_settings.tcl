@@ -2838,7 +2838,7 @@ if {1} {
 	# Colour field image (rectangular hue x saturation) + drag bindings. The
 	# bitmap is built lazily in picker_enter and attached via .can itemconfigure.
 	set ::led::wheel_canvas_item [dui add canvas_item image led_picker $::led::rect_x0 $::led::rect_y0 -anchor nw]
-	.can bind $::led::wheel_canvas_item <ButtonPress-1>   {::led::on_wheel_input %x %y 0}
+	.can bind $::led::wheel_canvas_item <ButtonPress-1>   {::led::on_wheel_input %x %y 0 1}
 	.can bind $::led::wheel_canvas_item <B1-Motion>       {::led::on_wheel_input %x %y 0}
 	.can bind $::led::wheel_canvas_item <ButtonRelease-1> {::led::on_wheel_input %x %y 1}
 	set ::led::puck_item [dui add canvas_item oval led_picker \
@@ -2853,7 +2853,7 @@ if {1} {
 	set ::led::_field_frame [dui add canvas_item rect led_picker $::led::rect_x0 $::led::rect_y0 \
 		[expr {$::led::rect_x0 + $::led::rect_w}] [expr {$::led::rect_y0 + $::led::rect_h}] \
 		-fill "" -outline "#DDDDDD" -width 2]
-	.can bind $::led::_field_frame <ButtonPress-1>   {::led::on_wheel_input %x %y 0}
+	.can bind $::led::_field_frame <ButtonPress-1>   {::led::on_wheel_input %x %y 0 1}
 	.can bind $::led::_field_frame <B1-Motion>       {::led::on_wheel_input %x %y 0}
 	.can bind $::led::_field_frame <ButtonRelease-1> {::led::on_wheel_input %x %y 1}
 

@@ -243,7 +243,13 @@
 		set ::led::_save_after [after 3000 {set ::led::_save_after ""; save_settings; ::led::push_all_stored; set ::led::_dirty 0}]
 	}
 	# px, py: widget pixel coords (from %x %y). commit=1 on release.
-	proc ::led::on_wheel_input {px py commit} {
+	# press=1 on the initial ButtonPress: picking a colour jumps brightness to
+	# full, so a tap always shows that colour (otherwise a stored colour of
+	# #000000 -- the sleep default -- left brightness at 0 and the LEDs stayed
+	# dark whatever the user tapped). Dragging afterwards keeps it at full; the
+	# slider is still there to dim it deliberately.
+	proc ::led::on_wheel_input {px py commit {press 0}} {
+		if {$press} { ::led::_set_brightness_full }
 		# Ignore stray events that land after the user has navigated away.
 		if {!$::led::picker_active} { return }
 		set x [dui platform unscale_x $px]
@@ -322,14 +328,23 @@
 		if {[string length $h] != 6 || [scan $h "%2x%2x%2x" r g b] != 3} { return "#FFFFFF" }
 		return [expr {(0.299*$r + 0.587*$g + 0.114*$b) < 128 ? "#FFFFFF" : "#000000"}]
 	}
+	# Move the brightness slider to full without re-entering the slider's own
+	# -command (which would commit a stale preview colour).
+	proc ::led::_set_brightness_full {} {
+		if {$::led::brightness == 100} { return }
+		set ::led::_suppress_brightness_cmd 1
+		set ::led::brightness 100
+		set ::led::_suppress_brightness_cmd 0
+	}
+	# Tapping a preset swatch paints that colour at FULL brightness, ignoring the
+	# preset's own V and whatever the slider was on.
 	proc ::led::apply_preset {hex} {
 		lassign [::led::hex_to_hsv $hex] h s v
 		set ::led::wheel_hue $h
 		set ::led::wheel_sat $s
-		set ::led::_suppress_brightness_cmd 1
-		set ::led::brightness [expr {int(round($v * 100))}]
-		set ::led::_suppress_brightness_cmd 0
+		::led::_set_brightness_full
 		::led::_update_puck
+		set hex [::led::_current_preview_hex]
 		::led::_store_edited_colour $hex
 		::led::_update_swatches
 		::led::_commit_current
