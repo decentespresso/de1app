@@ -800,6 +800,83 @@ add_de1_rich_text "water" 690 330 left 1 2 65 $::background_color $water_btns
 add_de1_rich_text "water_zoomed" 50 330 left 1 2 65 $::background_color $water_btns
 
 
+# Bengle milk-temperature probe -----------------------------------------------
+# A Bengle can stop steaming by MILK TEMPERATURE instead of by time: the firmware
+# watches the steam wand's temperature probe and stops at the target (MMR
+# TargetMilkTemp 0x8038A8, written by set_target_milk_temp when
+# ::settings(steam_stop_mode) is "temp"). ::de1(milk_temperature) comes from the
+# Bengle shot sample and is 0 when no probe is plugged in. So the steam setting
+# becomes a TEMPERATURE setting when -- and only when -- a Bengle is connected
+# with its probe attached; on a DE1, or with the probe out, it stays the timer.
+proc streamline_steam_temp_available {} {
+	if {[catch { is_bengle_model } bengle] || !$bengle} { return 0 }
+	return [expr {[ifexists ::de1(milk_temperature) 0] > 0}]
+}
+
+# Live milk temperature on the steam page's data line (Temp / Pressure / Flow).
+# All three parts return "" with no probe attached, so the whole group simply
+# is not there on a DE1 or with the probe unplugged -- the rich-text entries are
+# re-evaluated on every refresh, so it appears and disappears as the probe is
+# plugged in and out, with no page rebuild.
+proc streamline_milk_dataline_label {} {
+	if {![streamline_steam_temp_available]} { return "" }
+	return "    [translate {Milk}] "
+}
+
+proc streamline_milk_dataline_value {} {
+	if {![streamline_steam_temp_available]} { return "" }
+	return [lindex [return_temperature_measurement_no_unit $::de1(milk_temperature) 1 1] 0]
+}
+
+proc streamline_milk_dataline_unit {} {
+	if {![streamline_steam_temp_available]} { return "" }
+	return [lindex [return_temperature_measurement_no_unit $::de1(milk_temperature) 1 1] 1]
+}
+
+proc streamline_steam_temp_mode {} {
+	return [expr {$::streamline_steam_btn_mode eq "temp"}]
+}
+
+# Send the target (and the stop mode) to the machine. Not in temp mode -> target
+# 0, which tells the firmware not to stop on temperature.
+proc streamline_apply_steam_stop_mode {} {
+	if {[streamline_steam_temp_mode]} {
+		set ::settings(steam_stop_mode) "temp"
+	} else {
+		set ::settings(steam_stop_mode) "time"
+	}
+	catch {
+		if {[streamline_steam_temp_mode]} {
+			set_target_milk_temp [ifexists ::settings(target_milk_temp) 60]
+		} else {
+			set_target_milk_temp 0
+		}
+	}
+}
+
+# Follow the probe being plugged in / unplugged while the app runs: switch the
+# steam setting into temperature mode when a probe appears, and back to the
+# timer when it goes away, so the control can never be left showing a
+# temperature the machine is no longer stopping on.
+proc streamline_steam_temp_watch {} {
+	set available [streamline_steam_temp_available]
+	if {$available && $::streamline_steam_btn_mode eq "time"} {
+		set ::streamline_steam_btn_mode "temp"
+		streamline_steam_mode_changed
+	} elseif {!$available && [streamline_steam_temp_mode]} {
+		set ::streamline_steam_btn_mode "time"
+		streamline_steam_mode_changed
+	}
+	after 2000 streamline_steam_temp_watch
+}
+
+proc streamline_steam_mode_changed {} {
+	streamline_apply_steam_stop_mode
+	catch { refresh_steam_time_flow_labels }
+	catch { refresh_favorite_steam_button_labels }
+	catch { streamline_steam_setting_change }
+}
+
 set steam_btns ""
 lappend steam_btns \
 	[list -text "Temp" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
@@ -815,7 +892,10 @@ lappend steam_btns \
 	[list -text "Flow" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
 	[list -text {[round_to_one_digits $::de1(flow)]} -font "mono12" -foreground $::dataline_data_color  ] \
-	[list -text {[translate ml/s]} -font "mono8" -foreground $::dataline_data_color  ] 
+	[list -text {[translate ml/s]} -font "mono8" -foreground $::dataline_data_color  ] \
+	[list -text {[streamline_milk_dataline_label]} -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text {[streamline_milk_dataline_value]} -font "mono12" -foreground $::dataline_data_color  ] \
+	[list -text {[streamline_milk_dataline_unit]} -font "mono8" -foreground $::dataline_data_color  ] 
 
 #set ::streamline_status_msg [add_de1_rich_text "steam" 690 330 left 1 2 65 $::background_color $steam_btns ]
 add_de1_rich_text "steam" 690 330 left 1 2 65 $::background_color $steam_btns 
@@ -1337,11 +1417,12 @@ set ::steam_time_flow [add_de1_rich_text "off steam" 50 994 [list left none] 0 1
 	[list -text {$::steam_time_flow_part6} -font Inter-Bold11 -foreground $::left_label_color2 -exec steam_time_flow_flip ] \
 ]]
 
+
 proc refresh_steam_time_flow_labels {} {
 	
-	if {$::streamline_steam_btn_mode == "time"} {
+	if {$::streamline_steam_btn_mode == "time" || [streamline_steam_temp_mode]} {
 
-		set ::steam_time_flow_part1 [translate "Time"]
+		set ::steam_time_flow_part1 [expr {[streamline_steam_temp_mode] ? [translate "Temp"] : [translate "Time"]}]
 		set ::steam_time_flow_part2 " | "
 		set ::steam_time_flow_part3 [translate "Flow"]
 		set ::steam_time_flow_part4 ""
@@ -1352,7 +1433,7 @@ proc refresh_steam_time_flow_labels {} {
 		set ::steam_time_flow_part1 ""
 		set ::steam_time_flow_part2 ""
 		set ::steam_time_flow_part3 ""
-		set ::steam_time_flow_part4 [translate "Time"]
+		set ::steam_time_flow_part4 [expr {[streamline_steam_temp_available] ? [translate "Temp"] : [translate "Time"]}]
 		set ::steam_time_flow_part5 " | "
 		set ::steam_time_flow_part6 [translate "Flow"]
 	}
@@ -1426,6 +1507,23 @@ proc refresh_favorite_steam_button_labels {} {
 	##########
 
 
+	########## STOP-AT-MILK-TEMPERATURE (Bengle probe)
+	set steamtemps [ifexists ::settings(favorite_steamtemps)]
+	set streamline_selected_favorite_steamtemp ""
+	catch {
+		set streamline_selected_favorite_steamtemp [dict get $steamtemps selected number]
+	}
+	set tempdefaults [list 1 50 2 55 3 60 4 65]
+	foreach {slot default} $tempdefaults {
+		set val ""
+		catch { set val [dict get $steamtemps $slot value] }
+		if {$val == ""} {
+			dict set steamtemps $slot value $default
+			set changed 1
+		}
+	}
+	##########
+
 	########## STEAM FLOW RATE
 	set steamflow [ifexists ::settings(favorite_steamflow)]
 	set streamline_selected_favorite_steamflow ""
@@ -1483,11 +1581,19 @@ proc refresh_favorite_steam_button_labels {} {
 	if {$changed == 1} {
 		set ::settings(favorite_steams) $steams	
 		set ::settings(favorite_steamflow) $steamflow
+		set ::settings(favorite_steamtemps) $steamtemps
 		save_settings	
 		
 	}
 
-	if {$::streamline_steam_btn_mode == "time"} {
+	if {[streamline_steam_temp_mode]} {
+		foreach slot {1 2 3 4} {
+			set val ""
+			catch { set val [dict get $steamtemps $slot value] }
+			set ::streamline_favorite_steam_buttons(label_$slot) \
+				[lindex [return_temperature_measurement_no_unit $val 1 1] 0]
+		}
+	} elseif {$::streamline_steam_btn_mode == "time"} {
 		set ::streamline_favorite_steam_buttons(label_1) [seconds_text_very_abbreviated $t1]
 		set ::streamline_favorite_steam_buttons(label_2) [seconds_text_very_abbreviated $t2]
 		set ::streamline_favorite_steam_buttons(label_3) [seconds_text_very_abbreviated $t3]
@@ -1524,7 +1630,15 @@ proc refresh_favorite_steam_button_labels {} {
 	set lb3c $::preset_value_color
 	set lb4c $::preset_value_color
 
-	if {$::streamline_steam_btn_mode == "time"} {
+	if {[streamline_steam_temp_mode]} {
+		foreach slot {1 2 3 4} {
+			set val ""
+			catch { set val [dict get $steamtemps $slot value] }
+			if {$val ne "" && [ifexists ::settings(target_milk_temp) 60] == $val} {
+				set lb${slot}c $::preset_label_selected_color
+			}
+		}
+	} elseif {$::streamline_steam_btn_mode == "time"} {
 		if {$::settings(steam_timeout) == [dict get $steams 1 value]} {
 			set lb1c $::preset_label_selected_color
 		} 
@@ -1570,7 +1684,12 @@ proc streamline_steam_setting_change { } {
 
 	#[translate mL/s]
 	puts "streamline_steam_setting : $::streamline_steam_btn_mode"
-	if {$::streamline_steam_btn_mode == "time"} {
+	if {[streamline_steam_temp_mode]} {
+		# stop-at-milk-temperature (Bengle with probe): show the target, with the
+		# steam flow underneath as in the other modes
+		set ::streamline_steam_label_1st [lindex [return_temperature_measurement_no_unit [ifexists ::settings(target_milk_temp) 60] 1 1] 0][lindex [return_temperature_measurement_no_unit [ifexists ::settings(target_milk_temp) 60] 1 1] 1]
+		set ::streamline_steam_label_2nd "([round_to_one_digits [expr {$::settings(steam_flow) / 100.0}]])"
+	} elseif {$::streamline_steam_btn_mode == "time"} {
 		set ::streamline_steam_label_1st $stimeout
 		set ::streamline_steam_label_2nd "([round_to_one_digits [expr {$::settings(steam_flow) / 100.0}]])"
 	} else {
@@ -1582,12 +1701,17 @@ streamline_steam_setting_change
 
 proc steam_time_flow_flip {} {
 
-	if {$::streamline_steam_btn_mode == "time"} {
+	if {$::streamline_steam_btn_mode == "time" || [streamline_steam_temp_mode]} {
 		set ::streamline_steam_btn_mode "flow"
 
+	} elseif {[streamline_steam_temp_available]} {
+		# with a Bengle probe attached the left-hand mode is the stop-at-milk-
+		# temperature setting, in place of the steam timer
+		set ::streamline_steam_btn_mode "temp"
 	} else {
 		set ::streamline_steam_btn_mode "time"
 	}
+	streamline_apply_steam_stop_mode
 
 	#puts "ERROR steam_time_flow_flip $::streamline_steam_btn_mode "
 	refresh_steam_time_flow_labels
@@ -1925,7 +2049,9 @@ proc save_steam_flow_rate {} {
 
 }
 proc choose_appropriate_data_entry_for_steam {} {
-	if {$::streamline_steam_btn_mode == "time"} {
+	if {[streamline_steam_temp_mode]} {
+		ask_for_data_entry_number [translate "MILK TEMPERATURE"] [ifexists ::settings(target_milk_temp) 60] ::settings(target_milk_temp) "\u00b0C" 0 30 85 [list streamline_apply_steam_stop_mode streamline_steam_setting_change refresh_favorite_steam_button_labels refresh_hw_temp_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st" refresh_steam_time_flow_labels]
+	} elseif {$::streamline_steam_btn_mode == "time"} {
 		#ask_for_data_entry_number [translate "STEAM TIMEOUT"] [ifexists ::settings(steam_timeout)] ::settings(steam_timeout) [translate "s"] 1 3 255 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st"]
 		ask_for_data_entry_number [translate "STEAM TIMEOUT"] [ifexists ::settings(steam_timeout)] ::settings(steam_timeout) [translate "s"] 1 0 255 [list streamline_steam_setting_change refresh_favorite_steam_button_labels refresh_hw_temp_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st" refresh_steam_time_flow_labels]
 	} else {
@@ -2721,7 +2847,21 @@ proc streamline_hotwater_btn { args } {
 
 proc streamline_steam_btn { args } {
 
-	if {$::streamline_steam_btn_mode == "time"} {
+	if {[streamline_steam_temp_mode]} {
+		set target [ifexists ::settings(target_milk_temp) 60]
+		if {$args == "-"} {
+			if {$target > 30} {
+				set ::settings(target_milk_temp) [expr {$target - 1}]
+				flash_button "streamline_minus_steam_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
+			}
+		} elseif {$args == "+"} {
+			if {$target < 85} {
+				set ::settings(target_milk_temp) [expr {$target + 1}]
+				flash_button "streamline_plus_steam_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
+			}
+		}
+		streamline_apply_steam_stop_mode
+	} elseif {$::streamline_steam_btn_mode == "time"} {
 		if {$args == "-"} {
 			if {$::settings(steam_timeout) > 0} {
 				set ::settings(steam_timeout) [expr {$::settings(steam_timeout) - 1}]
@@ -3036,7 +3176,13 @@ proc streamline_set_temperature_preset { slot } {
 
 
 proc streamline_set_steam_preset { slot } {
-	if {$::streamline_steam_btn_mode == "time"} {
+	if {[streamline_steam_temp_mode]} {
+
+		set steamtemps [ifexists ::settings(favorite_steamtemps)]
+		dict set steamtemps $slot value [ifexists ::settings(target_milk_temp) 60]
+		set ::settings(favorite_steamtemps) $steamtemps
+
+	} elseif {$::streamline_steam_btn_mode == "time"} {
 
 		set steams [ifexists ::settings(favorite_steams)]
 		dict set steams $slot value $::settings(steam_timeout)
@@ -3685,7 +3831,18 @@ proc streamline_steam_select { slot } {
 
 #	catch {
 
-		if {$::streamline_steam_btn_mode == "time"} {
+		if {[streamline_steam_temp_mode]} {
+			# get the favourite button values
+			set steamtemps [ifexists ::settings(favorite_steamtemps)]
+
+			# set the setting, and tell the machine its new stop target
+			set ::settings(target_milk_temp) [dict get $steamtemps $slot value]
+			streamline_apply_steam_stop_mode
+
+			# save the new selected button
+			dict set steamtemps selected number $slot
+			set ::settings(favorite_steamtemps) $steamtemps
+		} elseif {$::streamline_steam_btn_mode == "time"} {
 			# get the favoritae button values
 			set steams [ifexists ::settings(favorite_steams)]
 
@@ -5187,6 +5344,11 @@ streamline_load_currently_selected_history_shot
 #set_next_page off "off_zoomed"
 #after 1000 page_show off_zoomed
 #after 100 page_show streamline_entry
+
+# Watch for the Bengle milk probe being plugged in / pulled out, and keep the
+# steam setting (timer vs stop-at-temperature) in step with it. Starts after the
+# skin is built; on a DE1 it just finds nothing, every 2s.
+after 5000 streamline_steam_temp_watch
 
 # revert to default DUI theme, so that other code that relies on current theme=default does not break
 dui theme set default
