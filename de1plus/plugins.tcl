@@ -203,6 +203,10 @@ namespace eval ::plugins {
             } elseif {$fbasename == "DPx_Flow_Calibrator"} {
                 # per Damian's suggestion, should not be part of the app
                 continue
+            } elseif {[string tolower $fbasename] == "decentscale_off"} {
+                # obsolete: core turns the Decent Scale off on sleep (scale_timer_start),
+                # and the plugin's extra 3s delay could miss the disconnect
+                continue
             }
 
             ############################################################

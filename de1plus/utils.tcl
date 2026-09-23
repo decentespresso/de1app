@@ -1580,6 +1580,12 @@ proc load_settings {} {
 	set ::settings(enabled_plugins) [lsearch -all -inline -not -exact $::settings(enabled_plugins) "DPx_Flow_Calibrator"]
 	set ::settings(enabled_plugins) [lsearch -all -inline -not -exact $::settings(enabled_plugins) "dpx_steam_stop"]
 	set ::settings(enabled_plugins) [lsearch -all -inline -not -exact $::settings(enabled_plugins) "skip_first_step_notice"]
+	# the core sleep path (scale_timer_start) already powers the Decent Scale off
+	# before disconnecting it; the plugin re-delayed that write by 3s, by which
+	# time the scale could be gone. Must be removed HERE as well as skipped in
+	# plugins list: plugins init loads straight from enabled_plugins, so the skip
+	# list alone would leave it loading for everyone who already has it on.
+	set ::settings(enabled_plugins) [lsearch -all -inline -not -exact $::settings(enabled_plugins) "decentscale_off"]
 
     #set ::de1(language_rtl) 1
     
