@@ -2421,16 +2421,12 @@ proc later_new_de1_connection_setup {} {
 	# de1_send_steam_hotwater_settings, and get_cupwarmer_status) no-op until
 	# is_bengle_model flips true -- which only happens after the v13Model MMR
 	# read / first 0xA013 sample lands, a few seconds into the connection. So
-	# the authoritative on/off never reaches the machine on the initial pass,
+	# the authoritative settings never reach the machine on the initial pass,
 	# and a warmer left heating by a prior session (RAM-only CupWarmerMode=1)
-	# stays hot. Reconcile once detection has settled: (re)send the app's
-	# enable state, then read status so the verification test still runs.
-	after 9000 {
-		if {[is_bengle_model]} {
-			set_cupwarmer_mode [ifexists ::settings(cupwarmer_enable) 0]
-			get_cupwarmer_status
-		}
-	}
+	# stays hot. Reconcile once detection has actually settled -- waiting for
+	# the event rather than guessing a delay (bengle.tcl). This also pushes the
+	# stored LED colours.
+	bengle_push_settings_on_connect
 
 	get_refill_kit_present
 	get_sn
@@ -2463,11 +2459,6 @@ proc later_new_de1_connection_setup {} {
 	after 9000 de1_enable_temp_notifications
 	after 11000 de1_enable_state_notifications
 
-	# Push stored LED colours back to the machine after state is known.
-	# Sync all 4 stored LED colours to firmware on connect. The firmware
-	# persists them and switches automatically on sleep/wake, but we push
-	# on connect to reconcile any app-side changes made while disconnected.
-	after 12000 ::led::push_all_stored
 
 }
 

@@ -599,3 +599,56 @@ proc ::bengle_fw::_monitor {{elapsed 0}} {
 	}
 	after 3000 [list ::bengle_fw::_monitor [expr {$elapsed + 3000}]]
 }
+
+
+# ---------------------------------------------------------------------------
+# Connect-time settings push
+#
+# Every Bengle setter (set_cupwarmer_*, ::led::write_stored, ...) early-returns
+# when is_bengle_model is false -- and is_bengle_model only becomes true once
+# the v13Model MMR read (or the first 0xA013 sample) has landed, a few seconds
+# into a connection. Pushing these on fixed timers after connect (9s / 12s) was
+# a race: on a slow connect the push ran while detection was still pending, was
+# silently dropped, and the machine kept running whatever it had -- so the
+# cup-warmer and LED settings looked like they were "not saved between runs".
+#
+# Instead, wait for detection and push once it has actually happened. Gives up
+# quietly on a DE1 (where detection never flips).
+# ---------------------------------------------------------------------------
+set ::bengle_push_seq 0
+
+proc bengle_push_settings_on_connect {} {
+	# cancel any retry chain still running from a previous connection
+	incr ::bengle_push_seq
+	bengle_push_settings_when_ready $::bengle_push_seq 0
+}
+
+proc bengle_push_settings_when_ready {seq elapsed} {
+	if {$seq != $::bengle_push_seq} { return }
+	if {![is_bengle_model]} {
+		if {$elapsed >= 30000} {
+			return
+		}
+		after 1000 [list bengle_push_settings_when_ready $seq [expr {$elapsed + 1000}]]
+		return
+	}
+
+	::comms::msg -NOTICE bengle_push_settings_on_connect "detected after ${elapsed}ms; pushing cup warmer + LED settings"
+
+	# CupWarmerMode is RAM-only on the firmware side, and the machine may have
+	# been power-cycled or changed while we were away, so re-send rather than
+	# trusting the dedup cache.
+	catch { array set ::led::_last_written {front "" rear ""} }
+
+	set_cupwarmer_temperature [ifexists ::settings(cupwarmer_temp) 70]
+	set_cupwarmer_preheat [ifexists ::settings(cupwarmer_prewarm_enable) 0] \
+		[ifexists ::settings(cupwarmer_prewarm_minutes) 30]
+	set_cupwarmer_mode [ifexists ::settings(cupwarmer_enable) 0]
+	get_cupwarmer_status
+
+	# Stored LED colours. Skipped while the colour picker is open, so we don't
+	# overwrite the colour the user is previewing right now.
+	if {![ifexists ::led::picker_active 0]} {
+		::led::push_all_stored
+	}
+}
