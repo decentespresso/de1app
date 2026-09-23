@@ -2077,6 +2077,19 @@ proc ui_startup {} {
 
 	load_settings
 
+	# --ui-shot --ui-lang <code>: dev-only layout check in another language. Set
+	# after load_settings (which would overwrite it) and before the skin builds,
+	# since page text is translated at build time.
+	if {[ifexists ::ui_shot_language] ne ""} {
+		set ::ui_shot_prior_language $::settings(language)
+		set ::settings(language) $::ui_shot_language
+	}
+	# --ui-shot --ui-skin <name>: build a different skin for the layout check
+	if {[ifexists ::ui_shot_skin] ne ""} {
+		set ::ui_shot_prior_skin $::settings(skin)
+		set ::settings(skin) $::ui_shot_skin
+	}
+
 	# Cap unlimited pressure steps at the default flow limit (8 mL/s) for the profile
 	# that is already selected at launch. select_profile does this for profiles the
 	# user actively selects, but at startup the profile is restored straight from

@@ -1140,20 +1140,26 @@ add_de1_text "settings_3" 1304 750 -text [translate "Firmware"] -font Helv_10_bo
 	# both a DE1 and a Bengle. Only the tap target below differs by model.
 	add_de1_variable "settings_3" 1960 926 -text "" -width [rescale_x_skin 1000] -font Helv_10_bold -fill "#FFFFFF" -justify "center" -anchor "center" -textvariable {[check_firmware_update_is_available][translate $::de1(firmware_update_button_label)]}
 
-	# DE1 firmware button: the classic power-off / power-on reboot flow.
-	dui add dbutton "settings_3" 1280 850 2540 1020 -theme none -tags {de1_fw_btn} \
-		-command {set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1}
+	# One firmware tap target for both models, dispatched at TAP time: a Bengle
+	# gets the live update over the connection (no power cycle), a DE1 keeps the
+	# classic power-off / power-on reboot flow. (Two overlapping per-model
+	# dbuttons swapped by show/hide broke the DE1 button: a dbutton's background
+	# carries its own tag, so the hidden Bengle button's background still sat on
+	# top and swallowed the tap -- github issue #359.)
+	proc open_firmware_update {{force 0}} {
+		if {$force} { set ::settings(force_fw_update) 1 }
+		if {[is_bengle_model]} {
+			::bengle_fw::open
+		} else {
+			set ::de1(in_fw_update_mode) 1
+			page_to_show_when_off firmware_update_1
+		}
+	}
+	dui add dbutton "settings_3" 1280 850 2540 1020 -theme none -tags {fw_update_btn} \
+		-command {open_firmware_update}
 	# hidden button to force a firmware update even if it is currently disabled.
-	dui add dbutton "settings_3" 1280 750 1800 810 -theme none -tags {de1_fw_force} \
-		-command {set ::settings(force_fw_update) 1; set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1}
-
-	# Bengle firmware button: live update over the connection, no physical power
-	# cycle. Same card location; shown only on a Bengle (gated in the settings_3
-	# page-show action, alongside the Counter-box buttons).
-	dui add dbutton "settings_3" 1280 850 2540 1020 -theme none -tags {bengle_fw_btn} \
-		-command {::bengle_fw::open}
-	dui add dbutton "settings_3" 1280 750 1800 810 -theme none -tags {bengle_fw_force} \
-		-command {set ::settings(force_fw_update) 1; ::bengle_fw::open}
+	dui add dbutton "settings_3" 1280 750 1800 810 -theme none -tags {fw_update_force} \
+		-command {open_firmware_update 1}
 
 
 # app update
@@ -1341,7 +1347,11 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 
 
 			dui add dtoggle "measurements"  1740 500 -height 60 -anchor nw -variable ::settings(dim_screen_when_battery_low)
-			add_de1_text "measurements" 1880 480 -text [translate "Dim screen when battery low"] -font $optionfont -width [rescale_x_skin 440] -fill "#4e85f4" -anchor "nw"
+			# anchored on the row's centre line (-anchor w) so a wrapped
+			# translation grows up AND down instead of only down, over the row
+			# below; capped at 3 lines, shrinking the font to stay inside that.
+			add_de1_text "measurements" 1880 530 -text [translate "Dim screen when battery low"] -font $optionfont -width [rescale_x_skin 440] -fill "#4e85f4" -anchor "w" -tags dim_screen_label
+			dui::item::shrink_font_to_lines [dui::item::get measurements dim_screen_label] 3
 			add_de1_button "measurements" { set ::settings(dim_screen_when_battery_low) [expr {!$::settings(dim_screen_when_battery_low)}] } 1740 470 2280 586
 
 
@@ -1357,7 +1367,8 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 
 
 			dui add dtoggle "measurements"  1740 660 -height 60 -anchor nw -variable ::settings(enable_sounds)
-			add_de1_text "measurements" 1880 660 -text [translate "Sounds"] -font $optionfont -width [rescale_x_skin 2400] -fill "#4e85f4" -anchor "nw"
+			add_de1_text "measurements" 1880 690 -text [translate "Sounds"] -font $optionfont -width [rescale_x_skin 440] -fill "#4e85f4" -anchor "w" -tags sounds_label
+			dui::item::shrink_font_to_lines [dui::item::get measurements sounds_label] 3
 
 			#set ::_placebo_true 1
 			#add_de1_widget "measurements" checkbutton 1300 740  {} -text [translate "Logging is enabled"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable _placebo_true -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat  -state disabled
@@ -1377,10 +1388,19 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			#add_de1_text "measurements" 1420 704 -text [translate "Fast tap mode"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
 			#add_de1_button "measurements" { set ::settings(use_finger_down_for_tap) [expr {!$::settings(use_finger_down_for_tap)}] } 1280 704 1700 764
 
-			dui add dtoggle "measurements" 1280 660 -height 60 -anchor nw -variable ::settings(keep_scale_on)
+			# "Keep scale on" is about a separate BLE scale; a Bengle has an integrated
+			# scale (BLE scales are refused while it's connected), so the option is
+			# hidden there. Built unconditionally and gated at page-show, because
+			# is_bengle_model is still false when the skin is built.
+			dui add dtoggle "measurements" 1280 660 -height 60 -anchor nw -variable ::settings(keep_scale_on) -tags [list keep_scale_on_toggle keep_scale_on]
 			
-			add_de1_text "measurements" 1420 660 -text [translate "Keep scale on"] -font $optionfont -width [rescale_x_skin 300] -fill "#4e85f4" -anchor "nw"
-			add_de1_button "measurements" { set ::settings(keep_scale_on) [expr {!$::settings(keep_scale_on)}] } 1280 660 1700 720
+			add_de1_text "measurements" 1420 690 -text [translate "Keep scale on"] -font $optionfont -width [rescale_x_skin 300] -fill "#4e85f4" -anchor "w" -tags [list keep_scale_on_label keep_scale_on]
+			dui::item::shrink_font_to_lines [dui::item::get measurements keep_scale_on_label] 3
+			dui add dbutton "measurements" 1280 660 1700 720 -theme none -tags [list keep_scale_on_btn keep_scale_on] -command { set ::settings(keep_scale_on) [expr {!$::settings(keep_scale_on)}] }
+			# hide via the shared group tag: every canvas item a dui widget
+			# creates (toggle slider, button rect, label) carries it, and canvas
+			# tag expressions are literal -- no wildcards
+			add_de1_action "measurements" { dui item show_or_hide [expr {![is_bengle_model]}] measurements keep_scale_on }
 
 			#dui add dtoggle "measurements" 1280 804 -height 60 -anchor nw -variable ::settings(smart_battery_charging) 
 			#add_de1_text "measurements" 1420 804 -text [translate "Smart charging"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
@@ -1566,17 +1586,6 @@ proc fetch_possible_de1_sn {} {
 		dui add dbutton "settings_3" 760 235 -bheight 100 -style insight_ok -anchor nw -command {::led::open_picker} -label [translate "LED colors"] -tags [list bengle_counter_led bengle_counter]
 		dui add dbutton "settings_3" 760 350 -bheight 100 -style insight_ok -anchor nw -command {say [translate {Cup warmer}] $::settings(sound_button_in); page_to_show_when_off cupwarmer} -label [translate "Cup warmer"] -tags [list bengle_counter_cupwarmer bengle_counter]
 		add_de1_action "settings_3" { dui item show_or_hide [is_bengle_model] settings_3 bengle_counter }
-
-		# Firmware tap target is model-aware: the Bengle gets the live (no
-		# power-cycle) flow, the DE1 keeps its reboot flow. The shared label
-		# stays visible for both.
-		add_de1_action "settings_3" {
-			set _is_bengle [is_bengle_model]
-			dui item show_or_hide $_is_bengle          settings_3 bengle_fw_btn
-			dui item show_or_hide $_is_bengle          settings_3 bengle_fw_force
-			dui item show_or_hide [expr {!$_is_bengle}] settings_3 de1_fw_btn
-			dui item show_or_hide [expr {!$_is_bengle}] settings_3 de1_fw_force
-		}
 
 		add_de1_variable "settings_3" 1250 544 -text "" -font Helv_8 -fill "#7f879a" -anchor "ne" -width [rescale_x_skin 1000] -justify "right" -textvariable {[de1_sn_show]}
 		add_de1_button "settings_3" {show_de1_sn_page} 500 544 1250 600
@@ -1814,8 +1823,14 @@ proc scheduler_feature_hide_show_refresh {  } {
 #add_de1_widget "settings_2c" checkbutton 1538 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 -relief flat 
 # scheduled power up/down
 add_de1_text "settings_3" 180 1134 -justify left -anchor "nw" -font $optionfont -text [translate "Keep hot"]  -fill "#4e85f4" -width [rescale_x_skin 1000] 
-dui add dtoggle "settings_3" 50 1140 -height 50 -width 100 -anchor nw -variable ::settings(scheduler_enable) -command { scheduler_feature_hide_show_refresh; set_alarms_for_de1_wake_sleep }
-add_de1_button "settings_3" { set ::settings(scheduler_enable) [expr {! $::settings(scheduler_enable)}]; scheduler_feature_hide_show_refresh; set_alarms_for_de1_wake_sleep } 50 1140 500 1190
+# dtoggle -command must be a bare proc name: dui list-mangles a multi-command
+# script, which ran "scheduler_feature_hide_show_refresh;" as a command name.
+proc scheduler_enable_changed {} {
+	scheduler_feature_hide_show_refresh
+	set_alarms_for_de1_wake_sleep
+}
+dui add dtoggle "settings_3" 50 1140 -height 50 -width 100 -anchor nw -variable ::settings(scheduler_enable) -command scheduler_enable_changed
+add_de1_button "settings_3" { set ::settings(scheduler_enable) [expr {! $::settings(scheduler_enable)}]; scheduler_enable_changed } 50 1140 500 1190
 scheduler_feature_hide_show_refresh
 
 
@@ -2927,7 +2942,7 @@ set ::bengle_fw::_card1 [dui add canvas_item rect "bengle_firmware_update_1" 80 
 # ---- Page 2: progress -----------------------------------------------------
 set ::bengle_fw::_card2 [dui add canvas_item rect "bengle_firmware_update_2" 80 80 820 1090 -fill "#F6F1E9" -outline "#E2DACB" -width 2]
 
-	add_de1_text "bengle_firmware_update_2" 140 130 -text [translate "Updating Bengle firmware…"] -font Helv_16_bold -width [rescale_x_skin 640] -fill "#2b2b2b" -anchor "nw" -justify "left" -tags {bfw2_title bfw2_body}
+	add_de1_text "bengle_firmware_update_2" 140 130 -text [translate "Updating Bengle firmware"] -font Helv_16_bold -width [rescale_x_skin 640] -fill "#2b2b2b" -anchor "nw" -justify "left" -tags {bfw2_title bfw2_body}
 
 	# Installed → new version, with direction (upgrade / downgrade / no change).
 	add_de1_variable "bengle_firmware_update_2" 140 385 -text "" -font Helv_10 -width [rescale_x_skin 640] -fill "#2b2b2b" -anchor "nw" -justify "left" -tags {bfw2_ver bfw2_body} -textvariable {[::bengle_fw::version_change_label]}

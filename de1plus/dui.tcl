@@ -7153,9 +7153,85 @@ namespace eval ::dui {
 	namespace eval item {
 		namespace export add delete get get_widget type dui_type config cget coords \
 			enable_or_disable enable disable show_or_hide show hide add_image_dirs image_dirs \
-			listbox_get_selection listbox_set_selection relocate_text_wrt moveto moveby pages
+			listbox_get_selection listbox_set_selection relocate_text_wrt moveto moveby pages \
+			shrink_font_to_lines
 		namespace ensemble create
-	
+
+		# Cache of shrunk font variants, keyed by "<family> <size> <weight> <slant>",
+		# so a page full of long labels doesn't create a named font per item.
+		variable fitted_fonts
+		array set fitted_fonts {}
+
+		# Shrink a wrapping text item's font until it needs at most max_lines
+		# lines. Wrapping labels (those with -width) grow downwards over whatever
+		# is below them when a translation is long, so cap them and make the text
+		# smaller instead. Pair with -anchor w/center so the block grows up AND
+		# down around its row rather than only down.
+		# The line count is computed from the text and the font (not from the
+		# item's bbox): pages are built hidden, and a hidden item has no bbox.
+		proc shrink_font_to_lines { ids max_lines {min_size 8} } {
+			variable fitted_fonts
+			set can [dui canvas]
+			foreach id $ids {
+				if { [$can type $id] ne "text" } { continue }
+				if { [catch { $can itemcget $id -width } wrap_width] || $wrap_width <= 0 } { continue }
+				if { [catch { $can itemcget $id -text } txt] || [string trim $txt] eq "" } { continue }
+				if { [catch { $can itemcget $id -font } fnt] || $fnt eq "" } { continue }
+				if { [catch { array set fa [font actual $fnt -displayof $can] }] } { continue }
+				set family $fa(-family)
+				set size $fa(-size)
+				set weight $fa(-weight)
+				set slant $fa(-slant)
+				if { $size == 0 } { continue }
+				set sign [expr {$size < 0 ? -1 : 1}]
+				set mag [expr {abs($size)}]
+				set newfont $fnt
+				while { [wrapped_lines $can $newfont $txt $wrap_width] > $max_lines && $mag > $min_size } {
+					incr mag -1
+					set key "$family $mag $weight $slant"
+					if { [info exists fitted_fonts($key)] } {
+						set newfont $fitted_fonts($key)
+					} else {
+						set newfont "dui_fit_[string map {{ } _} $key]"
+						if { $newfont ni [::font names] } {
+							if { [catch { ::font create $newfont -family $family \
+									-size [expr {$sign * $mag}] -weight $weight -slant $slant }] } {
+								break
+							}
+						}
+						set fitted_fonts($key) $newfont
+					}
+				}
+				if { $newfont ne $fnt } {
+					catch { $can itemconfigure $id -font $newfont }
+				}
+			}
+		}
+
+		# How many lines `txt` takes when word-wrapped at wrap_width pixels in
+		# `fnt` -- the same greedy word wrap the canvas does.
+		proc wrapped_lines { can fnt txt wrap_width } {
+			set lines 0
+			foreach para [split $txt "\n"] {
+				incr lines
+				set cur ""
+				foreach word [split $para " "] {
+					if { $cur eq "" } {
+						set cand $word
+					} else {
+						set cand "$cur $word"
+					}
+					if { [font measure $fnt -displayof $can $cand] <= $wrap_width || $cur eq "" } {
+						set cur $cand
+					} else {
+						incr lines
+						set cur $word
+					}
+				}
+			}
+			return $lines
+		}
+
 		# Stores the initial tap position when dragging dscale sliders. Array keys are <first_page>,<dscale_tag>, and
 		# it contains the following value:
 		#   * an empty string when not in the middle of a drag/motion movement;
@@ -10239,7 +10315,7 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 				}
 				set suffix [incr i]
 			}
-			
+
 			# Clickable rect. Needs to have -width 0.
 			set rx [expr {$rx-$tp0}] 
 			set ry [expr {$ry-$tp1}] 

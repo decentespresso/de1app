@@ -227,6 +227,64 @@ proc sim_screenshot_capture {} {
 	after 800 { exit 0 }
 }
 
+# Page screenshot harness:  undroidwish de1plus.tcl --ui-shot <page>[,<page>...] [--ui-lang <code>]
+# Snaps whole PAGES (not just graphs) to /tmp/ui_shot_<page>.png, then exits.
+# Used to check layout in a translated language (long German labels overflowing
+# buttons) without a device. Dev-only diagnostic, like --sim-screenshot.
+proc ui_shot_start {} {
+	set arg [lsearch -exact $::argv "--ui-shot"]
+	set pages [split [lindex $::argv [expr {$arg + 1}]] ","]
+	set ::ui_shot_saved_language [ifexists ::ui_shot_prior_language $::settings(language)]
+	# --ui-bengle: pretend a Bengle is connected (is_bengle_model reads
+	# ::de1(ble_protocol_version) >= 2) so Bengle-only UI can be checked on a
+	# desktop with no machine attached. Affects the screenshot run only.
+	if {[lsearch -exact $::argv "--ui-bengle"] >= 0} {
+		set ::de1(ble_protocol_version) 2
+		msg -INFO "UISHOT: pretending to be a Bengle (ble_protocol_version=2)"
+	}
+	# --ui-milk <celsius>: pretend the Bengle's milk-temperature probe is
+	# attached and reading this, so probe-only UI can be checked with no
+	# machine. 0 = no probe (the real "unplugged" value).
+	set _uimilk [lsearch -exact $::argv "--ui-milk"]
+	if {$_uimilk >= 0} {
+		set ::de1(milk_temperature) [lindex $::argv [expr {$_uimilk + 1}]]
+		msg -INFO "UISHOT: pretending milk probe reads $::de1(milk_temperature)"
+	}
+	msg -INFO "UISHOT: pages=$pages language=$::settings(language)"
+	ui_shot_next $pages
+}
+
+proc ui_shot_next {pages} {
+	if {[llength $pages] == 0} {
+		# don't let a --ui-lang / --ui-skin override leak into a settings save
+		catch { set ::settings(language) $::ui_shot_saved_language }
+		catch { set ::settings(skin) $::ui_shot_prior_skin }
+		catch { ::logging::flush_log }
+		after 500 { exit 0 }
+		return
+	}
+	set page [lindex $pages 0]
+	if {[catch { page_display_change [dui page current] $page } err]} {
+		msg -INFO "UISHOT: cannot show page '$page': $err"
+	}
+	after 1200 [list ui_shot_capture $page [lrange $pages 1 end]]
+}
+
+proc ui_shot_capture {page rest} {
+	set photo "uishot_photo"
+	catch { image delete $photo }
+	set dst "/tmp/ui_shot_[string map {/ _} $page].png"
+	if {[catch { image create photo $photo } e1]} {
+		msg -INFO "UISHOT: photo create failed: $e1"
+	} elseif {[catch { blt::winop snap [dui canvas] $photo } e2]} {
+		msg -INFO "UISHOT: snap failed: $e2"
+	} else {
+		catch { $photo write $dst -format png }
+		msg -INFO "UISHOT: snapped page '$page' -> $dst"
+	}
+	after 200 [list ui_shot_next $rest]
+}
+
 # Proc call-frequency profiler:  undroidwish de1plus.tcl --proc-profile
 # Runs the GUI, starts a simulated espresso, installs enter-count execution
 # traces on every user proc, runs ~20s, dumps call counts (sorted) to

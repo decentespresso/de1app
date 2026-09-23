@@ -342,6 +342,30 @@ if {[lsearch -exact $::argv "--ble-test"] >= 0} {
 		exit
 	}
 
+} elseif {[lsearch -exact $::argv "--ui-shot"] >= 0} {
+
+	# Full GUI, then snapshot the named pages (optionally in another language)
+	# and exit. Layout check for long translations; see ui_shot_start (main.tcl).
+	set _uiskin [lsearch -exact $::argv "--ui-skin"]
+	if {$_uiskin >= 0} {
+		set ::ui_shot_skin [lindex $::argv [expr {$_uiskin + 1}]]
+	}
+	set _uilang [lsearch -exact $::argv "--ui-lang"]
+	if {$_uilang >= 0} {
+		# applied just after load_settings (gui.tcl), which would otherwise
+		# overwrite it, and before the skin builds its translated pages
+		set ::ui_shot_language [lindex $::argv [expr {$_uilang + 1}]]
+	}
+	after 6000 ui_shot_start
+	try {
+		de1_ui_startup
+	} on error {result ropts} {
+		msg -CRIT "Untrapped error running de1_ui_startup with result: $result"
+		msg -CRIT "$ropts"
+		msg -CRIT "Exiting"
+		exit
+	}
+
 } elseif {[lsearch -exact $::argv "--sim-screenshot"] >= 0} {
 
 	# Full GUI, then auto-start a simulated espresso and snapshot the chart.
