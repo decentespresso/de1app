@@ -28,6 +28,7 @@ proc determine_if_android {} {
         set _bi [borg osbuildinfo]
         if {[dict exists $_bi version.sdk] && [dict get $_bi version.sdk] > 0} {
             set ::android 1
+            set ::android_sdk [dict get $_bi version.sdk]
         }
     }
 
@@ -98,6 +99,31 @@ proc determine_if_android {} {
         set ::some_droid 1
     }
 
+}
+
+# The Android runtime permissions de1app needs, for THIS device's API level.
+# Asking for a permission that doesn't exist on the running Android version
+# always reads back "not granted", so the app re-asked on every launch and
+# nagged on every Search (seen on an Android 9 / SDK 28 tablet):
+#   - BLUETOOTH_SCAN / BLUETOOTH_CONNECT exist only from Android 12 (SDK 31);
+#     before that, BLE scanning is gated by the location permission alone.
+#   - READ/WRITE_EXTERNAL_STORAGE can no longer be granted from Android 13 (SDK 33).
+# which: "all" = everything to request at startup, "scan" = what a BLE scan needs.
+proc android_permissions_needed {{which all}} {
+    set sdk [ifexists ::android_sdk 0]
+    set perms {}
+    if {$which eq "all" && $sdk < 33} {
+        lappend perms android.permission.READ_EXTERNAL_STORAGE android.permission.WRITE_EXTERNAL_STORAGE
+    }
+    if {$sdk >= 31} {
+        lappend perms android.permission.BLUETOOTH_SCAN
+        if {$which eq "all"} { lappend perms android.permission.BLUETOOTH_CONNECT }
+    }
+    # Location exists (and is grantable) on every version; kept on 12+ too since
+    # a BLE scan without the neverForLocation manifest flag can still need it.
+    lappend perms android.permission.ACCESS_FINE_LOCATION
+    if {$which eq "all"} { lappend perms android.permission.ACCESS_COARSE_LOCATION }
+    return $perms
 }
 determine_if_android
 

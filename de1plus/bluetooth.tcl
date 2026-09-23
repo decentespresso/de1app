@@ -3522,7 +3522,7 @@ proc scanning_state_text {} {
 proc android_scan_permission_missing {} {
 	if {!$::android} { return {} }
 	set missing {}
-	foreach perm {android.permission.BLUETOOTH_SCAN android.permission.ACCESS_FINE_LOCATION} {
+	foreach perm [android_permissions_needed scan] {
 		catch { if {[borg checkpermission $perm] != 1} { lappend missing $perm } }
 	}
 	return $missing

@@ -281,14 +281,9 @@ namespace eval ::app {
 		# ANDROID ONLY : if this androwish version allows us to scan and request Android permissions, then ask for what perms this app needs to properly function
 		if {$::android == 1} {
 			if {$::app::build_timestamp > 1710864000} {
-				set perms_wanted [list \
-					android.permission.READ_EXTERNAL_STORAGE \
-					android.permission.WRITE_EXTERNAL_STORAGE \
-					android.permission.BLUETOOTH_CONNECT \
-					android.permission.BLUETOOTH_SCAN \
-					android.permission.ACCESS_FINE_LOCATION \
-					android.permission.ACCESS_COARSE_LOCATION \
-				]
+				# only the permissions that exist on this Android version (see
+				# android_permissions_needed in updater.tcl)
+				set perms_wanted [android_permissions_needed all]
 
 				catch {
 					set some_wanted 0
