@@ -952,14 +952,93 @@ proc reset_gui_starting_espresso {} {
 	}
 }
 
-# these are machines known to have been stolen from customers, or which FEDEX/UPS "lost" in the last mile
+# these are machines known to have been stolen from customers, or which FEDEX/UPS "lost" in the last mile.
+# This proc is the single source of truth for the list; it is also exported to
+# stolen_serials.json for other clients to consume (see export_stolen_serials_json).
+proc stolen_machine_sn_list {} {
+	return [list 6654 5502 4291 380 317 8980 659 2276 2548 76 5317 11358 10079]
+}
+
 proc check_for_missing_sn {} {
 		set sn $::settings(sn)
 
-			set missing_machine_sn [list 6654 5502 4291 380 317 8980 659 2276 2548 76 5317 11358 10079]
+			set missing_machine_sn [stolen_machine_sn_list]
 			if {$sn != "" && [lsearch -exact $missing_machine_sn $sn] != -1} {
 					message_page "A problem has been detected with your espresso machine.\n\nPlease contact Decent Espresso Tech Support ($sn)" [translate "Quit"];
 			}
+}
+
+# Export the stolen-SN list (stolen_machine_sn_list) to a committed JSON file so
+# that other clients / apps can fetch it from a stable raw-GitHub URL:
+#   https://raw.githubusercontent.com/decentespresso/de1app/main/de1plus/stolen_serials.json
+#
+# This runs ONLY on John's dev Mac. It is triple-gated on startup -- OS type
+# (macOS / Darwin), hostname (john-m4.local) AND the repo's git user.name
+# ("John Buckman") -- so it is a no-op on every field install and on every other
+# machine, and the shipped detection logic above is entirely unaffected. When the
+# SN list has actually changed it rewrites the file and auto-commits + pushes just
+# that one file. Everything is wrapped in catch so it can never disrupt startup.
+
+# Pull the stolen_sns array out of our own JSON file and return it as a sorted
+# integer list, so we can detect whether the list has genuinely changed (and avoid
+# churning a commit just because the "updated" date differs).
+proc stolen_serials_sns_from_json {jsontext} {
+	if {[regexp {"stolen_sns"\s*:\s*\[([^\]]*)\]} $jsontext -> body]} {
+		return [lsort -integer [regexp -all -inline {\d+} $body]]
+	}
+	return {}
+}
+
+proc export_stolen_serials_json {} {
+	# Cheap gates first, short-circuiting: bail on non-macOS, then on the wrong
+	# hostname. ONLY if both of those pass do we shell out to git to check the
+	# user.name -- so the git exec never runs on any other machine. (All the gates
+	# are before the main catch so none of them uses a "return" inside a catch,
+	# which would be reported as an error by that catch.)
+	if {$::tcl_platform(os) ne "Darwin"} { return }
+	if {[info hostname] ne "john-m4.local"} { return }
+	set gituser ""
+	catch { set gituser [string trim [exec -ignorestderr git -C [source_directory] config user.name]] }
+	if {$gituser ne "John Buckman"} { return }
+
+	if {[catch {
+		set dir [source_directory]
+		set fn [file join $dir "stolen_serials.json"]
+		set sns [lsort -integer [stolen_machine_sn_list]]
+
+		# Only rewrite when the actual SN list has changed (avoid churning a commit
+		# just because the "updated" date differs). Note: no early "return" here --
+		# a return inside this catch would be reported as an error by the outer catch.
+		set changed 1
+		if {[file exists $fn]} {
+			catch { if {[stolen_serials_sns_from_json [read_file $fn]] eq $sns} { set changed 0 } }
+		}
+
+		if {$changed} {
+			# Build JSON by hand (no package dependency).
+			set items {}
+			foreach s $sns { lappend items "\"$s\"" }
+			set today [clock format [clock seconds] -format "%Y-%m-%d"]
+			set json "{\n  \"updated\": \"$today\",\n  \"stolen_sns\": \[[join $items {, }]\]\n}\n"
+			write_file $fn $json
+			msg -NOTICE "export_stolen_serials_json: wrote $fn ([llength $sns] serials)"
+
+			# Auto commit + push just this one file. -ignorestderr so git's normal
+			# progress-on-stderr does not look like a Tcl error; -- <path> so only
+			# stolen_serials.json is committed and John's other de1app WIP is untouched.
+			if {[catch {
+				exec -ignorestderr git -C $dir add stolen_serials.json
+				exec -ignorestderr git -C $dir commit -m "Auto-export stolen_serials.json" -- stolen_serials.json
+				exec -ignorestderr git -C $dir push origin HEAD
+			} gerr]} {
+				msg -ERROR "export_stolen_serials_json git commit/push failed (file written locally): $gerr"
+			} else {
+				msg -NOTICE "export_stolen_serials_json: committed & pushed stolen_serials.json"
+			}
+		}
+	} err]} {
+		msg -ERROR "export_stolen_serials_json failed: $err"
+	}
 }
 
 proc ghc_message {type} {

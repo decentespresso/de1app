@@ -39,6 +39,11 @@ proc load_skin {} {
 	}
 
 	after 10000 check_for_missing_sn
+
+	# Dev-Mac-only: export the stolen-SN list to stolen_serials.json at startup.
+	# Self-gated on OS (macOS) + hostname (john-m4.local) + git user, so it's a
+	# no-op on every field install and every other machine.
+	export_stolen_serials_json
 }
 
 proc strip_crlf {in} {
