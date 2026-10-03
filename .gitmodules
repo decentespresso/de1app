@@ -77,3 +77,6 @@
 [submodule "de1plus/skins/Metric"]
 	path = de1plus/skins/Metric
 	url = https://github.com/decentespresso/decent-metric.git
+[submodule "de1plus/skins/Aiden"]
+	path = de1plus/skins/Aiden
+	url = https://github.com/alexuser/aiden-decent-skin.git
