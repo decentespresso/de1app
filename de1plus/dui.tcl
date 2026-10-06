@@ -79,7 +79,7 @@ namespace eval ::dui {
 	variable _base_screen_height 1600.0
 	
 	# Most coming from old proc "setup_environment" in utils.tcl
-	proc init { {screen_size_width {}} {screen_size_height {}} {orientation landscape} } {
+	proc init { {screen_size_width {}} {screen_size_height {}} {orientation landscape} {fresh_install 0} } {
 		global android
 		global undroid
 		# Because font files can only be loaded ONCE with 'sdltk addfont', we need to keep the mapping of file names
@@ -138,9 +138,19 @@ namespace eval ::dui {
 			sdltk screensaver off
 			set fontm $::settings(default_font_calibration)
 			
-			if { $screen_size_width eq "" || $screen_size_height eq "" } {
-				# A better approach than a pause to wait for the lower panel to move away might be to "bind . <<ViewportUpdate>>" 
-				# or (when your toplevel is in fullscreen mode) to "bind . <Configure>" and to watch out for "winfo screenheight" in 
+			# Auto-detect the tablet panel and seed the screen resolution (and, for
+			# a couple of models, font scaling / orientation) ONLY on a genuine
+			# first launch. On an upgrade the user's saved screen_size/font/
+			# orientation must be left exactly as they are -- re-detecting here is
+			# what produced the "huge fonts / wrong resolution after an update" bug.
+			# An existing install always has screen_size persisted, so it skips this
+			# block on the empty-check alone; the extra fresh_install guard covers
+			# the case where screen_size was cleared out from under an existing
+			# install (e.g. create_de1app_icon.tcl on a folder copied to a different
+			# tablet), which must NOT trigger a re-detect/overwrite here.
+			if { ($screen_size_width eq "" || $screen_size_height eq "") && $fresh_install } {
+				# A better approach than a pause to wait for the lower panel to move away might be to "bind . <<ViewportUpdate>>"
+				# or (when your toplevel is in fullscreen mode) to "bind . <Configure>" and to watch out for "winfo screenheight" in
 				# the bound code.
 				if {$android == 1} {
 					pause 500
