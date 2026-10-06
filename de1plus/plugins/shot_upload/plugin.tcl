@@ -154,6 +154,17 @@ proc ::plugins::shot_upload::post_json {url json} {
     set body    $json
     set headers [list "Content-Type: application/json; charset=utf-8" "Authorization: $auth"]
 
+    # gzip the body to cut the upload transfer (~340KB shot JSON -> ~40KB). Shot
+    # uploads are transfer-bound, so this is the real speedup; the server inflates
+    # it when it sees Content-Encoding: gzip. gzip is binary and works on the UTF-8
+    # BYTES -- so unlike the plain path we DO [encoding convertto utf-8] here, then
+    # send the bytes raw. Guard: if zlib is unavailable, fall back to the plain body.
+    set _postsize ""
+    if {![catch {set body [zlib gzip [encoding convertto utf-8 $json]]}]} {
+        lappend headers "Content-Encoding: gzip"
+        set _postsize [string length $body]
+    }
+
     if {![catch {package require TclCurl}]} {
         set resp ""
         set hdl [curl::init]
@@ -163,6 +174,9 @@ proc ::plugins::shot_upload::post_json {url json} {
                 -httpheader $headers -bodyvar resp \
                 -useragent "de1app-shot-upload" \
                 -connecttimeout 15 -timeout 30 -failonerror 0 -followlocation 1
+            # REQUIRED for the gzip body: it contains NUL bytes, so without an
+            # explicit size libcurl would strlen() it and truncate at the first NUL.
+            if {$_postsize ne ""} { $hdl configure -postfieldsize $_postsize }
             if {[string match -nocase "https:*" $url]} {
                 set _ca "[homedir]/allcerts.pem"
                 if {[file exists $_ca]} { $hdl configure -sslverifypeer 1 -cainfo $_ca }
@@ -183,11 +197,15 @@ proc ::plugins::shot_upload::post_json {url json} {
         package require tls
         catch { ::http::register https 443 ::tls::socket }
     }
+    # $body is gzipped above when zlib was available; carry the header through so the
+    # server inflates it. (TclCurl is the normal path; this ::http fallback is rare.)
+    set _fbheaders [list Authorization $auth]
+    if {$_postsize ne ""} { lappend _fbheaders Content-Encoding gzip }
     set tok [::http::geturl $url \
         -method POST \
         -type "application/json; charset=utf-8" \
         -query $body \
-        -headers [list Authorization $auth] \
+        -headers $_fbheaders \
         -timeout 15000]
     set ncode [::http::ncode $tok]
     set rbody [::http::data $tok]
@@ -511,7 +529,7 @@ namespace eval ::plugins::shot_upload::shot_upload_settings {
 
         # Where to view -- vertically aligned with the account link; tap opens a browser.
         dui add dtext $page_name 1350 470 -tags view_url -font Helv_8 -width 1000 -fill "#4e85f4" -anchor "nw" -justify "left" \
-            -text [translate "See your shots at decentespresso.com/support/espressomachine"]
+            -text [translate "See your shots at decentespresso.com/support/"]
         dui add dbutton $page_name 1340 445 2400 620 -tags view_url_btn -command [namespace current]::view_shots
 
         # Auto-upload toggle
@@ -550,7 +568,7 @@ namespace eval ::plugins::shot_upload::shot_upload_settings {
     # Tap on "See your shots at ..." -> open it in the system browser.
     proc view_shots {} {
         dui say [translate {Ok}] sound_button_in
-        catch { web_browser "https://decentespresso.com/support/espressomachine" }
+        catch { web_browser "https://decentespresso.com/support/" }
     }
 
     proc save_settings {} {
