@@ -1438,9 +1438,11 @@ proc load_settings {} {
 
     set osbuildinfo_string [borg osbuildinfo]
 
-    catch {
-        array set osbuildinfo $osbuildinfo_string
-    }
+    # Parse via osbuildinfo_as_dict (updater.tcl), not a bare [array set]: on some
+    # devices borg returns an ODD-length list (a Build field with an empty value
+    # emitted as a bare key), which makes [array set] throw -- leaving osbuildinfo
+    # empty and tablet_model blank. The helper rebuilds it pair-by-pair.
+    array set osbuildinfo [osbuildinfo_as_dict $osbuildinfo_string]
 
     set tablet_model "[ifexists osbuildinfo(manufacturer)] [ifexists osbuildinfo(model)]"
 
