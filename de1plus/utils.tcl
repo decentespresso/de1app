@@ -2887,22 +2887,26 @@ proc geturl_auth {url username password {postcontents {}} } {
     
     #set auth "Basic [base64::encode $username:$password]"
 	set res ""
+    set tok ""
 	catch {
 
 		set auth "Basic [binary encode base64 $username:$password]"
 
 		if {$postcontents == ""} {
 		    set headerl [list Authorization $auth]
-	    	set tok [http::geturl $url -headers $headerl]
+            set tok [http::geturl $url -headers $headerl -timeout 10000]
 	    } else {
 	        set md5 [binary encode base64 [::md5::md5 $postfile]]
 		    set headerl [list Authorization $auth Content-MD5 $md5 "Content-Transfer-Encoding" "BASE64"]
 	        set tok [::http::geturl $url -headers $headerl -type "text/plain" -query $postfile -timeout $timeout]
 
 	    }
-	    set res [http::data $tok]
-	    http::cleanup $tok
+        if {[http::status $tok] eq "ok"} {
+            set res [http::data $tok]
+        }
 	}
+    # Release an owned token even if status/data handling raises an error.
+    if {$tok ne ""} {catch {http::cleanup $tok}}
     return $res
 }
 
