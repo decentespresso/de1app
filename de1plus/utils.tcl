@@ -1417,7 +1417,7 @@ proc save_settings {} {
 
             set sv [ifexists ::settings_saved($k)]
             if {$sv != $v} {
-                msg -DEBUG "New setting: '$k' = '$v' (was '$sv')"
+                msg -DEBUG "Setting changed (name and values omitted)"
             }
         }
     }
