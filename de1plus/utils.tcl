@@ -1423,7 +1423,7 @@ proc save_settings {} {
     }
 
     msg -INFO "saving settings"
-    save_array_to_file ::settings [settings_filename]
+    save_array_to_file ::settings [settings_filename] 1
 
     catch {
         update_temperature_charts_y_axis

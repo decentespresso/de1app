@@ -1,0 +1,116 @@
+package require tcltest 2
+namespace import ::tcltest::*
+set root [file dirname [file dirname [file normalize [info script]]]]
+# Load exact production procs without starting the GUI/BLE/application packages.
+proc load_procs {path names} {
+    set f [open $path]; set text [read $f]; close $f
+    set command ""
+    foreach line [split $text \n] {
+        append command $line \n
+        if {![info complete $command]} {continue}
+        if {[regexp {^\s*proc\s+(\S+)} $command -> name] && $name in $names} {
+            uplevel #0 $command
+        }
+        set command ""
+    }
+}
+load_procs [file join $root de1plus utils.tcl] {save_settings}
+load_procs [file join $root de1plus updater.tcl] {write_file write_file_atomic fast_write_open save_array_to_file read_binary_file}
+set dir [makeDirectory utilities]
+set filename [file join $dir settings.tdb]
+proc settings_filename {} {return $::filename}
+proc msg {args} {lappend ::messages $args}
+proc update_temperature_charts_y_axis {} {incr ::refreshes}
+proc reset_case {} {
+    unset -nocomplain ::settings ::settings_saved
+    array set ::settings {}
+    set ::messages {}; set ::refreshes 0
+    foreach p [glob -nocomplain -directory $::dir * .*] {
+        if {[file tail $p] ni {. ..}} {file delete -force $p}
+    }
+}
+proc contents {} {set f [open $::filename];set s [read $f];close $f;return $s}
+proc disk_dict {} {return [encoding convertfrom utf-8 [read_binary_file $::filename]]}
+proc persist {values} {array set a $values;save_array_to_file a $::filename}
+proc temps {} {return [glob -nocomplain -directory $::dir *.tmp .*.tmp]}
+# Android shared storage does not support symlinks. Probe in our test directory
+# and report these cases as skipped there, rather than asserting POSIX support.
+set probe [file join $dir symlink-probe]
+set probe_target [file join $dir symlink-target]
+set f [open $probe_target w]; close $f
+set has_symlinks [expr {![catch {file link -symbolic $probe $probe_target}]}]
+testConstraint symlinks $has_symlinks
+file delete -force $probe $probe_target
+
+proc ifexists {name} {
+    upvar 1 $name value
+    if {[info exists value]} {return $value}
+    return ""
+}
+test atomic-1 {successful replacement keeps permissions and leaves no temp} -setup {
+ reset_case;write_file $::filename old;file attributes $::filename -permissions 0640
+ set original_permissions [file attributes $::filename -permissions]
+} -body {list [write_file_atomic $::filename new] [string trim [contents]] [expr {[file attributes $::filename -permissions] eq $original_permissions}] [temps]} -result {1 new 1 {}}
+test atomic-2 {write failure preserves old bytes and cleans temp/channel} -setup {
+ reset_case;write_file $::filename old;set channels [lsort [file channels]]
+ rename puts real_puts
+ proc puts {args} {if {[llength $args] == 2 && [lindex $args 1] eq "FAIL"} {error injected};uplevel 1 [linsert $args 0 real_puts]}
+} -body {list [write_file_atomic $::filename FAIL] [string trim [contents]] [temps] [expr {[lsort [file channels]] eq $channels}]} -cleanup {rename puts {};rename real_puts puts} -result {0 old {} 1}
+test atomic-3 {close failure preserves old bytes and cleans temp} -setup {
+ reset_case;write_file $::filename old;set fail_close 1;set channels [lsort [file channels]]
+ rename close real_close
+ proc close {ch} {if {$::fail_close} {set ::fail_close 0;error injected};real_close $ch}
+} -body {list [write_file_atomic $::filename new] [string trim [contents]] [temps] [expr {[lsort [file channels]] eq $channels}]} -cleanup {rename close {};rename real_close close} -result {0 old {} 1}
+test atomic-4 {rename failure preserves old bytes and cleans temp} -setup {
+ reset_case;write_file $::filename old
+ rename file real_file
+ proc file {sub args} {if {$sub eq "rename"} {error injected};uplevel 1 [linsert $args 0 real_file $sub]}
+} -body {list [write_file_atomic $::filename new] [string trim [contents]] [temps]} -cleanup {rename file {};rename real_file file} -result {0 old {}}
+test atomic-5 {symlink save retains link and updates its target} -constraints symlinks -setup {
+ reset_case;set target [file join $::dir target];write_file $target old;file link -symbolic $::filename $target
+} -body {list [write_file_atomic $::filename new] [file type $::filename] [string trim [read_binary_file $target]]} -result {1 link new}
+test atomic-6 {relative symlink resolves beside the link} -constraints symlinks -setup {
+ reset_case;write_file [file join $::dir target] old
+ file link -symbolic $::filename target
+} -body {list [write_file_atomic $::filename new] [file type $::filename] [string trim [contents]]} -result {1 link new}
+test atomic-7 {directory destination is rejected without leaving a file} -setup {
+ reset_case;file mkdir $::filename
+} -body {list [write_file_atomic $::filename new] [glob -nocomplain -directory $::filename * .*tmp] [temps]} -result {0 {} {}}
+test atomic-8 {failed save is retried, without an optimistic settings cache} -setup {
+ reset_case;persist {a old};array set ::settings {a new};set ::deny_rename 1
+ rename file real_file
+ proc file {sub args} {if {$sub eq "rename" && $::deny_rename} {error injected};uplevel 1 [linsert $args 0 real_file $sub]}
+} -body {
+ save_settings;set first [dict get [disk_dict] a]
+ set ::deny_rename 0;save_settings
+ list $first [dict get [disk_dict] a] $::refreshes [temps]
+} -cleanup {rename file {};rename real_file file} -result {old new 2 {}}
+test atomic-9 {legacy and atomic array serialization have identical bytes} -setup {
+ reset_case;array set a {foo {bar baz} empty {} unicode café}
+} -body {
+ save_array_to_file a $::filename;set legacy [read_binary_file $::filename]
+ save_array_to_file a $::filename 1
+ expr {$legacy eq [read_binary_file $::filename]}
+} -result 1
+
+test atomic-owned-temp {A failed exclusive open never deletes someone else's temporary file} -setup {
+ reset_case;write_file $::filename old;set ::fixed_click 987654
+ rename clock real_clock
+ proc clock {sub args} {if {$sub eq "clicks"} {return $::fixed_click};uplevel 1 [linsert $args 0 real_clock $sub]}
+ set collision [file join $::dir ".[file tail $::filename].[pid].$::fixed_click.tmp"]
+ set ch [open $collision w];puts $ch someone-else;close $ch
+} -body {
+ list [write_file_atomic $::filename new] [string trim [contents]] [string trim [read_binary_file $collision]]
+} -cleanup {rename clock {};rename real_clock clock} -result {0 old someone-else}
+test atomic-private-diagnostic {Failure diagnostics omit private setting keys and data} -setup {
+ reset_case;write_file $::filename old;set ::messages {}
+ rename file real_file
+ proc file {sub args} {if {$sub eq "rename"} {error injected};uplevel 1 [linsert $args 0 real_file $sub]}
+} -body {
+ set result [write_file_atomic $::filename {private-key private-secret}]
+ list $result [regexp {private-key|private-secret} $::messages] [string trim [contents]]
+} -cleanup {rename file {};rename real_file file} -result {0 0 old}
+set failed $::tcltest::numTests(Failed)
+removeDirectory utilities
+cleanupTests
+if {$failed} {exit 1}

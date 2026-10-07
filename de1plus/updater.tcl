@@ -260,6 +260,53 @@ proc write_file {filename data} {
     return $success
 }
 
+# Settings-only replacement: write and close a sibling before rename.
+# Ordinary failure protection; no fsync/power-loss guarantee.
+proc write_file_atomic {filename data} {
+    set fn ""
+    set temporary ""
+    set success 0
+    set errcode [catch {
+        # Resolve an existing symlink so saving retains its previous meaning.
+        set destination [file normalize $filename]
+        set links 0
+        while {![catch {file type $destination} kind] && $kind eq "link"} {
+            if {[incr links] > 32} {error "Too many settings symlinks"}
+            set target [file readlink $destination]
+            if {[file pathtype $target] eq "relative"} {
+                set target [file join [file dirname $destination] $target]
+            }
+            set destination [file normalize $target]
+        }
+        if {[file exists $destination] && ![file isfile $destination]} {
+            error "Settings destination is not a regular file"
+        }
+        set candidate [file join [file dirname $destination] \
+            ".[file tail $destination].[pid].[clock clicks].tmp"]
+        set fn [open $candidate {WRONLY CREAT EXCL} 0600]
+        set temporary $candidate
+        # Preserve existing POSIX permissions where the filesystem supports them.
+        if {[file exists $destination] && \
+                ![catch {file attributes $destination -permissions} permissions]} {
+            file attributes $temporary -permissions $permissions
+        }
+        fconfigure $fn -buffersize 1000000 -translation {lf lf}
+        puts $fn $data
+        close $fn
+        set fn ""
+        file rename -force $temporary $destination
+        set temporary ""
+        set success 1
+    }]
+    if {$errcode != 0} {
+        # Do not log data or interpreter stack frames that may contain it.
+        if {$fn ne ""} {catch {close $fn}}
+        if {$temporary ne ""} {catch {file delete $temporary}}
+        catch {msg -ERROR "Unable to replace settings file atomically"}
+    }
+    return $success
+}
+
 proc percent20encode {in} {
     set out $in
     regsub -all " " $out "%20" out
@@ -1222,14 +1269,15 @@ proc read_binary_file {filename} {
 
 
 
-proc save_array_to_file {arrname fn} {
+proc save_array_to_file {arrname fn {atomic 0}} {
     upvar $arrname item
     set toexport2 {}
     foreach k [lsort -dictionary [array names item]] {
         set v $item($k)
         append toexport2 [subst {[list $k] [list $v]\n}]
     }
-    write_file $fn $toexport2
+    if {$atomic} {return [write_file_atomic $fn $toexport2]}
+    return [write_file $fn $toexport2]
 }
 
 proc settings_filename {} {
