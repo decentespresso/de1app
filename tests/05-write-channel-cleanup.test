@@ -1,0 +1,59 @@
+package require tcltest 2
+namespace import ::tcltest::*
+set root [file dirname [file dirname [file normalize [info script]]]]
+# Load exact production procs without starting the GUI/BLE/application packages.
+proc load_procs {path names} {
+    set f [open $path]; set text [read $f]; close $f
+    set command ""
+    foreach line [split $text \n] {
+        append command $line \n
+        if {![info complete $command]} {continue}
+        if {[regexp {^\s*proc\s+(\S+)} $command -> name] && $name in $names} {
+            uplevel #0 $command
+        }
+        set command ""
+    }
+}
+load_procs [file join $root de1plus utils.tcl] {save_settings}
+load_procs [file join $root de1plus updater.tcl] {write_file write_file_atomic fast_write_open save_array_to_file read_binary_file}
+set dir [makeDirectory utilities]
+set filename [file join $dir settings.tdb]
+proc settings_filename {} {return $::filename}
+proc msg {args} {lappend ::messages $args}
+proc update_temperature_charts_y_axis {} {incr ::refreshes}
+proc reset_case {} {
+    unset -nocomplain ::settings ::settings_saved
+    array set ::settings {}
+    set ::messages {}; set ::refreshes 0
+    foreach p [glob -nocomplain -directory $::dir * .*] {
+        if {[file tail $p] ni {. ..}} {file delete -force $p}
+    }
+}
+proc contents {} {set f [open $::filename];set s [read $f];close $f;return $s}
+proc disk_dict {} {return [encoding convertfrom utf-8 [read_binary_file $::filename]]}
+proc persist {values} {array set a $values;save_array_to_file a $::filename}
+proc temps {} {return [glob -nocomplain -directory $::dir *.tmp .*.tmp]}
+proc ifexists {name} {
+    upvar 1 $name value
+    if {[info exists value]} {return $value}
+    return ""
+}
+test write-1 {legacy write_file cleans channel on write failure} -setup {
+ reset_case;set channels [lsort [file channels]]
+ rename puts real_puts
+ proc puts {args} {if {[llength $args] == 2 && [lindex $args 1] eq "FAIL"} {error injected};uplevel 1 [linsert $args 0 real_puts]}
+} -body {list [write_file $::filename FAIL] [expr {[lsort [file channels]] eq $channels}]} -cleanup {rename puts {};rename real_puts puts} -result {0 1}
+
+test write-close-error {A failed close is retried and the channel is released} -setup {
+ reset_case;set channels [lsort [file channels]];set ::fail_close 1
+ rename close real_close
+ proc close {ch} {if {$::fail_close} {set ::fail_close 0;error injected};real_close $ch}
+} -body {list [write_file $::filename new] [expr {[lsort [file channels]] eq $channels}]} -cleanup {rename close {};rename real_close close} -result {0 1}
+test write-success {Ordinary write bytes and return value remain unchanged} -setup {reset_case} -body {
+ list [write_file $::filename {hello world}] [contents]
+} -result {1 {hello world
+}}
+set failed $::tcltest::numTests(Failed)
+removeDirectory utilities
+cleanupTests
+if {$failed} {exit 1}

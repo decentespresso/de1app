@@ -244,16 +244,20 @@ proc fast_write_open {fn parms} {
 
 proc write_file {filename data} {
     set success 0
+    set fn ""
     set errcode [catch {
         set fn [fast_write_open $filename w]
         puts $fn $data 
         close $fn
+        set fn ""
         set success 1
     }]
 
     if {$errcode != 0} {
+        set details $::errorInfo
+        if {$fn ne ""} {catch {close $fn}}
         catch {
-            msg -ERROR "write_file '$filename' $::errorInfo"
+            msg -ERROR "write_file '$filename' $details"
         }
     }
 
