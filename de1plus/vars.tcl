@@ -4558,43 +4558,34 @@ proc app_updates_policy_as_text {} {
 
 proc set_resolution_height_from_width { {discard {}} } {
 
-	set ::settings(screen_size_height) [expr {int($::settings(screen_size_width)/1.6)}]
-
-	# samsung tab a7 lite 
-	if {$::settings(screen_size_width) == "1341"} {
-		set ::settings(screen_size_width) 1340
-		set ::settings(screen_size_height) 800
-		return
-	}
-
-	# samsung galaxy tab a9+
-	if {$::settings(screen_size_width) == "1921"} {
-		set ::settings(screen_size_width) 1920
-		set ::settings(screen_size_height) 1200
-		return
-	}
-
-	# samsung a9 14" tablet custom resolution
-	if {$::settings(screen_size_width) == "2961"} {
-		set ::settings(screen_size_width) 2960
-		set ::settings(screen_size_height) 1848
-		return
-	}
-
-	return
-
-	# john 6-12-2024 no longer forcing 16 resolution, so that other numbers can be chosen.
-	# this is temporary until we replace this UI with a list of all allowed resolutions.
-
-	# check the width and make sure it is a multiple of 160. If not, pick the nearest setting.
-	for {set x [expr {$::settings(screen_size_width) - 0}]} {$x <= 2800} {incr x} {
-		set ratio [expr {$x / 16.0}]
-		if {$ratio == int($ratio)} {
-			set ::settings(screen_size_width) $x
-			set ::settings(screen_size_height) [expr {int($::settings(screen_size_width)/1.6)}]
-			break
+	# The misc resolution control is a width-only slider; the height is derived
+	# here. For known tablet panels we must snap to the EXACT width x height that
+	# the launch-time autodetect (dui::init) and create_de1app_icon.tcl produce --
+	# otherwise the chosen resolution never matches what the app re-derives on the
+	# next launch: create_de1app_icon.tcl unsets screen_size on the mismatch and
+	# dui::init re-derives it, so the user's choice "won't stick". A small
+	# tolerance is used because the touch slider steps by 1 over 320..2960 and can
+	# almost never land on an exact value -- e.g. int(1340/1.6)=837, not the Tab A9
+	# native 800, so previously only the unreachable exact widths 1341/1921/2961
+	# snapped (and 2961 is above the slider's 2960 max). Widths far from any known
+	# panel keep the 16:10 default so other resolutions can still be chosen
+	# (John 6-12-2024, no longer forcing a 16-multiple resolution).
+	set w $::settings(screen_size_width)
+	foreach {known_w known_h} {
+		1280 800
+		1340 800
+		1920 1200
+		2000 1200
+		2960 1848
+	} {
+		if {abs($w - $known_w) <= 20} {
+			set ::settings(screen_size_width) $known_w
+			set ::settings(screen_size_height) $known_h
+			return
 		}
 	}
+
+	set ::settings(screen_size_height) [expr {int($w / 1.6)}]
 }
 
 

@@ -11,6 +11,30 @@ package require de1_logging 1.0
 # live here, but were moved to utils.tcl so this failsafe updater never loads BLE
 # -- android detection below now uses `borg osbuildinfo`, not the `ble` command.
 # See android_specific_stubs (utils.tcl), which loads them at app runtime.
+
+# Parse `borg osbuildinfo` (android.os.Build.* as a flat "key value key value..."
+# list) into a dict, tolerating MALFORMED input. On some devices a Build field
+# with an empty value is emitted as a bare key -- e.g. a trailing "... type user
+# user dpi radio", where RADIO carries no value -- which makes the result an
+# ODD-length list and therefore NOT a valid Tcl dict: a plain [dict get] or
+# [array set] then throws or mis-reads it. Rebuild the dict pair-by-pair,
+# dropping any dangling final key, so every well-formed key/value stays usable.
+# Returns {} when the result can't be parsed as a list.
+# (Seen on a Samsung SM-T220 / Tab A7 Lite, Android 13: version.sdk was missed,
+# so the app ran as ::undroid -> huge fonts + resolution auto-reset.)
+proc osbuildinfo_as_dict {raw} {
+    set result [dict create]
+    catch {
+        if {[llength $raw] % 2 == 1} {
+            set raw [lrange $raw 0 end-1]
+        }
+        foreach {key val} $raw {
+            dict set result $key $val
+        }
+    }
+    return $result
+}
+
 proc determine_if_android {} {
 
     set ::android 0
@@ -25,7 +49,11 @@ proc determine_if_android {} {
     # BLE: the failsafe updater must stay lean, so the real BLE/USB drivers load
     # later, in android_specific_stubs (utils.tcl), which the updater never runs.
     catch {
-        set _bi [borg osbuildinfo]
+        # borg osbuildinfo can be an ODD-length list on some devices (see
+        # osbuildinfo_as_dict), so parse it robustly rather than treating the raw
+        # result as a dict -- otherwise version.sdk is missed and a real Android
+        # tablet is misdetected as ::undroid (huge fonts + resolution auto-reset).
+        set _bi [osbuildinfo_as_dict [borg osbuildinfo]]
         if {[dict exists $_bi version.sdk] && [dict get $_bi version.sdk] > 0} {
             set ::android 1
             set ::android_sdk [dict get $_bi version.sdk]

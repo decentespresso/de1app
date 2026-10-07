@@ -25,7 +25,7 @@ proc setup_environment {} {
 		button_out "[homedir]/sounds/KeypressDelete_120.ogg" \
 		page_change "[homedir]/sounds/KeypressDelete_120.ogg"
 	
-	dui init $settings(screen_size_width) $settings(screen_size_height) $settings(orientation)
+	dui init $settings(screen_size_width) $settings(screen_size_height) $settings(orientation) [ifexists ::de1(fresh_install) 0]
 	
 	# Do this after dui init, so if the same image is on the current skin and in default, the one in the skin directory takes precedence
 	dui image add_dirs "[homedir]/skins/default/"
@@ -1438,9 +1438,11 @@ proc load_settings {} {
 
     set osbuildinfo_string [borg osbuildinfo]
 
-    catch {
-        array set osbuildinfo $osbuildinfo_string
-    }
+    # Parse via osbuildinfo_as_dict (updater.tcl), not a bare [array set]: on some
+    # devices borg returns an ODD-length list (a Build field with an empty value
+    # emitted as a bare key), which makes [array set] throw -- leaving osbuildinfo
+    # empty and tablet_model blank. The helper rebuilds it pair-by-pair.
+    array set osbuildinfo [osbuildinfo_as_dict $osbuildinfo_string]
 
     set tablet_model "[ifexists osbuildinfo(manufacturer)] [ifexists osbuildinfo(model)]"
 
@@ -1452,10 +1454,16 @@ proc load_settings {} {
     # and never when an existing user merely upgrades their app.
     set fresh_install [expr {[string length $settings_file_contents] == 0}]
 
+    # Expose the first-launch flag so dui::init can gate its one-time screen
+    # resolution / font / orientation auto-detection on it: that auto-detection
+    # must run ONLY on a genuine first launch, never on an upgrade (where it
+    # would overwrite the user's saved resolution / font / orientation).
+    set ::de1(fresh_install) $fresh_install
+
     if {$fresh_install} {
 
         # if there are no settings, then set some based on what we know about this machine's settings
-        # nb : we could 
+        # nb : we could
         if {[ifexists osbuildinfo(product)] == "P80X_EEA"} {
             # this "Teclast" tablet firmware version has an Android metadata configuration bug, and needs 20% larger fonts
             # other Teclast tablets do not have this error.
