@@ -1,0 +1,80 @@
+package require tcltest 2
+namespace import ::tcltest::*
+set root [file dirname [file dirname [file normalize [info script]]]]
+# Load exact production procs without starting the GUI/BLE/application packages.
+proc load_procs {path names} {
+    set f [open $path]; set text [read $f]; close $f
+    set command ""
+    foreach line [split $text \n] {
+        append command $line \n
+        if {![info complete $command]} {continue}
+        if {[regexp {^\s*proc\s+(\S+)} $command -> name] && $name in $names} {
+            uplevel #0 $command
+        }
+        set command ""
+    }
+}
+load_procs [file join $root de1plus utils.tcl] {save_settings}
+load_procs [file join $root de1plus updater.tcl] {write_file write_file_atomic fast_write_open save_array_to_file read_binary_file}
+set dir [makeDirectory utilities]
+set filename [file join $dir settings.tdb]
+proc settings_filename {} {return $::filename}
+proc msg {args} {lappend ::messages $args}
+proc update_temperature_charts_y_axis {} {incr ::refreshes}
+proc reset_case {} {
+    unset -nocomplain ::settings ::settings_saved
+    array set ::settings {}
+    set ::messages {}; set ::refreshes 0
+    foreach p [glob -nocomplain -directory $::dir * .*] {
+        if {[file tail $p] ni {. ..}} {file delete -force $p}
+    }
+}
+proc contents {} {set f [open $::filename];set s [read $f];close $f;return $s}
+proc disk_dict {} {return [encoding convertfrom utf-8 [read_binary_file $::filename]]}
+proc persist {values} {array set a $values;save_array_to_file a $::filename}
+proc temps {} {return [glob -nocomplain -directory $::dir *.tmp .*.tmp]}
+proc ifexists {name} {
+    upvar 1 $name value
+    if {[info exists value]} {return $value}
+    return ""
+}
+test settings-1 {unchanged saves do not rewrite or log, still refresh} -setup {
+ reset_case; array set ::settings {a 1 b {hello world}};persist [array get ::settings]
+ file mtime $::filename 1000000000
+} -body {
+ for {set i 0} {$i < 100} {incr i} {save_settings}
+ list [file mtime $::filename] $::refreshes $::messages
+} -result {1000000000 100 {}}
+test settings-2 {changed, removed, empty and Unicode values persist} -setup {
+ reset_case;persist {remove old a 1};array set ::settings {a 2 empty {} unicode {café ☕}}
+} -body {save_settings;set d [disk_dict];list [dict exists $d remove] [dict get $d a] [dict get $d empty] [dict get $d unicode] [temps]} -result {0 2 {} {café ☕} {}}
+test settings-3 {no stale saved array; disk is reread after an external edit} -setup {
+ reset_case;array set ::settings {a 1};persist {a 1};array set ::settings_saved {obsolete secret}
+} -body {save_settings;persist {a external};save_settings;dict get [disk_dict] a} -result 1
+test settings-4 {missing settings file is created even for an empty array} -setup {reset_case} -body {save_settings;list [file exists $::filename] [dict size [disk_dict]]} -result {1 0}
+test settings-5 {malformed settings are preserved and error is reported} -setup {
+ reset_case;write_file $::filename "broken \{";set original [contents]
+} -body {list [catch save_settings] [expr {[contents] eq $original}]} -result {1 1}
+test settings-7 {string changes are not lost through numeric equality} -setup {
+ reset_case;persist {a 01};array set ::settings {a 1}
+} -body {save_settings;dict get [disk_dict] a} -result 1
+
+test retry-without-cache {A failed writer is retried from disk on the next save} -setup {
+ reset_case;persist {a old};array set ::settings {a new};set ::attempts 0
+ rename save_array_to_file real_save_array_to_file
+ proc save_array_to_file {arrname filename args} {
+   incr ::attempts
+   if {$::attempts == 1} {return 0}
+   uplevel 1 [linsert $args 0 real_save_array_to_file $arrname $filename]
+ }
+} -body {
+ save_settings;set first [dict get [disk_dict] a];save_settings
+ list $first [dict get [disk_dict] a] $::attempts $::refreshes
+} -cleanup {rename save_array_to_file {};rename real_save_array_to_file save_array_to_file} -result {old new 2 2}
+test fresh-key-set {An externally added key is removed even when existing values match} -setup {
+ reset_case;persist {a 1};array set ::settings {a 1};save_settings;persist {a 1 added externally}
+} -body {save_settings;set data [disk_dict];list [dict size $data] [dict get $data a] $::refreshes} -result {1 1 2}
+set failed $::tcltest::numTests(Failed)
+removeDirectory utilities
+cleanupTests
+if {$failed} {exit 1}
