@@ -1416,7 +1416,7 @@ proc save_settings {} {
         set sv [ifexists saved($k)]
         if {![info exists saved($k)] || $sv ne $v} {
             set changed 1
-            msg -DEBUG "New setting: '$k' = '$v' (was '$sv')"
+            msg -DEBUG "Setting changed (name and values omitted)"
         }
     }
     foreach k [array names saved] {
