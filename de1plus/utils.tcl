@@ -2895,9 +2895,10 @@ proc geturl_auth {url username password {postcontents {}} } {
 		    set headerl [list Authorization $auth]
 	    	set tok [http::geturl $url -headers $headerl]
 	    } else {
-	        set md5 [binary encode base64 [::md5::md5 $postfile]]
-		    set headerl [list Authorization $auth Content-MD5 $md5 "Content-Transfer-Encoding" "BASE64"]
-	        set tok [::http::geturl $url -headers $headerl -type "text/plain" -query $postfile -timeout $timeout]
+            set headerl [list Authorization $auth]
+            # The argument is plain text; no base64-transfer header is needed.
+            set tok [::http::geturl $url -headers $headerl -type "text/plain" \
+                -query $postcontents -timeout 10000]
 
 	    }
 	    set res [http::data $tok]

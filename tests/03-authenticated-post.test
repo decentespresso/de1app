@@ -1,0 +1,53 @@
+package require tcltest 2
+namespace import ::tcltest::*
+set root [file dirname [file dirname [file normalize [info script]]]]
+# Load exact production procs without starting the GUI/BLE/application packages.
+proc load_procs {path names} {
+    set f [open $path]; set text [read $f]; close $f
+    set command ""
+    foreach line [split $text \n] {
+        append command $line \n
+        if {![info complete $command]} {continue}
+        if {[regexp {^\s*proc\s+(\S+)} $command -> name] && $name in $names} {
+            uplevel #0 $command
+        }
+        set command ""
+    }
+}
+load_procs [file join $root de1plus utils.tcl] {geturl_auth}
+if {[package vcompare [info patchlevel] 8.6] < 0} {
+ rename binary original_binary
+ proc binary {sub args} {
+  if {$sub eq "encode" && [lindex $args 0] eq "base64"} {return encoded-test-credentials}
+  uplevel 1 [linsert $args 0 original_binary $sub]
+ }
+}
+namespace eval http {
+ proc geturl {url args} {set ::request [list $url $args];if {$::failure eq "geturl"} {error injected};return token1}
+ proc status {tok} {if {$::failure eq "status"} {error injected};return $::http_status}
+ proc data {tok} {if {$::failure eq "data"} {error injected};return response}
+ proc cleanup {tok} {lappend ::cleaned $tok;if {$::failure eq "cleanup"} {error injected}}
+}
+proc reset_http {} {set ::failure {};set ::cleaned {};set ::http_status ok;set ::request {}}
+test http-2 {POST uses actual supplied body and no false transfer encoding} -setup {reset_http} -body {
+ set response [geturl_auth https://example.invalid user secret {plain payload}]
+ set opts [lindex $::request 1]
+ list $response [dict get $opts -query] [dict get $opts -type] [dict get $opts -timeout] [dict exists [dict get $opts -headers] Content-Transfer-Encoding] $::cleaned
+} -result {response {plain payload} text/plain 10000 0 token1}
+
+test post-literal {The supplied text is passed unchanged, without evaluating delimiters} -setup {reset_http} -body {
+ set payload {café [literal] $text ; {nested} and spaces}
+ set response [geturl_auth https://example.invalid user secret $payload]
+ set opts [lindex $::request 1]
+ list $response [expr {[dict get $opts -query] eq $payload}] [dict exists [dict get $opts -headers] Content-MD5] $::cleaned
+} -result {response 1 0 token1}
+test post-empty-remains-get {An empty optional body retains the existing GET convention} -setup {reset_http} -body {
+ geturl_auth https://example.invalid user secret ""
+ list [dict exists [lindex $::request 1] -query] $::cleaned
+} -result {0 token1}
+test post-request-error {A throwing POST request returns empty without a token to clean} -setup {reset_http;set ::failure geturl} -body {
+ list [geturl_auth https://example.invalid user secret payload] $::cleaned
+} -result {{} {}}
+set failed $::tcltest::numTests(Failed)
+cleanupTests
+if {$failed} {exit 1}
