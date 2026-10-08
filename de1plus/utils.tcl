@@ -1406,31 +1406,28 @@ proc god_shot_clear {} {
 }
 
 proc save_settings {} {
-
-    set compare_settings 1
-
-    if {$compare_settings == 1} {
-        array set ::settings_saved [encoding convertfrom utf-8 [read_binary_file [settings_filename]]]
-
-        foreach k [lsort [array names ::settings]] {
-            set v $::settings($k)
-
-            set sv [ifexists ::settings_saved($k)]
-            if {$sv != $v} {
-                msg -DEBUG "New setting: '$k' = '$v' (was '$sv')"
-            }
+    set filename [settings_filename]
+    # Compare a fresh disk snapshot, including removed keys and exact strings.
+    # A malformed file still raises an error before any overwrite.
+    array set saved [encoding convertfrom utf-8 [read_binary_file $filename]]
+    set changed [expr {![file exists $filename]}]
+    foreach k [lsort [array names ::settings]] {
+        set v $::settings($k)
+        set sv [ifexists saved($k)]
+        if {![info exists saved($k)] || $sv ne $v} {
+            set changed 1
+            msg -DEBUG "Setting changed (name and values omitted)"
         }
     }
-
-    msg -INFO "saving settings"
-    save_array_to_file ::settings [settings_filename]
-
-    catch {
-        update_temperature_charts_y_axis
+    foreach k [array names saved] {
+        if {![info exists ::settings($k)]} {set changed 1}
     }
-    #save_settings_to_de1
-    # john not sure what this is for since we're receiving hot water notifications
-    #de1_read_hotwater
+    if {$changed} {
+        msg -INFO "saving settings"
+        save_array_to_file ::settings $filename
+    }
+    # Keep the chart refresh even when persistence work is unnecessary.
+    catch {update_temperature_charts_y_axis}
 }
 
 proc load_settings {} {
