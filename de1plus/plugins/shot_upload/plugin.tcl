@@ -21,7 +21,7 @@ set plugin_name "shot_upload"
 namespace eval ::plugins::${plugin_name} {
     variable author "Decent"
     variable contact "john@decentespresso.com"
-    variable version 0.4
+    variable version 0.5
     variable description "Upload espresso shots to your Decent account."
     variable name "Shot Upload"
 
@@ -37,6 +37,14 @@ namespace eval ::plugins::${plugin_name} {
     # Reachability-probe scratch (socket -> connect result).
     variable _reach
     array set _reach {}
+    # Serials the server has rejected with 403 ("not in your account") THIS session.
+    # A 403 is permanent until the machine is linked, so we stop re-uploading those
+    # serials and skip past them -- while still uploading shots whose serial IS linked.
+    # These are session-scoped (reset on plugin load / app restart): a restart after
+    # the machine is linked is what re-attempts them. toasted_serials de-dupes the
+    # user-facing toast so one unlinked machine doesn't spam a toast per shot.
+    variable unlinked_serials {}
+    variable toasted_serials {}
 }
 
 # Load the converter procs (::plugins::shot_upload::convert / convert_data / ...).
@@ -135,6 +143,38 @@ proc ::plugins::shot_upload::machine_identity {} {
         dict set d firmwareVersion $::de1(version)
     }
     return $d
+}
+
+# The serial the current machine uploads under (empty if unknown).
+proc ::plugins::shot_upload::_current_sn {} {
+    set mid [machine_identity]
+    if {[dict exists $mid serialNumber]} { return [dict get $mid serialNumber] }
+    return ""
+}
+
+# The serial a given .shot's upload WOULD carry, matching converter.tcl exactly:
+# machine_identity's serial wins, else the shot's own embedded settings(sn). This is
+# what the server's ownership check sees, so it's the right key for skip-by-serial.
+proc ::plugins::shot_upload::_shot_sn {txt} {
+    set sn [_current_sn]
+    if {$sn ne ""} { return $sn }
+    if {![catch {array set _a $txt}] && [info exists _a(settings)]} {
+        catch { set sn [dict get $_a(settings) sn] }
+    }
+    return $sn
+}
+
+# Record a serial the server said isn't in this account (403), and toast the user
+# ONCE per serial explaining why their shots aren't uploading. Session-scoped.
+proc ::plugins::shot_upload::_note_unlinked_serial {sn} {
+    variable unlinked_serials
+    variable toasted_serials
+    if {$sn eq ""} { set sn "unknown" }
+    if {$sn ni $unlinked_serials} { lappend unlinked_serials $sn }
+    if {$sn ni $toasted_serials} {
+        lappend toasted_serials $sn
+        catch { popup "Machine sn# $sn not listed in your Decent Espresso Account" }
+    }
 }
 
 # POST a JSON body to the Decent support API with the linked account's HTTP Basic
@@ -307,6 +347,7 @@ proc ::plugins::shot_upload::_mark_shot_uploaded {filename {tries 5}} {
 
 proc ::plugins::shot_upload::upload_current_shot {} {
     variable settings
+    variable unlinked_serials
     _init_settings
 
     if {![info exists ::settings(espresso_clock)]} { return }
@@ -316,6 +357,15 @@ proc ::plugins::shot_upload::upload_current_shot {} {
     if {$settings(last_upload_clock) eq $clock} { return }
     if {![_account_linked]} {
         msg -INFO "shot_upload: no Decent account linked; skipping upload"
+        return
+    }
+
+    # This machine's serial is already known (this session) not to be in the account.
+    # Don't re-POST a 340KB body just to get another 403; a restart after linking retries.
+    set cur_sn [_current_sn]
+    if {$cur_sn ne "" && $cur_sn in $unlinked_serials} {
+        set settings(last_upload_result) "paused: machine sn# $cur_sn not linked to your Decent account"
+        msg -INFO "shot_upload: skipping upload; sn=$cur_sn not linked (retries after restart)"
         return
     }
 
@@ -347,6 +397,12 @@ proc ::plugins::shot_upload::upload_current_shot {} {
         _mark_shot_uploaded $fn
         catch { plugins save_settings shot_upload }
         msg -INFO "shot_upload: uploaded shot $clock -> $body"
+    } elseif {$code == 403} {
+        # Machine serial isn't in this account. Permanent until linked: record +
+        # toast the user (once per serial) so they know WHY shots aren't uploading.
+        _note_unlinked_serial $cur_sn
+        set settings(last_upload_result) "paused: machine sn# $cur_sn not linked to your Decent account"
+        msg -ERROR "shot_upload: upload rejected (http 403, sn=$cur_sn not in account): $body"
     } elseif {$code >= 400 && $code < 500} {
         set settings(last_upload_result) "rejected (http $code)"
         msg -ERROR "shot_upload: upload rejected (http $code): $body"
@@ -415,14 +471,18 @@ proc ::plugins::shot_upload::_drain_next {} {
     set f    [lindex $drain_queue 0]
     set path "[data_directory]/history/$f"
 
-    # outcome: uploaded | done | skip-auth | network | count
-    #   uploaded  -> 2xx: mark the .shot file + ledger + advance
-    #   done      -> 4xx bad shot, or unreadable: ledger + advance (no upload mark)
-    #   skip-auth -> 401/403: pause (login/ownership), not the shot's fault
-    #   network   -> transport failure (Wi-Fi off, DNS, timeout): pause, NO count
-    #   count     -> server 5xx: count toward the per-shot give-up budget
+    # outcome: uploaded | done | skip-serial | skip-auth | network | count
+    #   uploaded   -> 2xx: mark the .shot file + ledger + advance
+    #   done       -> 4xx bad shot (not 401/403), or unreadable: ledger + advance
+    #   skip-serial-> 403, or a serial already known-unlinked: skip THIS shot and
+    #                 any others with the same serial, keep draining other serials.
+    #                 Not ledgered -- a restart after linking retries it.
+    #   skip-auth  -> 401: login/token problem, nothing is uploadable -> pause drain
+    #   network    -> transport failure (Wi-Fi off, DNS, timeout): pause, NO count
+    #   count      -> server 5xx: count toward the per-shot give-up budget
     set outcome "count"
     set txt ""
+    set sn ""
     # read_file (updater.tcl) opens with -translation binary, which in Tcl also
     # forces -encoding binary -- so it returns the file's raw BYTES, not characters.
     # A .shot file is UTF-8, so an accented title came back as its UTF-8 bytes read
@@ -432,10 +492,13 @@ proc ::plugins::shot_upload::_drain_next {} {
     # already a proper Tcl string -- which is why only re-uploaded/backlog shots
     # were mangled. Decode here so both paths hand identical characters to
     # convert_data. (Mirrors converter.tcl's own reader, which uses -encoding utf-8.)
+    variable unlinked_serials
     if {[catch { set txt [encoding convertfrom utf-8 [read_file $path]] }]} {
         set outcome "done"                       ;# unreadable file: skip it
     } elseif {[string trim $txt] eq ""} {
         set outcome "done"
+    } elseif {[set sn [_shot_sn $txt]] ne "" && $sn in $unlinked_serials} {
+        set outcome "skip-serial"                ;# serial already known-unlinked this session
     } elseif {[catch { set r [_do_upload $txt] } err]} {
         set outcome "network"                    ;# transport error -> no attempt burned
         msg -WARNING "shot_upload: network error on $f: $err"
@@ -443,8 +506,14 @@ proc ::plugins::shot_upload::_drain_next {} {
         set code [dict get $r ncode]
         if {$code >= 200 && $code < 300} {
             set outcome "uploaded"
-        } elseif {$code == 401 || $code == 403} {
-            set outcome "skip-auth"
+        } elseif {$code == 403} {
+            # Serial isn't in this account. Record + toast once, then skip this serial
+            # and keep draining -- other machines' shots may well be linked.
+            _note_unlinked_serial $sn
+            set outcome "skip-serial"
+            msg -WARNING "shot_upload: $f sn=$sn not in account (http 403); skipping serial"
+        } elseif {$code == 401} {
+            set outcome "skip-auth"              ;# login/token problem: nothing uploadable
         } elseif {$code >= 400 && $code < 500} {
             set outcome "done"                   ;# permanently bad shot: don't retry
             msg -WARNING "shot_upload: backlog skipping $f (http $code)"
@@ -467,8 +536,16 @@ proc ::plugins::shot_upload::_drain_next {} {
             set drain_backoff 2000
             after 800 ::plugins::shot_upload::_drain_next
         }
+        skip-serial {
+            # Not this account's machine. Don't ledger (a restart after the machine is
+            # linked retries it); just advance so OTHER serials in the backlog still
+            # upload. No network happened, so continue quickly.
+            set drain_queue [lrange $drain_queue 1 end]
+            set drain_backoff 2000
+            after 50 ::plugins::shot_upload::_drain_next
+        }
         skip-auth {
-            msg -WARNING "shot_upload: backlog paused (login/ownership); will resume later"
+            msg -WARNING "shot_upload: backlog paused (login/auth); will resume later"
             set draining 0
         }
         network {
