@@ -1,0 +1,55 @@
+package require tcltest 2
+namespace import ::tcltest::*
+set root [file dirname [file dirname [file normalize [info script]]]]
+# Load exact production procs without starting the GUI/BLE/application packages.
+proc load_procs {path names} {
+    set f [open $path]; set text [read $f]; close $f
+    set command ""
+    foreach line [split $text \n] {
+        append command $line \n
+        if {![info complete $command]} {continue}
+        if {[regexp {^\s*proc\s+(\S+)} $command -> name] && $name in $names} {
+            uplevel #0 $command
+        }
+        set command ""
+    }
+}
+load_procs [file join $root de1plus utils.tcl] {geturl_auth}
+if {[package vcompare [info patchlevel] 8.6] < 0} {
+ rename binary original_binary
+ proc binary {sub args} {
+  if {$sub eq "encode" && [lindex $args 0] eq "base64"} {return encoded-test-credentials}
+  uplevel 1 [linsert $args 0 original_binary $sub]
+ }
+}
+namespace eval http {
+ proc geturl {url args} {set ::request [list $url $args];if {$::failure eq "geturl"} {error injected};return token1}
+ proc status {tok} {if {$::failure eq "status"} {error injected};return $::http_status}
+ proc data {tok} {if {$::failure eq "data"} {error injected};return response}
+ proc cleanup {tok} {lappend ::cleaned $tok;if {$::failure eq "cleanup"} {error injected}}
+}
+proc reset_http {} {set ::failure {};set ::cleaned {};set ::http_status ok;set ::request {}}
+test http-1 {GET has bounded timeout and always releases token} -setup {reset_http} -body {
+ set response [geturl_auth https://example.invalid user secret]
+ list $response [dict get [lindex $::request 1] -timeout] $::cleaned
+} -result {response 10000 token1}
+test http-timeout {timeout does not return partial data} -setup {reset_http;set ::http_status timeout} -body {list [geturl_auth https://example.invalid user secret] $::cleaned} -result {{} token1}
+test http-cleanup {cleanup error does not discard complete response} -setup {reset_http;set ::failure cleanup} -body {list [geturl_auth https://example.invalid user secret] $::cleaned} -result {response token1}
+foreach scenario {geturl status data} expected {{} token1 token1} {
+ test http-error-$scenario {request/response error returns empty and cleans owned token} -setup {reset_http;set ::failure $scenario} -body {
+  list [geturl_auth https://example.invalid user secret] $::cleaned
+ } -result [list {} $expected]
+}
+
+foreach state {error eof reset} {
+ test http-terminal-$state {Incomplete transport status discards data and releases the token} -setup {reset_http;set ::http_status $state} -body {
+  list [geturl_auth https://example.invalid user secret] $::cleaned
+ } -result {{} token1}
+}
+test http-repeated {Repeated completed requests release every owned token} -setup {reset_http} -body {
+ for {set i 0} {$i < 50} {incr i} {geturl_auth https://example.invalid user secret}
+ list [llength $::cleaned] [lsort -unique $::cleaned]
+} -result {50 token1}
+set failed $::tcltest::numTests(Failed)
+cleanupTests
+if {$failed} {exit 1}
