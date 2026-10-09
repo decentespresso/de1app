@@ -1424,7 +1424,7 @@ proc save_settings {} {
     }
     if {$changed} {
         msg -INFO "saving settings"
-        save_array_to_file ::settings $filename
+        save_array_to_file ::settings $filename 1
     }
     # Keep the chart refresh even when persistence work is unnecessary.
     catch {update_temperature_charts_y_axis}
