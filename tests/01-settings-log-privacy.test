@@ -1,0 +1,60 @@
+package require tcltest 2
+namespace import ::tcltest::*
+set root [file dirname [file dirname [file normalize [info script]]]]
+# Load exact production procs without starting the GUI/BLE/application packages.
+proc load_procs {path names} {
+    set f [open $path]; set text [read $f]; close $f
+    set command ""
+    foreach line [split $text \n] {
+        append command $line \n
+        if {![info complete $command]} {continue}
+        if {[regexp {^\s*proc\s+(\S+)} $command -> name] && $name in $names} {
+            uplevel #0 $command
+        }
+        set command ""
+    }
+}
+load_procs [file join $root de1plus utils.tcl] {save_settings}
+load_procs [file join $root de1plus updater.tcl] {write_file write_file_atomic fast_write_open save_array_to_file read_binary_file}
+set dir [makeDirectory utilities]
+set filename [file join $dir settings.tdb]
+proc settings_filename {} {return $::filename}
+proc msg {args} {lappend ::messages $args}
+proc update_temperature_charts_y_axis {} {incr ::refreshes}
+proc reset_case {} {
+    unset -nocomplain ::settings ::settings_saved
+    array set ::settings {}
+    set ::messages {}; set ::refreshes 0
+    foreach p [glob -nocomplain -directory $::dir * .*] {
+        if {[file tail $p] ni {. ..}} {file delete -force $p}
+    }
+}
+proc contents {} {set f [open $::filename];set s [read $f];close $f;return $s}
+proc disk_dict {} {return [encoding convertfrom utf-8 [read_binary_file $::filename]]}
+proc persist {values} {array set a $values;save_array_to_file a $::filename}
+proc temps {} {return [glob -nocomplain -directory $::dir *.tmp .*.tmp]}
+proc ifexists {name} {
+    upvar 1 $name value
+    if {[info exists value]} {return $value}
+    return ""
+}
+test settings-6 {logs omit private names and both old/new values} -setup {
+ reset_case;persist {private-device-id old-password};array set ::settings {private-device-id new-password}
+} -body {save_settings;list [llength $::messages] [regexp {private-device-id|old-password|new-password} $::messages]} -result {2 0}
+
+test privacy-multiple {Multiple private keys and values are never formatted into change logs} -setup {
+ reset_case;persist {private-first old-secret private-second old-token}
+ array set ::settings {private-first new-secret private-second new-token}
+} -body {
+ save_settings
+ list [llength $::messages] [regexp {private-first|private-second|old-secret|old-token|new-secret|new-token} $::messages] $::refreshes
+} -result {3 0 1}
+test privacy-unchanged {Masking leaves unchanged-save and chart behavior alone} -setup {
+ reset_case;array set ::settings {a 1};persist {a 1}
+} -body {
+ save_settings;list [dict get [disk_dict] a] $::refreshes [regexp {old-secret|new-secret} $::messages]
+} -result {1 1 0}
+set failed $::tcltest::numTests(Failed)
+removeDirectory utilities
+cleanupTests
+if {$failed} {exit 1}
