@@ -77,3 +77,6 @@
 [submodule "de1plus/skins/Metric"]
 	path = de1plus/skins/Metric
 	url = https://github.com/decentespresso/decent-metric.git
+[submodule "de1plus/skins/Lumen"]
+	path = de1plus/skins/Lumen
+	url = https://github.com/Blastize/de1app-skin-Lumen.git
