@@ -39,6 +39,9 @@
 [submodule "de1plus/skins/DSx2"]
 	path = de1plus/skins/DSx2
 	url = https://github.com/decentespresso/DSx2.git
+[submodule "de1plus/skins/Lumen"]
+	path = de1plus/skins/Lumen
+	url = https://github.com/Blastize/de1app-skin-Lumen.git
 [submodule "de1plus/plugins/mqtt"]
 	path = de1plus/plugins/mqtt
 	url = https://github.com/decentespresso/de1plus-mqtt.git
@@ -77,6 +80,3 @@
 [submodule "de1plus/skins/Metric"]
 	path = de1plus/skins/Metric
 	url = https://github.com/decentespresso/decent-metric.git
-[submodule "de1plus/skins/Lumen"]
-	path = de1plus/skins/Lumen
-	url = https://github.com/Blastize/de1app-skin-Lumen.git
