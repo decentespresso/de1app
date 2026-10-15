@@ -166,7 +166,8 @@ proc de1_usb_scale_bytes_received {raw} {
 			parse_decent_scale_recv $frame arr
 			if {[ifexists arr(parsed)] eq "weight" && [info exists arr(weight)]} {
 				set sensorweight [expr {$arr(weight) / 10.0}]
-				::device::scale::process_weight_update $sensorweight $update_received
+				::device::scale::process_decentscale_weight_update \
+					$::de1(scale_device_handle) $arr(command) $sensorweight $update_received
 			}
 		} perr]} {
 			::comms::msg -DEBUG "de1_usb_scale: parse error: $perr"

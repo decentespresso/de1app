@@ -139,6 +139,7 @@ namespace eval ::device::scale {
 	}
 
 	proc is_operational {} {
+		if { [::de1::packet::use_ble_v2] && $::de1(scale_device_handle) == 0 } { return 1 }
 		expr { [::device::scale::is_connected] && $::device::scale::_watchdog_updates_seen }
 	}
 
@@ -235,7 +236,8 @@ namespace eval ::device::scale {
 
 		if { $event_time == 0 } {set event_time [expr { [clock milliseconds] / 1000.0 }]}
 
-		if { $::settings(scale_type) != "decentscale" } {
+		if { $::settings(scale_type) != "decentscale" \
+				|| ([::de1::packet::use_ble_v2] && $::de1(scale_device_handle) == 0) } {
 			::device::scale::watchdog_tickle
 		}
 
@@ -466,7 +468,7 @@ namespace eval ::device::scale {
 
 	proc watchdog_first {args} {
 
-		if { ! [::device::scale::is_connected] } {
+		if { ! [::device::scale::is_connected] || $::de1(scale_device_handle) == 0 } {
 			msg -WARNING "Scale watchdog first skipping start, scale not connected"
 			return
 		}
@@ -485,7 +487,7 @@ namespace eval ::device::scale {
 
 	proc _watchdog_first_fire {handle tries} {
 
-		if { ! [::device::scale::is_connected] || $handle != $::de1(scale_device_handle) } {
+		if { $handle == 0 || ! [::device::scale::is_connected] || $handle != $::de1(scale_device_handle) } {
 			msg -DEBUG "Ignoring stale scale watchdog for handle $handle"
 			return
 		}

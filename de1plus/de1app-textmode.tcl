@@ -100,6 +100,7 @@ proc ::device::scale::process_decentscale_weight_update {handle command w {t 0}}
 }
 proc ::device::scale::watchdog_tickle {args} {}
 proc ::device::scale::is_operational {} {
+    if {[ifexists ::de1(ble_protocol_version) 1] >= 2 && $::de1(scale_device_handle) == 0} { return 1 }
     expr {$::de1(scale_device_handle) != 0}
 }
 proc ::device::scale::should_handle_disconnect {handle} { return 1 }
