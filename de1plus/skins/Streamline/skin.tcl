@@ -833,20 +833,31 @@ proc streamline_milk_dataline_unit {} {
 	return [lindex [return_temperature_measurement_no_unit $::de1(milk_temperature) 1 1] 1]
 }
 
+# Is the milk temperature the setting being edited? ("flow" is the other one.)
 proc streamline_steam_temp_mode {} {
 	return [expr {$::streamline_steam_btn_mode eq "temp"}]
 }
 
-# Send the target (and the stop mode) to the machine. Not in temp mode -> target
-# 0, which tells the firmware not to stop on temperature.
+# The stop-at-milk-temperature target as display text, e.g. "60°".
+proc streamline_steam_target_temp_text {} {
+	set t [return_temperature_measurement_no_unit [ifexists ::settings(target_milk_temp) 60] 1 1]
+	return "[lindex $t 0][lindex $t 1]"
+}
+
+# Send the target (and the stop mode) to the machine. HOW steaming stops follows
+# the hardware, not which setting is being edited: with the probe attached it
+# stops on milk temperature, also while the user has tapped over to editing the
+# steam flow. Otherwise target 0, which tells the firmware not to stop on
+# temperature.
 proc streamline_apply_steam_stop_mode {} {
-	if {[streamline_steam_temp_mode]} {
+	set by_temp [streamline_steam_temp_available]
+	if {$by_temp} {
 		set ::settings(steam_stop_mode) "temp"
 	} else {
 		set ::settings(steam_stop_mode) "time"
 	}
 	catch {
-		if {[streamline_steam_temp_mode]} {
+		if {$by_temp} {
 			set_target_milk_temp [ifexists ::settings(target_milk_temp) 60]
 		} else {
 			set_target_milk_temp 0
@@ -857,7 +868,10 @@ proc streamline_apply_steam_stop_mode {} {
 # Follow the probe being plugged in / unplugged while the app runs: switch the
 # steam setting into temperature mode when a probe appears, and back to the
 # timer when it goes away, so the control can never be left showing a
-# temperature the machine is no longer stopping on.
+# temperature the machine is no longer stopping on. While steam FLOW is the
+# setting being edited it stays there, but the stop mode and the temperature /
+# seconds shown under the flow still follow the probe.
+set ::streamline_steam_temp_was_available 0
 proc streamline_steam_temp_watch {} {
 	set available [streamline_steam_temp_available]
 	if {$available && $::streamline_steam_btn_mode eq "time"} {
@@ -866,7 +880,10 @@ proc streamline_steam_temp_watch {} {
 	} elseif {!$available && [streamline_steam_temp_mode]} {
 		set ::streamline_steam_btn_mode "time"
 		streamline_steam_mode_changed
+	} elseif {$available ne $::streamline_steam_temp_was_available} {
+		streamline_steam_mode_changed
 	}
+	set ::streamline_steam_temp_was_available $available
 	after 2000 streamline_steam_temp_watch
 }
 
@@ -1687,14 +1704,20 @@ proc streamline_steam_setting_change { } {
 	if {[streamline_steam_temp_mode]} {
 		# stop-at-milk-temperature (Bengle with probe): show the target, with the
 		# steam flow underneath as in the other modes
-		set ::streamline_steam_label_1st [lindex [return_temperature_measurement_no_unit [ifexists ::settings(target_milk_temp) 60] 1 1] 0][lindex [return_temperature_measurement_no_unit [ifexists ::settings(target_milk_temp) 60] 1 1] 1]
+		set ::streamline_steam_label_1st [streamline_steam_target_temp_text]
 		set ::streamline_steam_label_2nd "([round_to_one_digits [expr {$::settings(steam_flow) / 100.0}]])"
 	} elseif {$::streamline_steam_btn_mode == "time"} {
 		set ::streamline_steam_label_1st $stimeout
 		set ::streamline_steam_label_2nd "([round_to_one_digits [expr {$::settings(steam_flow) / 100.0}]])"
 	} else {
 		set ::streamline_steam_label_1st "[round_to_one_digits [expr {$::settings(steam_flow) / 100.0}]]"
-		set ::streamline_steam_label_2nd "($stimeout)"
+		if {[streamline_steam_temp_available]} {
+			# probe attached: steaming stops on milk temperature, so that is the
+			# other setting shown under the flow, not the timer
+			set ::streamline_steam_label_2nd "([streamline_steam_target_temp_text])"
+		} else {
+			set ::streamline_steam_label_2nd "($stimeout)"
+		}
 	}
 }
 streamline_steam_setting_change
