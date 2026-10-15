@@ -1,9 +1,10 @@
-if {[llength $argv] != 2 || [lindex $argv 0] ni {bengle hds}} {
-	puts stderr "Usage: tclsh tests/scale_hardware.tcl bengle|hds COM-port"
+if {[llength $argv] != 2 || [lindex $argv 0] ni {bengle hds bengle-load hds-load}} {
+	puts stderr "Usage: tclsh tests/scale_hardware.tcl bengle|hds|bengle-load|hds-load COM-port"
 	exit 2
 }
 
 set kind [lindex $argv 0]
+set integrated [expr {$kind in {bengle bengle-load}}]
 set port [lindex $argv 1]
 set app_dir [file normalize [file join [file dirname [info script]] .. de1plus]]
 set events {}
@@ -89,7 +90,7 @@ set ::settings(scale_stop_at_half_shot) 0
 set ::settings(high_vibration_scale_filtering) 0
 set ::de1(scale_device_handle) 0
 set ::de1(scale_connectivity) usb
-set ::de1(ble_protocol_version) [expr {$kind eq "bengle" ? 2 : 1}]
+set ::de1(ble_protocol_version) [expr {$integrated ? 2 : 1}]
 set ::de1(state) 0
 set ::de1(substate) 0
 set ::de1(current_frame_number) 0
@@ -148,7 +149,7 @@ proc report {stage} {
 set handle ""
 set failed 0
 try {
-	if {$kind eq "bengle"} {
+	if {$integrated} {
 		::device::scale::init
 		set handle [usb connect $port receive_bengle]
 		usb write $handle <+N>
@@ -181,7 +182,7 @@ try {
 		usb write $handle <+S>
 		wait_ms 3500
 		require_condition {$samples > $before + 10} "Bengle notifications did not recover"
-	} else {
+	} elseif {$kind eq "hds"} {
 		set before $samples
 		set drop_updates 1
 		::device::scale::callbacks::on_connect {}
@@ -195,8 +196,10 @@ try {
 		wait_ms 3500
 		require_condition {$samples > $before + 10} "HDS live reporting did not recover"
 		set handle $::de1(scale_device_handle)
+	} else {
+		require_condition {[lindex $sorted end] - [lindex $sorted 0] >= 5.0} "No changed load was observed"
 	}
-	report recovered
+	report [expr {$kind in {bengle-load hds-load} ? "load_confirmed" : "recovered"}]
 	require_condition {[::device::scale::is_operational] && [::device::scale::is_reporting]} "Recovered scale is not ready"
 	require_condition {[llength $errors] == 0} "Callback errors: $errors"
 	puts [list PASS $kind $port samples $samples partial_frames $partial_frames \
@@ -207,7 +210,7 @@ try {
 	puts stderr [dict get $options -errorinfo]
 } finally {
 	foreach id [after info] { after cancel $id }
-	if {$kind eq "bengle" && $handle ne "" && [::usb::is_open $handle]} {
+	if {$integrated && $handle ne "" && [::usb::is_open $handle]} {
 		usb write $handle <-N>
 		usb write $handle <-S>
 	}
