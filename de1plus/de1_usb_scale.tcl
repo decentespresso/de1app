@@ -142,7 +142,7 @@ proc de1_usb_scale_bytes_received {raw} {
 		set start -1
 		for {set i 0} {$i <= $n-2} {incr i} {
 			binary scan [string range $::de1_usb_scale::buf $i [expr {$i+1}]] cucu b0 b1
-			if {$b0 == 0x03 && $b1 == 0xCE} { set start $i; break }
+			if {$b0 == 0x03 && ($b1 == 0xCE || $b1 == 0xCA)} { set start $i; break }
 		}
 		if {$start < 0} {
 			# no frame start; keep only the last byte (in case a 0x03 is mid-arrival)

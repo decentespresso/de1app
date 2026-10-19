@@ -138,23 +138,27 @@ test scale-disconnect-stale-connecting-handle-1 {} -body {
 	list $::closed_handles $::reconnects $::currently_connecting_scale_handle
 } -result {{} 0 ble2}
 
-test scale-cached-weight-1 {} -body {
-	reset_watchdog ble1
-	set accepted [::device::scale::process_decentscale_weight_update ble1 0xCA 1.2 3.4]
-	list $accepted $::processed_weights $::device::scale::_watchdog_updates_seen
-} -result {True {{1.2 3.4}} False}
+foreach command {0x0A 0x0C 0x0F 0xAA} {
+	test scale-non-weight-does-not-tickle-$command-1 {} -body {
+		reset_watchdog ble1
+		::device::scale::watchdog_tickle ble1 $command
+		list $::device::scale::_watchdog_updates_seen $::scale_events $::cancelled $::scheduled
+	} -result {False {} {} {}}
+}
 
-test scale-stale-live-weight-1 {} -body {
-	reset_watchdog ble1
-	set accepted [::device::scale::process_decentscale_weight_update ble2 0xCE 1.2 3.4]
-	list $accepted $::processed_weights $::device::scale::_watchdog_updates_seen
-} -result {False {} False}
+foreach command {0xCE 0xCA} {
+	test scale-stale-live-weight-$command-1 {} -body {
+		reset_watchdog ble1
+		set accepted [::device::scale::process_decentscale_weight_update ble2 $command 1.2 3.4]
+		list $accepted $::processed_weights $::device::scale::_watchdog_updates_seen
+	} -result {False {} False}
 
-test scale-first-live-weight-1 {} -body {
-	reset_watchdog ble1
-	set accepted [::device::scale::process_decentscale_weight_update ble1 0xCE 1.2 3.4]
-	list $accepted $::processed_weights $::device::scale::_watchdog_updates_seen $::blink_water_weight $::scale_events $::cancelled
-} -result {True {{1.2 3.4}} True 0 scale_reporting watchdog-current}
+	test scale-first-live-weight-$command-1 {} -body {
+		reset_watchdog ble1
+		set accepted [::device::scale::process_decentscale_weight_update ble1 $command 1.2 3.4]
+		list $accepted $::processed_weights $::device::scale::_watchdog_updates_seen $::blink_water_weight $::scale_events $::cancelled
+	} -result {True {{1.2 3.4}} True 0 scale_reporting watchdog-current}
+}
 
 test scale-disconnect-clears-reporting-once-1 {} -body {
 	reset_watchdog ble1
@@ -234,14 +238,14 @@ foreach scale_type {{} decentscale bookoo} {
 	} -result {1 True 12.5 1.5 scale_reporting}
 }
 
-test scale-bengle-external-scale-still-needs-live-packet-1 {} -body {
-	reset_pipeline ble1 decentscale 2
-	set before [::device::scale::is_operational]
-	::device::scale::process_decentscale_weight_update ble1 0xCA 12.3 100
-	set cached [::device::scale::is_operational]
-	::device::scale::process_decentscale_weight_update ble1 0xCE 12.3 101
-	list $before $cached [::device::scale::is_operational]
-} -result {0 0 1}
+foreach command {0xCE 0xCA} {
+	test scale-bengle-external-scale-still-needs-live-packet-$command-1 {} -body {
+		reset_pipeline ble1 decentscale 2
+		set before [::device::scale::is_operational]
+		::device::scale::process_decentscale_weight_update ble1 $command 12.3 100
+		list $before [::device::scale::is_operational]
+	} -result {0 1}
+}
 
 test scale-bengle-no-ble-recovery-1 {} -body {
 	reset_pipeline 0 decentscale 2
@@ -251,13 +255,39 @@ test scale-bengle-no-ble-recovery-1 {} -body {
 	list $::scheduled $::closed_handles $::reconnects
 } -result {{} {} 0}
 
-test scale-usb-live-packet-1 {} -body {
-	reset_pipeline serial1 decentscale
-	set ::de1(scale_connectivity) usb
-	set ::de1_usb_scale::buf ""
-	de1_usb_scale_bytes_received [de1_usb_scale_cmd {0xCE 0x00 0x7B 0x00 0x00}]
-	list [::device::scale::is_operational] $::de1(scale_sensor_weight) $::scale_events
-} -result {1 12.3 scale_reporting}
+foreach {format command frame} {
+	7 0xCE 03ce007b0000b6
+	7 0xCA 03ca007b0000b2
+	10 0xCE 03ce007b0102030000b6
+	10 0xCA 03ca007b0102030000b2
+} {
+	test scale-parsed-weight-$format-$command-1 {} -body {
+		reset_pipeline ble1 decentscale
+		parse_decent_scale_recv [binary decode hex $frame] packet
+		::device::scale::process_decentscale_weight_update ble1 $packet(command) \
+			[expr {$packet(weight) / 10.0}] 100
+		list $packet(parsed) [expr {$packet(command) == $command}] \
+			[::device::scale::is_operational] $::de1(scale_sensor_weight) $::scale_events
+	} -result {weight 1 1 12.3 scale_reporting}
+}
+
+foreach command {0xCE 0xCA} {
+	test scale-usb-live-packet-$command-1 {} -body {
+		reset_pipeline serial1 decentscale
+		set ::de1(scale_connectivity) usb
+		set ::de1_usb_scale::buf ""
+		de1_usb_scale_bytes_received [de1_usb_scale_cmd [list $command 0x00 0x7B 0x00 0x00]]
+		list [::device::scale::is_operational] $::de1(scale_sensor_weight) $::scale_events
+	} -result {1 12.3 scale_reporting}
+}
+
+test scale-changing-weight-stream-1 {} -body {
+	reset_pipeline ble1 decentscale
+	::device::scale::process_decentscale_weight_update ble1 0xCA 12.3 100
+	::device::scale::process_decentscale_weight_update ble1 0xCA 12.4 101
+	list [::device::scale::is_operational] $::de1(scale_sensor_weight) \
+		$::device::scale::_last_weight_update_time $::scale_events $::cancelled $::reconnects
+} -result {1 12.4 101 scale_reporting {watchdog-current watchdog-next} 0}
 
 test scale-bengle-hotwater-readiness-1 {} -body {
 	reset_pipeline 0 decentscale 2

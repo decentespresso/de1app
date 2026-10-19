@@ -515,7 +515,7 @@ namespace eval ::device::scale {
 
 	proc watchdog_tickle {{handle ""} {command ""}} {
 
-		if { $command != "" && $command != 0xCE } {
+		if { $command != "" && $command != 0xCE && $command != 0xCA } {
 			return
 		}
 

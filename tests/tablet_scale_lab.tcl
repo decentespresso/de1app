@@ -215,7 +215,7 @@ proc ::pr351::ready {} {
 		if {$::pr351::drop_live && $event eq "characteristic" \
 				&& [dict exists $data value] && [dict exists $data cuuid] \
 				&& [::pr351::uuid [dict get $data cuuid]] eq "0000fff400001000800000805f9b34fb" \
-				&& [string match "03ce*" [binary encode hex [dict get $data value]]]} {
+				&& [string match {03c[ae]*} [binary encode hex [dict get $data value]]]} {
 			incr ::pr351::dropped_packets
 			return
 		}
