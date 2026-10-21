@@ -15,6 +15,9 @@
 [submodule "de1plus/plugins/keyboard_control"]
 	path = de1plus/plugins/keyboard_control
 	url = https://github.com/decentespresso/de1app_plugin_keyboard_control.git
+[submodule "de1plus/plugins/MaintenanceTracker"]
+	path = de1plus/plugins/MaintenanceTracker
+	url = https://github.com/Blastize/de1app-plugin-MaintenanceTracker.git
 [submodule "de1plus/plugins/DYE"]
 	path = de1plus/plugins/DYE
 	url = https://github.com/decentespresso/de1app_plugin_DYE.git
