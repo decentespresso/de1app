@@ -653,6 +653,22 @@ proc de1_event_handler { command_name value {update_received 0}} {
 }
 
 proc scale_disconnect_handler { handle } {
+	if { ! [::device::scale::should_handle_disconnect $handle] } {
+		::bt::msg -DEBUG "Ignoring stale or duplicate scale disconnect for handle $handle"
+		return
+	}
+
+	if { [ifexists ::de1(scale_connectivity)] eq "usb" } {
+		de1_usb_scale_disconnect
+		catch {
+			::device::scale::event::apply::on_disconnect_callbacks [dict create \
+				event_time [expr {[clock milliseconds] / 1000.0}] \
+				address $::settings(usb_scale_address)]
+		}
+		de1_usb_scale_connect $::settings(usb_scale_address)
+		return
+	}
+
 	catch {
 		ble close $handle
 	}
@@ -674,8 +690,8 @@ proc scale_disconnect_handler { handle } {
 
 	catch {
 		set event_dict [dict create \
-			event_time $event_time \
-			address $address \
+			event_time [expr {[clock milliseconds] / 1000.0}] \
+			address [::device::scale::bluetooth_address] \
 		]
 
 		::device::scale::event::apply::on_disconnect_callbacks $event_dict

@@ -204,7 +204,7 @@ proc return_de1_packed_steam_hotwater_settings { {temporarily_disable_steam 0} }
 
 	set arr(TargetHotWaterTemp) [convert_float_to_U8P0 $::settings(water_temperature)]
 	
-	if {$::de1(scale_device_handle) != 0} {
+	if {[::device::scale::is_operational]} {
 		# "hot water: stop on weight" feature. Works with the scale, so it's more accurate.
 		# we ask for more water than we need, so that we can definitely get enough
 		# to stop on weight.
