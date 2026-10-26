@@ -24,6 +24,9 @@
 [submodule "de1plus/plugins/DYE"]
 	path = de1plus/plugins/DYE
 	url = https://github.com/decentespresso/de1app_plugin_DYE.git
+[submodule "de1plus/plugins/DrinkMenu"]
+	path = de1plus/plugins/DrinkMenu
+	url = https://github.com/Blastize/de1app-plugin-DrinkMenu.git
 [submodule "de1plus/skins/DSx"]
 	path = de1plus/skins/DSx
 	url = https://github.com/Damian-AU/DSx
