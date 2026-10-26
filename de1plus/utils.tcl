@@ -1405,12 +1405,54 @@ proc god_shot_clear {} {
     save_settings
 }
 
+# 1 if text can be loaded with [array set]: a well-formed, even-length Tcl list.
+proc settings_contents_valid {contents} {
+    if {[catch {llength $contents} n]} {return 0}
+    return [expr {$n % 2 == 0}]
+}
+
+# Keep a copy of a damaged settings file before anything replaces it, so it can
+# still be looked at by hand.
+proc preserve_damaged_settings {filename contents} {
+    if {[string trim $contents] eq ""} {return}
+    if {[catch {file copy -force $filename "${filename}.damaged"} err]} {
+        msg -ERROR "could not keep a copy of the damaged settings file: $err"
+    }
+}
+
+# settings.tdb exists but is empty or unreadable (e.g. power was lost during a
+# save). Fall back to the previous good copy that save_settings keeps in .bak.
+# Returns the contents to load, or "" to start from default settings.
+proc recover_damaged_settings {filename contents} {
+    msg -ERROR "settings file is damaged ([string length $contents] characters)"
+    preserve_damaged_settings $filename $contents
+    set backup ""
+    if {[file exists "${filename}.bak"]} {
+        set backup [encoding convertfrom utf-8 [read_binary_file "${filename}.bak"]]
+    }
+    if {[string trim $backup] ne "" && [settings_contents_valid $backup]} {
+        msg -WARNING "settings restored from ${filename}.bak"
+        catch {popup [translate_toast "Your settings were damaged and have been restored from a backup"]}
+        return $backup
+    }
+    msg -ERROR "no usable settings backup, starting with default settings"
+    catch {popup [translate_toast "Your settings were damaged and have been reset"]}
+    return ""
+}
+
 proc save_settings {} {
     set filename [settings_filename]
     # Compare a fresh disk snapshot, including removed keys and exact strings.
-    # A malformed file still raises an error before any overwrite.
-    array set saved [encoding convertfrom utf-8 [read_binary_file $filename]]
-    set changed [expr {![file exists $filename]}]
+    set disk [encoding convertfrom utf-8 [read_binary_file $filename]]
+    set disk_valid [settings_contents_valid $disk]
+    if {$disk_valid} {
+        array set saved $disk
+    } else {
+        # A damaged file must not block saving, or it could never be repaired.
+        msg -WARNING "settings file is damaged, replacing it"
+        preserve_damaged_settings $filename $disk
+    }
+    set changed [expr {![file exists $filename] || !$disk_valid}]
     foreach k [lsort [array names ::settings]] {
         set v $::settings($k)
         set sv [ifexists saved($k)]
@@ -1423,6 +1465,10 @@ proc save_settings {} {
         if {![info exists ::settings($k)]} {set changed 1}
     }
     if {$changed} {
+        # The previous good copy becomes the backup that load_settings recovers from.
+        if {$disk_valid && [string trim $disk] ne ""} {
+            write_file_atomic "${filename}.bak" [string trimright $disk \n]
+        }
         msg -INFO "saving settings"
         save_array_to_file ::settings $filename 1
     }
@@ -1443,7 +1489,11 @@ proc load_settings {} {
 
     set tablet_model "[ifexists osbuildinfo(manufacturer)] [ifexists osbuildinfo(model)]"
 
-    set settings_file_contents [encoding convertfrom utf-8 [read_binary_file [settings_filename]]]    
+    set settings_file_contents [encoding convertfrom utf-8 [read_binary_file [settings_filename]]]
+    if {[file exists [settings_filename]] && ([string trim $settings_file_contents] eq "" \
+            || ![settings_contents_valid $settings_file_contents])} {
+        set settings_file_contents [recover_damaged_settings [settings_filename] $settings_file_contents]
+    }
 
 
     # A fresh install has no settings.tdb yet. We use this to apply one-time

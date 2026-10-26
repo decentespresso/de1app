@@ -14,7 +14,7 @@ proc load_procs {path names} {
         set command ""
     }
 }
-load_procs [file join $root de1plus utils.tcl] {save_settings}
+load_procs [file join $root de1plus utils.tcl] {save_settings settings_contents_valid preserve_damaged_settings}
 load_procs [file join $root de1plus updater.tcl] {write_file write_file_atomic fast_write_open save_array_to_file read_binary_file}
 set dir [makeDirectory utilities]
 set filename [file join $dir settings.tdb]
@@ -52,9 +52,13 @@ test settings-3 {no stale saved array; disk is reread after an external edit} -s
  reset_case;array set ::settings {a 1};persist {a 1};array set ::settings_saved {obsolete secret}
 } -body {save_settings;persist {a external};save_settings;dict get [disk_dict] a} -result 1
 test settings-4 {missing settings file is created even for an empty array} -setup {reset_case} -body {save_settings;list [file exists $::filename] [dict size [disk_dict]]} -result {1 0}
-test settings-5 {malformed settings are preserved and error is reported} -setup {
- reset_case;write_file $::filename "broken \{";set original [contents]
-} -body {list [catch save_settings] [expr {[contents] eq $original}]} -result {1 1}
+test settings-5 {malformed settings are kept as .damaged and replaced} -setup {
+ reset_case;write_file $::filename "broken \{";set original [contents];array set ::settings {a 1}
+} -body {
+ save_settings
+ set f [open $::filename.damaged];set kept [read $f];close $f
+ list [expr {$kept eq $original}] [dict get [disk_dict] a] [file exists $::filename.bak] [string match *damaged* $::messages]
+} -result {1 1 0 1}
 test settings-7 {string changes are not lost through numeric equality} -setup {
  reset_case;persist {a 01};array set ::settings {a 1}
 } -body {save_settings;dict get [disk_dict] a} -result 1
