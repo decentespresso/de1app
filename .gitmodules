@@ -39,6 +39,9 @@
 [submodule "de1plus/plugins/old_lcd_disable"]
 	path = de1plus/plugins/old_lcd_disable
 	url = https://github.com/bkeller2/old_lcd_disable
+[submodule "de1plus/plugins/BeanScanner"]
+	path = de1plus/plugins/BeanScanner
+	url = https://github.com/Blastize/de1app-plugin-BeanScanner.git
 [submodule "de1plus/skins/MiniMetric"]
 	path = de1plus/skins/Mini Metric
 	url = https://github.com/barneyhawes/mini-metric
