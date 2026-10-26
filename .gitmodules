@@ -33,6 +33,9 @@
 [submodule "de1plus/plugins/DPx_Screen_Saver"]
 	path = de1plus/plugins/DPx_Screen_Saver
 	url = https://github.com/decentespresso/DPx_Screen_Saver.git
+[submodule "de1plus/plugins/ShotHistoryEditor"]
+	path = de1plus/plugins/ShotHistoryEditor
+	url = https://github.com/Blastize/de1app-plugin-ShotHistoryEditor.git
 [submodule "de1plus/plugins/old_lcd_disable"]
 	path = de1plus/plugins/old_lcd_disable
 	url = https://github.com/bkeller2/old_lcd_disable
