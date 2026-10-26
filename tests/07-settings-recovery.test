@@ -1,0 +1,110 @@
+package require tcltest 2
+namespace import ::tcltest::*
+set root [file dirname [file dirname [file normalize [info script]]]]
+# Load exact production procs without starting the GUI/BLE/application packages.
+proc load_procs {path names} {
+    set f [open $path]; set text [read $f]; close $f
+    set command ""
+    foreach line [split $text \n] {
+        append command $line \n
+        if {![info complete $command]} {continue}
+        if {[regexp {^\s*proc\s+(\S+)} $command -> name] && $name in $names} {
+            uplevel #0 $command
+        }
+        set command ""
+    }
+}
+load_procs [file join $root de1plus utils.tcl] {save_settings settings_contents_valid preserve_damaged_settings recover_damaged_settings}
+load_procs [file join $root de1plus updater.tcl] {write_file write_file_atomic fast_write_open save_array_to_file read_binary_file}
+set dir [makeDirectory recovery]
+set filename [file join $dir settings.tdb]
+proc settings_filename {} {return $::filename}
+proc msg {args} {lappend ::messages $args}
+proc popup {args} {lappend ::popups $args}
+proc translate_toast {english} {return $english}
+proc update_temperature_charts_y_axis {} {}
+proc ifexists {name} {
+    upvar 1 $name value
+    if {[info exists value]} {return $value}
+    return ""
+}
+proc reset_case {} {
+    unset -nocomplain ::settings
+    array set ::settings {}
+    set ::messages {}; set ::popups {}
+    foreach p [glob -nocomplain -directory $::dir * .*] {
+        if {[file tail $p] ni {. ..}} {file delete -force $p}
+    }
+}
+proc raw {path} {set f [open $path rb];set s [read $f];close $f;return $s}
+proc disk_dict {path} {return [encoding convertfrom utf-8 [read_binary_file $path]]}
+proc persist {values} {array set a $values;save_array_to_file a $::filename}
+
+test valid-1 {well-formed even lists are valid, empty included} -body {
+ list [settings_contents_valid {a 1 b {x y}}] [settings_contents_valid ""] [settings_contents_valid "a 1 b"] [settings_contents_valid "a \{"]
+} -result {1 1 0 0}
+
+test backup-1 {a changed save keeps the previous good file as .bak} -setup {
+ reset_case;persist {a 1 b 2};array set ::settings {a 1 b 3}
+} -body {
+ save_settings
+ list [dict get [disk_dict $::filename] b] [dict get [disk_dict $::filename.bak] b]
+} -result {3 2}
+
+test backup-2 {an unchanged save does not touch .bak} -setup {
+ reset_case;persist {a 1};array set ::settings {a 1}
+} -body {save_settings;file exists $::filename.bak} -result 0
+
+test backup-3 {the first save of a new install makes no .bak} -setup {
+ reset_case;array set ::settings {a 1}
+} -body {save_settings;list [file exists $::filename] [file exists $::filename.bak]} -result {1 0}
+
+test backup-4 {a damaged file never overwrites a good .bak} -setup {
+ reset_case;persist {a good};file copy $::filename $::filename.bak
+ write_file $::filename "a \{";array set ::settings {a new}
+} -body {
+ save_settings
+ list [dict get [disk_dict $::filename] a] [dict get [disk_dict $::filename.bak] a]
+} -result {new good}
+
+test backup-5 {Unicode values survive the round trip through .bak} -setup {
+ reset_case;persist {drink {café ☕}};array set ::settings {drink tea}
+} -body {save_settings;dict get [disk_dict $::filename.bak] drink} -result {café ☕}
+
+test recover-1 {an empty settings file is restored from .bak} -setup {
+ reset_case;persist {a 1 b 2};file rename $::filename $::filename.bak
+ close [open $::filename w]
+} -body {
+ set c [recover_damaged_settings $::filename [disk_dict $::filename]]
+ list [dict get $c b] [file exists $::filename.damaged] [llength $::popups]
+} -result {2 0 1}
+
+test recover-2 {an unreadable file is kept as .damaged and restored from .bak} -setup {
+ reset_case;persist {a 1};file rename $::filename $::filename.bak
+ write_file $::filename "a \{ broken"
+} -body {
+ set c [recover_damaged_settings $::filename [disk_dict $::filename]]
+ list [dict get $c a] [expr {[raw $::filename.damaged] eq [raw $::filename]}]
+} -result {1 1}
+
+test recover-3 {no backup means default settings} -setup {
+ reset_case;write_file $::filename "a \{"
+} -body {
+ list [recover_damaged_settings $::filename [disk_dict $::filename]] [file exists $::filename.damaged]
+} -result {{} 1}
+
+test recover-4 {a damaged .bak is not used} -setup {
+ reset_case;write_file $::filename "";write_file $::filename.bak "b \{"
+} -body {recover_damaged_settings $::filename ""} -result {}
+
+test recover-5 {after recovery the next save repairs the file and keeps the good .bak} -setup {
+ reset_case;persist {a 1};file rename $::filename $::filename.bak
+ write_file $::filename "a \{"
+} -body {
+ array set ::settings [recover_damaged_settings $::filename [disk_dict $::filename]]
+ set ::settings(a) 2
+ save_settings
+ list [dict get [disk_dict $::filename] a] [dict get [disk_dict $::filename.bak] a]
+} -result {2 1}
+
+cleanupTests

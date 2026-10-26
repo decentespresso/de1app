@@ -14,7 +14,7 @@ proc load_procs {path names} {
         set command ""
     }
 }
-load_procs [file join $root de1plus utils.tcl] {save_settings}
+load_procs [file join $root de1plus utils.tcl] {save_settings settings_contents_valid preserve_damaged_settings}
 load_procs [file join $root de1plus updater.tcl] {write_file write_file_atomic fast_write_open save_array_to_file read_binary_file}
 set dir [makeDirectory utilities]
 set filename [file join $dir settings.tdb]
