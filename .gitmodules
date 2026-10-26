@@ -12,6 +12,9 @@
 [submodule "de1plus/plugins/SDB"]
 	path = de1plus/plugins/SDB
 	url = https://github.com/decentespresso/de1app_plugin_SDB.git
+[submodule "de1plus/plugins/GrindAdvisor"]
+	path = de1plus/plugins/GrindAdvisor
+	url = https://github.com/Blastize/de1app-plugin-GrindAdvisor.git
 [submodule "de1plus/plugins/keyboard_control"]
 	path = de1plus/plugins/keyboard_control
 	url = https://github.com/decentespresso/de1app_plugin_keyboard_control.git
