@@ -525,6 +525,7 @@ namespace eval ::profile {
             # save/load cannot silently turn a power profile into zero watts,
             # erase an explicit/unknown mode, or destroy future Reserved data.
             foreach {outname innames} [list \
+                popup {popup} \
                 pump_mode {pump_mode PumpMode Mode} \
                 power {power Power} \
                 mode_max_pressure {mode_max_pressure mode_max_p ModeMaxP} \
@@ -610,6 +611,100 @@ namespace eval ::profile {
         ]
 
         return $profile
+    }
+
+    proc _v2_get {d key {default {}}} {
+        if {[catch {dict exists $d $key} ok]} {return $default}
+        if {$ok} {return [dict get $d $key]}
+        return $default
+    }
+
+    # Inverse of legacy_profile_to_v2: a v2 profile (a dict from json2dict) ->
+    # the legacy "key value" settings list the app loads profiles from. Users
+    # rename a .json profile to .tcl and drop it into profiles/, so import it.
+    #
+    # ponytail: always imported as Advanced (settings_2c). v2 has no
+    # simple-profile fields -- a pressure/flow profile is flattened to steps on
+    # export -- so the frames round-trip exactly but the type does not.
+    # Pattern-match steps back into a 2a/2b shape only if users complain.
+    proc v2_to_legacy {v2} {
+        set steps {}
+        foreach step [_v2_get $v2 steps] {
+            set legacy_step [list \
+                name [_v2_get $step name] \
+                temperature [_v2_get $step temperature] \
+                sensor [_v2_get $step sensor coffee] \
+                pump [_v2_get $step pump pressure] \
+                transition [_v2_get $step transition fast] \
+                pressure [_v2_get $step pressure 0] \
+                flow [_v2_get $step flow 0] \
+                seconds [_v2_get $step seconds 0] \
+                volume [_v2_get $step volume 0] \
+                weight [_v2_get $step weight 0] \
+                popup [_v2_get $step popup] \
+            ]
+
+            # The legacy editor reads all four of these unconditionally, so they
+            # are always written; a power exit has no legacy default and is
+            # simply appended when used.
+            set exits {exit_pressure_over 0 exit_pressure_under 0 exit_flow_over 0 exit_flow_under 0}
+            set exit [_v2_get $step exit]
+            set exit_type [_v2_get $exit type]
+            set exit_condition [_v2_get $exit condition]
+            if {$exit_type ne "" && $exit_condition ne ""} {
+                lappend legacy_step exit_if 1 exit_type "${exit_type}_${exit_condition}"
+                dict set exits exit_${exit_type}_${exit_condition} [_v2_get $exit value 0]
+            } else {
+                lappend legacy_step exit_if 0
+            }
+            lappend legacy_step {*}$exits
+
+            set limiter [_v2_get $step limiter]
+            if {[_v2_get $limiter value] ne ""} {
+                lappend legacy_step \
+                    max_flow_or_pressure [_v2_get $limiter value] \
+                    max_flow_or_pressure_range [_v2_get $limiter range 0.6]
+            }
+            foreach k {pump_mode power mode_max_pressure lever_spring lever_give reserved} {
+                if {[_v2_get $step $k] ne ""} {
+                    lappend legacy_step $k [_v2_get $step $k]
+                }
+            }
+            lappend steps $legacy_step
+        }
+
+        set weight [_v2_get $v2 target_weight 0]
+        set volume [_v2_get $v2 target_volume 0]
+        return [list \
+            advanced_shot $steps \
+            settings_profile_type settings_2c \
+            profile_title [_v2_get $v2 title] \
+            author [_v2_get $v2 author] \
+            profile_notes [_v2_get $v2 notes] \
+            beverage_type [_v2_get $v2 beverage_type espresso] \
+            profile_language [_v2_get $v2 lang en] \
+            profile_hide [_v2_get $v2 hidden 0] \
+            tank_desired_water_temperature [_v2_get $v2 tank_temperature 0] \
+            final_desired_shot_weight $weight \
+            final_desired_shot_weight_advanced $weight \
+            final_desired_shot_volume $volume \
+            final_desired_shot_volume_advanced $volume \
+            final_desired_shot_volume_advanced_count_start [_v2_get $v2 target_volume_count_start 0] \
+        ]
+    }
+
+    # JSON text -> legacy settings list, or "" when it is not a usable v2
+    # profile (so the caller can refuse it rather than load an empty profile).
+    proc v2_json_to_legacy {json_text} {
+        if {[catch {::json::json2dict $json_text} v2]} {
+            msg -WARNING [namespace current] v2_json_to_legacy: "not parseable as JSON: $v2"
+            return ""
+        }
+        if {[_v2_get $v2 steps] eq "" || [_v2_get $v2 title] eq ""} {
+            msg -WARNING [namespace current] v2_json_to_legacy: "JSON has no profile title or steps"
+            return ""
+        }
+        return [v2_to_legacy $v2]
     }
 
     # Apply a default flow limit to every unlimited PRESSURE step of the currently
@@ -749,6 +844,7 @@ namespace eval ::profile {
             catch {
                 set settings_file_contents [encoding convertfrom utf-8 [read_binary_file $fn]]    
                 array set ::settings $settings_file_contents
+                prune_invalid_settings
                 save $target_file
             }
         }
