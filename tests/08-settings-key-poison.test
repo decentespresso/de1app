@@ -1,0 +1,50 @@
+package require tcltest 2
+namespace import ::tcltest::*
+set root [file dirname [file dirname [file normalize [info script]]]]
+proc load_procs {path names} {
+    set f [open $path]; set text [read $f]; close $f
+    set command ""
+    foreach line [split $text \n] {
+        append command $line \n
+        if {![info complete $command]} {continue}
+        if {[regexp {^\s*proc\s+(\S+)} $command -> name] && $name in $names} {
+            uplevel #0 $command
+        }
+        set command ""
+    }
+}
+load_procs [file join $root de1plus utils.tcl] {valid_setting_key prune_invalid_settings looks_like_json}
+proc msg {args} {lappend ::messages $args}
+
+# What a JSON profile actually becomes when [foreach {k v}] parses the file: the
+# outer braces are stripped by the list parser, so the key is the inner text,
+# which is NOT itself a parseable Tcl list.
+set json_file {{
+    "version": 2,
+    "title": "Test"
+}}
+set json [lindex $json_file 0]
+
+test key-1 {bare setting names are valid, a JSON blob is not} -body {
+    list [valid_setting_key profile_title] [valid_setting_key led_front_idle_colour] \
+        [valid_setting_key $json] [valid_setting_key {a b}]
+} -result {1 1 0 0}
+
+test prune-1 {a poisoned key is dropped, real settings survive, and array get stays list-safe} -setup {
+    unset -nocomplain ::settings
+    array set ::settings [list profile_title Test $json ""]
+    set ::messages {}
+} -body {
+    prune_invalid_settings
+    set ok 1
+    foreach {k v} [array get ::settings] {if {[catch {lindex $k 0}]} {set ok 0}}
+    list [array names ::settings] $ok [llength $::messages]
+} -result {profile_title 1 1}
+
+test format-1 {a v2 profile is spotted by content, a legacy profile is not} -body {
+    set legacy "profile_title {Blooming espresso}\nauthor Decent\n"
+    list [looks_like_json $json_file] [looks_like_json "\n   $json_file"] \
+        [looks_like_json {[{"a": 1}]}] [looks_like_json $legacy] [looks_like_json ""]
+} -result {1 1 1 0 0}
+
+cleanupTests

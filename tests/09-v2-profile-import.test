@@ -1,0 +1,99 @@
+package require tcltest 2
+package require huddle
+package require json
+namespace import ::tcltest::*
+set root [file dirname [file dirname [file normalize [info script]]]]
+proc msg {args} {}
+proc ifexists {name {default {}}} {
+    upvar 1 $name value
+    if {[info exists value]} {return $value}
+    set value $default
+    return $default
+}
+source [file join $root de1plus profile.tcl]
+proc read_binary_file {path} {set f [open $path rb];set s [read $f];close $f;return $s}
+
+# Every shipped ADVANCED profile must survive legacy -> v2 JSON -> legacy. The
+# meta fields that v2 renames are compared too; profile_notes/title text is left
+# out because jsondump escaping is not part of what this converts.
+proc roundtrip_mismatches {} {
+    set bad {}
+    foreach fn [lsort [glob -nocomplain -directory [file join $::root de1plus profiles] *.tcl]] {
+        unset -nocomplain legacy
+        if {[catch {array set legacy [encoding convertfrom utf-8 [read_binary_file $fn]]}]} {continue}
+        if {[ifexists legacy(settings_profile_type)] ne "settings_2c"} {continue}
+        if {![info exists legacy(advanced_shot)]} {continue}
+        set json [huddle jsondump [::profile::legacy_profile_to_v2 [array get legacy]]]
+        array set back [::profile::v2_json_to_legacy $json]
+        if {![info exists back(advanced_shot)]} {lappend bad "[file tail $fn]: not imported"; continue}
+        if {[llength $legacy(advanced_shot)] != [llength $back(advanced_shot)]} {
+            lappend bad "[file tail $fn]: step count"
+            continue
+        }
+        foreach a $legacy(advanced_shot) b $back(advanced_shot) {
+            array unset orig; array unset new
+            array set orig $a; array set new $b
+            # v2 keeps only the ACTIVE exit triple. A legacy step also stores
+            # the three inactive exit_* values, which the machine never reads
+            # (exit_type selects one), so they are not compared.
+            set inactive {exit_pressure_over exit_pressure_under exit_flow_over exit_flow_under}
+            if {[ifexists orig(exit_if)] == 1} {
+                set inactive [lsearch -all -inline -not -exact $inactive "exit_[ifexists orig(exit_type)]"]
+            }
+            foreach k [array names orig] {
+                if {$k in $inactive} {continue}
+                if {$k eq "exit_type" && [ifexists orig(exit_if)] != 1} {continue}
+                if {![info exists new($k)]} {lappend bad "[file tail $fn]: lost $k"; continue}
+                if {$orig($k) ne $new($k)} {
+                    lappend bad "[file tail $fn]: $k '$orig($k)' -> '$new($k)'"
+                }
+            }
+        }
+        foreach {lk bk} {final_desired_shot_weight_advanced final_desired_shot_weight_advanced
+                          final_desired_shot_volume_advanced final_desired_shot_volume_advanced
+                          tank_desired_water_temperature tank_desired_water_temperature
+                          beverage_type beverage_type
+                          final_desired_shot_volume_advanced_count_start final_desired_shot_volume_advanced_count_start} {
+            if {[info exists legacy($lk)] && $legacy($lk) ne [ifexists back($bk)]} {
+                lappend bad "[file tail $fn]: $lk '$legacy($lk)' -> '[ifexists back($bk)]'"
+            }
+        }
+        unset -nocomplain back
+    }
+    return $bad
+}
+
+test roundtrip-1 {shipped advanced profiles survive legacy -> v2 -> legacy} -body {
+    roundtrip_mismatches
+} -result {}
+
+test import-1 {a v2 profile loads as an advanced profile with its steps} -body {
+    set json {{
+        "title": "Imported",
+        "author": "Someone",
+        "beverage_type": "espresso",
+        "target_weight": "36",
+        "tank_temperature": "0",
+        "steps": [
+            {"name": "fill", "temperature": "92", "sensor": "coffee", "pump": "flow",
+             "transition": "fast", "pressure": "1", "flow": "6", "seconds": "25",
+             "volume": "0", "weight": "0",
+             "exit": {"type": "pressure", "condition": "over", "value": "4"},
+             "limiter": {"value": "6", "range": "0.6"}}
+        ],
+        "version": 2
+    }}
+    array set p [::profile::v2_json_to_legacy $json]
+    array set s [lindex $p(advanced_shot) 0]
+    list $p(settings_profile_type) $p(profile_title) $p(final_desired_shot_weight_advanced) \
+        $s(exit_if) $s(exit_type) $s(exit_pressure_over) $s(exit_flow_under) \
+        $s(max_flow_or_pressure) $s(max_flow_or_pressure_range)
+} -result {settings_2c Imported 36 1 pressure_over 4 0 6 0.6}
+
+test import-2 {junk and non-profile JSON are refused, not half-loaded} -body {
+    list [::profile::v2_json_to_legacy {{"not": "a profile"}}] \
+         [::profile::v2_json_to_legacy [format %sbroken \u007b]] \
+         [::profile::v2_json_to_legacy {{"title": "No steps", "steps": []}}]
+} -result {{} {} {}}
+
+cleanupTests
