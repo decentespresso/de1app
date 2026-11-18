@@ -21,7 +21,7 @@ set plugin_name "shot_upload"
 namespace eval ::plugins::${plugin_name} {
     variable author "Decent"
     variable contact "john@decentespresso.com"
-    variable version 0.5
+    variable version 0.6
     variable description "Upload espresso shots to your Decent account."
     variable name "Shot Upload"
 
@@ -194,16 +194,13 @@ proc ::plugins::shot_upload::post_json {url json} {
     set body    $json
     set headers [list "Content-Type: application/json; charset=utf-8" "Authorization: $auth"]
 
-    # gzip the body to cut the upload transfer (~340KB shot JSON -> ~40KB). Shot
-    # uploads are transfer-bound, so this is the real speedup; the server inflates
-    # it when it sees Content-Encoding: gzip. gzip is binary and works on the UTF-8
-    # BYTES -- so unlike the plain path we DO [encoding convertto utf-8] here, then
-    # send the bytes raw. Guard: if zlib is unavailable, fall back to the plain body.
-    set _postsize ""
-    if {![catch {set body [zlib gzip [encoding convertto utf-8 $json]]}]} {
-        lappend headers "Content-Encoding: gzip"
-        set _postsize [string length $body]
-    }
+    # NO gzip. v0.5 gzipped the body here (bd4b8c0c) and that broke EVERY upload:
+    # TclCurl's -postfields sends the Tcl string's UTF-8 rep, so binary bytes >= 0x80
+    # go out as two bytes (1f 8b -> 1f c2 8b) and NUL as c0 80. With -postfieldsize
+    # set after -postfields, libcurl sent no body at all; the server waited and curl
+    # gave up after -timeout with "28" (CURLE_OPERATION_TIMEDOUT). Even with the size
+    # set first the gzip arrives corrupted. Only re-add compression with a transport
+    # that sends raw bytes, and keep tests/08-shot-upload-post.test passing.
 
     if {![catch {package require TclCurl}]} {
         set resp ""
@@ -214,9 +211,6 @@ proc ::plugins::shot_upload::post_json {url json} {
                 -httpheader $headers -bodyvar resp \
                 -useragent "de1app-shot-upload" \
                 -connecttimeout 15 -timeout 30 -failonerror 0 -followlocation 1
-            # REQUIRED for the gzip body: it contains NUL bytes, so without an
-            # explicit size libcurl would strlen() it and truncate at the first NUL.
-            if {$_postsize ne ""} { $hdl configure -postfieldsize $_postsize }
             if {[string match -nocase "https:*" $url]} {
                 set _ca "[homedir]/allcerts.pem"
                 if {[file exists $_ca]} { $hdl configure -sslverifypeer 1 -cainfo $_ca }
@@ -237,10 +231,8 @@ proc ::plugins::shot_upload::post_json {url json} {
         package require tls
         catch { ::http::register https 443 ::tls::socket }
     }
-    # $body is gzipped above when zlib was available; carry the header through so the
-    # server inflates it. (TclCurl is the normal path; this ::http fallback is rare.)
+    # (TclCurl is the normal path; this ::http fallback is rare.)
     set _fbheaders [list Authorization $auth]
-    if {$_postsize ne ""} { lappend _fbheaders Content-Encoding gzip }
     set tok [::http::geturl $url \
         -method POST \
         -type "application/json; charset=utf-8" \
@@ -280,9 +272,19 @@ proc ::plugins::shot_upload::_shot_filename_for_clock {clock} {
 #           is retried a bounded number of times and then given up on (recorded
 #           in the failed list) instead of retried on every Sleep forever.
 
-proc ::plugins::shot_upload::_ledger_file   {} { return "[data_directory]/history/shots_uploaded_to_decent.tdb" }
-proc ::plugins::shot_upload::_attempts_file {} { return "[data_directory]/history/shots_upload_attempts.tdb" }
-proc ::plugins::shot_upload::_failed_file   {} { return "[data_directory]/history/shots_upload_failed.tdb" }
+# Where history/ lives. Core split homedir into source_directory/data_directory
+# (e14b7d06), but a tablet that switches from nightly to the beta or stable
+# channel keeps this plugin while getting an older core with no data_directory;
+# drain_backlog then died with 'invalid command name "data_directory"' on every
+# Sleep. Fall back to homedir, which is where data lived before the split.
+proc ::plugins::shot_upload::_data_dir {} {
+    if {[info commands ::data_directory] ne ""} { return [::data_directory] }
+    return [homedir]
+}
+
+proc ::plugins::shot_upload::_ledger_file   {} { return "[_data_dir]/history/shots_uploaded_to_decent.tdb" }
+proc ::plugins::shot_upload::_attempts_file {} { return "[_data_dir]/history/shots_upload_attempts.tdb" }
+proc ::plugins::shot_upload::_failed_file   {} { return "[_data_dir]/history/shots_upload_failed.tdb" }
 
 proc ::plugins::shot_upload::_read_list {f} {
     if {![file exists $f]} { return {} }
@@ -331,7 +333,7 @@ proc ::plugins::shot_upload::_txt_uploaded {txt} {
 # few times if the file hasn't been written yet (the live path can beat the
 # save-to-history writer). No-op if already marked.
 proc ::plugins::shot_upload::_mark_shot_uploaded {filename {tries 5}} {
-    set path "[data_directory]/history/$filename"
+    set path "[_data_dir]/history/$filename"
     if {![file exists $path]} {
         if {$tries > 0} {
             after 3000 [list ::plugins::shot_upload::_mark_shot_uploaded $filename [expr {$tries - 1}]]
@@ -430,7 +432,7 @@ proc ::plugins::shot_upload::drain_backlog {} {
         return
     }
 
-    set histdir "[data_directory]/history"
+    set histdir "[_data_dir]/history"
     if {![file isdirectory $histdir]} { return }
     set all [glob -nocomplain -tails -directory $histdir *.shot]
     set ledger [_load_ledger]
@@ -469,7 +471,7 @@ proc ::plugins::shot_upload::_drain_next {} {
     }
 
     set f    [lindex $drain_queue 0]
-    set path "[data_directory]/history/$f"
+    set path "[_data_dir]/history/$f"
 
     # outcome: uploaded | done | skip-serial | skip-auth | network | count
     #   uploaded   -> 2xx: mark the .shot file + ledger + advance

@@ -1,0 +1,107 @@
+package require tcltest 2
+namespace import ::tcltest::*
+set root [file dirname [file dirname [file normalize [info script]]]]
+# Load exact production procs without starting the GUI/BLE/application packages.
+proc load_procs {path names} {
+    set f [open $path]; set text [read $f]; close $f
+    set command ""
+    foreach line [split $text \n] {
+        append command $line \n
+        if {![info complete $command]} {continue}
+        if {[regexp {^\s*proc\s+(\S+)} $command -> name] && $name in $names} {
+            uplevel #0 $command
+        }
+        set command ""
+    }
+}
+namespace eval ::plugins::shot_upload {}
+load_procs [file join $root de1plus plugins shot_upload plugin.tcl] {
+    ::plugins::shot_upload::post_json ::plugins::shot_upload::_data_dir
+}
+proc ifexists {varname} {upvar $varname v; if {[info exists v]} {return $v}; return ""}
+proc homedir {} {return /test/home}
+array set ::settings {decent_login_email a@example.com decent_login_password_encrypted pw}
+
+# A shot body with accented text and characters >= 0x80, the case gzip broke.
+set json "{\"title\":\"Rao Allongé café ü\",\"pad\":\"[string repeat x 2000]\"}"
+set have_curl [expr {![catch {package require TclCurl}]}]
+testConstraint tclcurl $have_curl
+testConstraint nocurl [expr {!$have_curl}]
+testConstraint tclsh [expr {[auto_execok tclsh8.6] ne "" || [auto_execok tclsh] ne ""}]
+
+# --- ::http fallback (plain tclsh has no TclCurl) ---------------------------------
+package require http
+proc ::http::geturl {url args} {set ::request [list $url $args]; return tok1}
+proc ::http::ncode {tok} {return 200}
+proc ::http::data {tok} {return {{"ok":true}}}
+proc ::http::cleanup {tok} {}
+
+test shot-upload-fallback-plain {fallback sends the JSON unchanged, with no gzip} -constraints nocurl -body {
+    set r [::plugins::shot_upload::post_json http://example.invalid/support/api/shot_upload $json]
+    set opts [lindex $::request 1]
+    list [dict get $r ncode] [expr {[dict get $opts -query] eq $json}] \
+        [dict exists [dict get $opts -headers] Content-Encoding] [dict get $opts -type]
+} -result {200 1 0 {application/json; charset=utf-8}}
+
+# --- data dir fallback --------------------------------------------------------------
+test shot-upload-data-dir-fallback {older cores without data_directory use homedir} -body {
+    catch {rename ::data_directory {}}
+    ::plugins::shot_upload::_data_dir
+} -result /test/home
+
+test shot-upload-data-dir {newer cores use data_directory} -body {
+    proc ::data_directory {} {return /test/data}
+    set d [::plugins::shot_upload::_data_dir]
+    rename ::data_directory {}
+    set d
+} -result /test/data
+
+# --- TclCurl: the bytes that reach a real HTTP server ----------------------------
+# The server runs in a separate tclsh, because curl perform blocks this event loop.
+# It writes the raw request body to a file and answers 200.
+test shot-upload-curl-body-intact {TclCurl delivers exactly the UTF-8 bytes of the JSON} -constraints {tclcurl tclsh} -setup {
+    set tmp [file join [temporaryDirectory] shot_upload_body.bin]
+    set script [file join [temporaryDirectory] shot_upload_srv.tcl]
+    set portfile [file join [temporaryDirectory] shot_upload_port.txt]
+    file delete -force $tmp $portfile
+    set f [open $script w]
+    puts $f [string map [list @OUT@ $tmp @PORT@ $portfile] {
+        proc conn {s a p} {
+            fconfigure $s -translation binary
+            set len 0
+            while {[gets $s line] > 0} {
+                set line [string trimright $line \r]
+                if {$line eq ""} break
+                regexp -nocase {^content-length:\s*(\d+)} $line -> len
+            }
+            set body [read $s $len]
+            set o [open @OUT@ wb]; puts -nonewline $o $body; close $o
+            puts -nonewline $s "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\n{\"ok\":true}"
+            close $s; set ::done 1
+        }
+        set srv [socket -server conn -myaddr 127.0.0.1 0]
+        set o [open @PORT@ w]; puts $o [lindex [fconfigure $srv -sockname] 2]; close $o
+        after 20000 {set ::done 1}
+        vwait ::done
+    }]
+    close $f
+    set sh [auto_execok tclsh8.6]; if {$sh eq ""} {set sh [auto_execok tclsh]}
+    set srvlog [file join [temporaryDirectory] shot_upload_srv.log]
+    exec {*}$sh $script >& $srvlog &
+    for {set i 0} {$i < 100 && ![file exists $portfile]} {incr i} {after 100}
+    if {![file exists $portfile]} {
+        set f [open $srvlog]; set why [read $f]; close $f
+        error "test server did not start: $why"
+    }
+    set f [open $portfile]; set port [string trim [read $f]]; close $f
+} -body {
+    set r [::plugins::shot_upload::post_json http://127.0.0.1:$port/support/api/shot_upload $json]
+    set f [open $tmp rb]; set got [read $f]; close $f
+    list [dict get $r ncode] [expr {$got eq [encoding convertto utf-8 $json]}] [string length $got]
+} -cleanup {
+    file delete -force $tmp $script $portfile $srvlog
+} -result [list 200 1 [string length [encoding convertto utf-8 $json]]]
+
+set failed $::tcltest::numTests(Failed)
+cleanupTests
+if {$failed} {exit 1}
