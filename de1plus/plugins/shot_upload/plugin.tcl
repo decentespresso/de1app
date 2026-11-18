@@ -21,7 +21,7 @@ set plugin_name "shot_upload"
 namespace eval ::plugins::${plugin_name} {
     variable author "Decent"
     variable contact "john@decentespresso.com"
-    variable version 0.6
+    variable version 0.7
     variable description "Upload espresso shots to your Decent account."
     variable name "Shot Upload"
 
@@ -180,37 +180,65 @@ proc ::plugins::shot_upload::_note_unlinked_serial {sn} {
 # POST a JSON body to the Decent support API with the linked account's HTTP Basic
 # credentials. Returns {ncode <int> body <str>}; throws on transport failure.
 #
+# The body is gzipped (~340KB shot JSON -> ~40KB); the server inflates it when it
+# sees Content-Encoding: gzip. If gzip or the temp file is unavailable, the plain
+# JSON is sent instead -- the server accepts both.
+#
 # Uses libcurl (TclCurl) -- much lower CPU than ::http::geturl and it doesn't
 # block the Tk event loop -- mirroring decent_http_get_to_file in updater.tcl.
 # Falls back to ::http::geturl only if TclCurl is unavailable.
+#
+# ⚠️ TclCurl CANNOT send binary through -postfields: it sends the Tcl string's
+# UTF-8 rep, so bytes >= 0x80 go out as two bytes (gzip's 1f 8b -> 1f c2 8b) and
+# NUL as c0 80. v0.5 did that (bd4b8c0c), and with -postfieldsize set after
+# -postfields libcurl sent no body at all: every upload hung until -timeout and
+# failed with "28" (CURLE_OPERATION_TIMEDOUT). So the gzip bytes are written to a
+# file and streamed with -upload/-infile (customrequest POST), which libcurl reads
+# raw. tests/08-shot-upload-post.test checks the bytes that reach a real server.
 proc ::plugins::shot_upload::post_json {url json} {
     set email   [ifexists ::settings(decent_login_email)]
     set pw      [ifexists ::settings(decent_login_password_encrypted)]
     set auth    "Basic [binary encode base64 $email:$pw]"
-    # Pass the Tcl string through as-is. Both transports below already encode it
-    # as UTF-8 on the wire (TclCurl from the string rep, ::http from the charset
-    # in -type), so pre-encoding it with [encoding convertto utf-8] gets it
-    # encoded a SECOND time and every accented character ships as mojibake.
-    set body    $json
-    set headers [list "Content-Type: application/json; charset=utf-8" "Authorization: $auth"]
+    set ctype   "application/json; charset=utf-8"
 
-    # NO gzip. v0.5 gzipped the body here (bd4b8c0c) and that broke EVERY upload:
-    # TclCurl's -postfields sends the Tcl string's UTF-8 rep, so binary bytes >= 0x80
-    # go out as two bytes (1f 8b -> 1f c2 8b) and NUL as c0 80. With -postfieldsize
-    # set after -postfields, libcurl sent no body at all; the server waited and curl
-    # gave up after -timeout with "28" (CURLE_OPERATION_TIMEDOUT). Even with the size
-    # set first the gzip arrives corrupted. Only re-add compression with a transport
-    # that sends raw bytes, and keep tests/08-shot-upload-post.test passing.
+    # gzip works on the UTF-8 BYTES. (The plain path passes the Tcl string through
+    # as-is: both transports encode it as UTF-8 on the wire, so pre-encoding it
+    # with [encoding convertto utf-8] would double-encode every accented char.)
+    set gz ""
+    catch { set gz [zlib gzip [encoding convertto utf-8 $json]] }
 
     if {![catch {package require TclCurl}]} {
+        set gzfile ""
+        if {$gz ne ""} {
+            set gzfile "[_data_dir]/shot_upload_body_[pid].gz"
+            if {[catch {
+                set f [open $gzfile wb]
+                puts -nonewline $f $gz
+                close $f
+            }]} {
+                catch { close $f }
+                catch { file delete -force $gzfile }
+                set gzfile ""
+            }
+        }
         set resp ""
         set hdl [curl::init]
         set code 0
         if {[catch {
-            $hdl configure -url $url -post 1 -postfields $body \
-                -httpheader $headers -bodyvar resp \
+            $hdl configure -url $url -bodyvar resp \
                 -useragent "de1app-shot-upload" \
                 -connecttimeout 15 -timeout 30 -failonerror 0 -followlocation 1
+            if {$gzfile ne ""} {
+                # Raw bytes from the file. "Expect:" stops libcurl waiting for a
+                # 100-continue before sending the body.
+                $hdl configure -upload 1 -customrequest POST \
+                    -infile $gzfile -infilesize [file size $gzfile] \
+                    -httpheader [list "Content-Type: $ctype" "Content-Encoding: gzip" \
+                                     "Authorization: $auth" "Expect:"]
+            } else {
+                $hdl configure -post 1 -postfields $json \
+                    -httpheader [list "Content-Type: $ctype" "Authorization: $auth"]
+            }
             if {[string match -nocase "https:*" $url]} {
                 set _ca "[homedir]/allcerts.pem"
                 if {[file exists $_ca]} { $hdl configure -sslverifypeer 1 -cainfo $_ca }
@@ -219,23 +247,32 @@ proc ::plugins::shot_upload::post_json {url json} {
             set code [$hdl getinfo responsecode]
         } err]} {
             catch { $hdl cleanup }
+            if {$gzfile ne ""} { catch { file delete -force $gzfile } }
             error $err
         }
         catch { $hdl cleanup }
+        if {$gzfile ne ""} { catch { file delete -force $gzfile } }
         return [dict create ncode $code body $resp]
     }
 
-    # Fallback: blocking ::http::geturl if libcurl is somehow unavailable.
+    # Fallback: blocking ::http::geturl if libcurl is somehow unavailable. ::http
+    # sends a byte string in -query raw (checked with http 2.8 and 2.10), so the
+    # gzip goes as-is.
     package require http
     if {[string match -nocase "https:*" $url]} {
         package require tls
         catch { ::http::register https 443 ::tls::socket }
     }
-    # (TclCurl is the normal path; this ::http fallback is rare.)
     set _fbheaders [list Authorization $auth]
+    if {$gz ne ""} {
+        set body $gz
+        lappend _fbheaders Content-Encoding gzip
+    } else {
+        set body $json
+    }
     set tok [::http::geturl $url \
         -method POST \
-        -type "application/json; charset=utf-8" \
+        -type $ctype \
         -query $body \
         -headers $_fbheaders \
         -timeout 15000]
