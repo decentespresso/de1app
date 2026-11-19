@@ -29,7 +29,13 @@ proc ::plugins::shot_upload::_jnum {v} {
     if {$v eq "" || ![string is double -strict $v]} { return "null" }
     # normalise "nan"/"inf" which pass string-is-double on some builds
     if {[string match -nocase *n* $v] || [string match -nocase *inf* $v]} { return "null" }
-    return $v
+    # Already a valid JSON number: pass it through unchanged.
+    if {[regexp {^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$} $v]} { return $v }
+    # Tcl also accepts forms JSON does not: a user-typed "50." or ".5", "+5",
+    # "05", "0x1A". Re-emit those through double(), whose string form is always
+    # valid JSON (50.0, 0.5, 5.0, 26.0); anything it cannot read becomes null.
+    if {[catch {expr {double($v)}} d]} { return "null" }
+    return $d
 }
 
 # Number that must be finite; non-numbers coerce to 0 (used inside the

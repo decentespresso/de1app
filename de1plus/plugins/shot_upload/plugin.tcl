@@ -21,7 +21,7 @@ set plugin_name "shot_upload"
 namespace eval ::plugins::${plugin_name} {
     variable author "Decent"
     variable contact "john@decentespresso.com"
-    variable version 0.7
+    variable version 0.8
     variable description "Upload espresso shots to your Decent account."
     variable name "Shot Upload"
 
