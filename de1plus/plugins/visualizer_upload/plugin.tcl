@@ -13,7 +13,7 @@ set plugin_name "visualizer_upload"
 namespace eval ::plugins::${plugin_name} {
     variable author "Johanna Schander"
     variable contact "coffee-plugins@mimoja.de"
-    variable version 1.3
+    variable version 2.0
     variable description "Upload and download shots to/from visualizer.coffee"
     variable name "Upload to visualizer"
 
@@ -70,181 +70,391 @@ namespace eval ::plugins::${plugin_name} {
         }
     }
 
-    proc upload {content} {
-        variable settings
+    # --- Uploading -------------------------------------------------------------------------------------------
+    #
+    # Uploads never block the UI (v2.0). Previously `upload` ran on the UI thread with up to 20 attempts of 8 s
+    # each plus a blocking 1 s pause between them, freezing the screen for seconds normally and for minutes when
+    # the network or visualizer.coffee was down. Now (same approach as the shot_upload plugin):
+    #  - one non-blocking attempt right after each shot (decent_http_async in utils.tcl: libcurl multi interface,
+    #    falling back to ::http with -command);
+    #  - a shot that failed because of the network or a server error is queued, and the queue is retried only
+    #    while the machine is asleep, with exponential backoff, giving up on a shot after max_attempts server
+    #    errors. Network errors never count against a shot. Old history is never uploaded, only failed shots;
+    #  - 401 (bad username/password) shows its toast once and pauses uploads until the credentials are saved
+    #    again; any other 4xx means the shot itself was rejected, so it is not retried.
 
-        if {![has_credentials]} {
-            #popup [translate_toast "Please configure your username and password in the settings"]
-            #set settings(last_upload_result) [translate "Please configure your username and password in the settings"]
-            #plugins save_settings visualizer_upload
-            return {}
-        }
+    # Shots waiting for a retry: dict <espresso clock seconds> -> <server-error attempts>, persisted in
+    # [_pending_file] so it survives restarts.
+    variable max_attempts 5
+    # Never keep more than this many shots waiting (oldest dropped first).
+    variable max_pending 50
+    variable draining 0
+    variable drain_backoff 2000
+    # Set by a 401 this session; cleared when the credentials are saved again.
+    variable auth_failed 0
 
+    proc _pending_file {} { return "[data_directory]/history/visualizer_upload_pending.tdb" }
 
-        msg "uploading shot"
-        
-        
-        set settings(last_action) "upload"
-        set settings(last_upload_shot) $::settings(espresso_clock)
-        set settings(last_upload_result) ""
-        set settings(last_upload_id) ""
-        
-        set content [encoding convertto utf-8 $content]
-
-        http::register https 443 [list ::tls::socket -servername $settings(visualizer_url)]
-
-        set auth "Basic [binary encode base64 $settings(visualizer_username):$settings(visualizer_password)]"
-        set boundary "--------[clock seconds]"
-        set type "multipart/form-data, charset=utf-8, boundary=$boundary"
-        set headerl [list Authorization "$auth"]
-
-        set url "https://$settings(visualizer_url)/$settings(visualizer_endpoint)"
-
-        set contentHeader "Content-Disposition: form-data; name=\"file\"; filename=\"file.shot\"\r\nContent-Type: application/octet-stream\r\n"
-        set body "--$boundary\r\n$contentHeader\r\n$content\r\n--$boundary--\r\n"
-
-
-        set returncode 0
-        set returnfullcode ""
-        set answer ""
-
-        # Initialize retry counter
-        set retryCount 0
-        set maxAttempts 20
-        set success 0
-
-        # modification by Tom Schmidt to retry visualizer uploads 3 times
-        # https://3.basecamp.com/3671212/buckets/7351439/messages/6863865822#__recording_6880174537 
-
-        set attempts 0
-        while {$retryCount < $maxAttempts && !$success} {
-            if {[catch {
-                # Execute the HTTP POST request
-                if {$attempts == 0} {
-                    incr attempts
-                    popup [translate_toast "Uploading to Visualizer"]
-                } else {
-                    popup [subst {[translate_toast "Uploading to Visualizer, attempt"] #[incr attempts]}]
-                }
-
-                # exponentially increasing timeout
-                #set timeout [expr {$attempts * 2000}]
-                
-                set timeout 8000
-                set token [http::geturl $url -headers $headerl -method POST -type $type -query $body -timeout $timeout]
-                #msg $token
-
-                set status [http::status $token]
-                set answer [http::data $token]
-                set returncode [http::ncode $token]
-                set returnfullcode [http::code $token]
-                msg "status: $status"
-                msg "answer $answer"
-
-                http::cleanup $token
-
-                # Check if response code indicates success
-                if {$returncode == 200} {
-                    set success 1
-                } else {
-                    # Increment retry counter if response code is not 200
-                    incr retryCount
-                    after 1000
-                }
-            } err] != 0} {
-                # Increment retry counter in case of error
-                incr retryCount
-
-                # Log error message
-                msg "Error during Visualizer upload attempt $retryCount: $err"
-                set returnfullcode $err
-
-                # Clean up HTTP token if necessary
-                catch { http::cleanup $token }
-
-                if {$retryCount < $maxAttempts} {
-                    #after [expr {5000 * $retryCount}]
-                    after 1000
-                }
-            }
-        }
-
-        if {$returncode == 401} {
-            msg "Upload failed. Unauthorized"
-            popup [translate_toast "Upload failed! Authentication failed. Please check username / password"]
-            set settings(last_upload_result) [translate "Authentication failed. Please check username / password"]
-            plugins save_settings visualizer_upload
-            return
-        }
-        if {[string length $answer] == 0 || $returncode != 200} {
-            msg "Upload failed: $returnfullcode"
-            popup [translate_toast "Upload failed!"]
-            set settings(last_upload_result) "[translate {Upload failed!}] $returnfullcode"
-            plugins save_settings visualizer_upload
-            return
-        }
-
-        popup [translate_toast "Upload successful"]
-        if {[catch {
-            set response [::json::json2dict $answer]
-            set uploaded_id [dict get $response id]
-        } err] != 0} {
-            msg "Upload successful but unexpected server answer!"
-            set settings(last_upload_result) [translate "Upload successful but unexpected server answer!"]
-            plugins save_settings visualizer_upload
-            return
-        }
-        
-        msg "Upload successful with id: $uploaded_id"
-        set settings(last_upload_id) $uploaded_id
-        set settings(last_upload_result) "[translate {Upload successful with id}] $uploaded_id"
-        
-        plugins save_settings visualizer_upload
-	
-
-        return $uploaded_id
+    proc _load_pending {} {
+        set f [_pending_file]
+        if {![file exists $f] || [catch {read_file $f} d] || [catch {dict size $d}]} { return {} }
+        return $d
     }
 
-    proc uploadShotData {} {
+    proc _save_pending {d} {
+        catch { write_file [_pending_file] $d }
+    }
+
+    proc _queue_shot {clock} {
+        variable max_pending
+        if {$clock eq ""} return
+        set d [_load_pending]
+        if {![dict exists $d $clock]} { dict set d $clock 0 }
+        while {[dict size $d] > $max_pending} {
+            set oldest [lindex [lsort -integer [dict keys $d]] 0]
+            msg "dropping oldest queued shot $oldest (queue full)"
+            dict unset d $oldest
+        }
+        _save_pending $d
+    }
+
+    proc _unqueue_shot {clock} {
+        set d [_load_pending]
+        if {[dict exists $d $clock]} { dict unset d $clock; _save_pending $d }
+    }
+
+    proc pending_count {} { return [dict size [_load_pending]] }
+
+    # The saved history file for a shot, read back for a retry. Returns {} when it is gone.
+    proc _read_saved_shot {clock} {
+        set ts [clock format $clock -format "%Y%m%dT%H%M%S"]
+        foreach f [list "[data_directory]/history_v2/$ts.json" "[data_directory]/history/$ts.shot"] {
+            if {[file exists $f] && ![catch {read_file $f} raw]} {
+                # read_file returns raw bytes; the files are UTF-8
+                return [encoding convertfrom utf-8 $raw]
+            }
+        }
+        return {}
+    }
+
+    # What an HTTP result means for this shot:
+    #   uploaded | auth (401) | rejected (other 4xx) | network (no HTTP answer) | server (5xx or other)
+    proc classify_result {ncode error} {
+        if {$ncode == 0 || ($error ne "" && $ncode < 200)} { return network }
+        if {$ncode >= 200 && $ncode < 300} { return uploaded }
+        if {$ncode == 401} { return auth }
+        if {$ncode >= 400 && $ncode < 500} { return rejected }
+        return server
+    }
+
+    # The id visualizer.coffee returns for an uploaded shot, or {} when the answer can't be parsed.
+    proc parse_upload_id {body} {
+        if {[catch { set id [dict get [::json::json2dict $body] id] }]} { return {} }
+        return $id
+    }
+
+    # Request pieces for uploading shot content (a .shot file's text or ::shot::create's JSON) as the
+    # multipart "file" field visualizer.coffee expects. Returns {url headers body} with body as UTF-8 bytes.
+    proc build_upload_request {content {boundary {}}} {
         variable settings
+        if {$boundary eq ""} { set boundary "--------[clock milliseconds]" }
+        set auth "Basic [binary encode base64 [encoding convertto utf-8 $settings(visualizer_username):$settings(visualizer_password)]]"
+        set url "https://$settings(visualizer_url)/$settings(visualizer_endpoint)"
+        # visualizer_url may carry its own scheme, e.g. http://127.0.0.1:18765 for testing against a local server
+        if {[regexp {^https?://} $settings(visualizer_url)]} { set url "$settings(visualizer_url)/$settings(visualizer_endpoint)" }
+        set part "Content-Disposition: form-data; name=\"file\"; filename=\"file.shot\"\r\nContent-Type: application/octet-stream\r\n"
+        set body [encoding convertto utf-8 "--$boundary\r\n$part\r\n$content\r\n--$boundary--\r\n"]
+        set headers [list "Authorization: $auth" "Content-Type: multipart/form-data; boundary=$boundary" "Expect:"]
+        return [list $url $headers $body]
+    }
+
+    # POST shot content without blocking. Calls <callback> with {ncode body error} when done.
+    proc _post_shot {content callback} {
+        lassign [build_upload_request $content] url headers body
+        if {[decent_http_async $url $callback -body $body -headers $headers -timeout 30 -connecttimeout 15 \
+                -useragent "de1app-visualizer-upload"]} {
+            return
+        }
+        # No TclCurl: ::http in its asynchronous (-command) mode.
+        set hl {}
+        set ctype ""
+        foreach h $headers {
+            if {![regexp {^([^:]+):\s*(.*)$} $h -> k v] || $v eq ""} continue
+            if {$k eq "Content-Type"} { set ctype $v } else { lappend hl $k $v }
+        }
+        regexp {^https?://([^/:]+)} $url -> host
+        if {[catch {
+            ::http::register https 443 [list ::tls::socket -servername $host]
+            ::http::geturl $url -method POST -type $ctype -query $body -headers $hl -timeout 30000 \
+                -command [list [namespace current]::_http_done $callback]
+        } err]} {
+            after 0 [list {*}$callback [dict create ncode 0 body {} error $err]]
+        }
+    }
+
+    proc _http_done {callback token} {
+        set r [dict create ncode 0 body {} error {}]
+        catch {
+            if {[::http::status $token] eq "ok"} {
+                dict set r ncode [::http::ncode $token]
+                dict set r body [::http::data $token]
+            } else {
+                dict set r error "[::http::status $token] [::http::error $token]"
+            }
+        }
+        catch { ::http::cleanup $token }
+        uplevel #0 [linsert $callback end $r]
+    }
+
+    # Public, kept for other plugins: DYE calls it to (re-)upload an edited shot and expects the Visualizer id
+    # back (or {} on failure). The transfer itself is non-blocking; this waits for it with vwait, so the UI keeps
+    # running meanwhile. Single attempt; a failure here is reported, not queued.
+    proc upload {content} {
+        variable settings
+        if {![has_credentials]} { return {} }
+
+        msg "uploading shot"
         set settings(last_action) "upload"
         set settings(last_upload_shot) $::settings(espresso_clock)
         set settings(last_upload_result) ""
         set settings(last_upload_id) ""
-        
-        if { ! $settings(auto_upload) } {
-            set settings(last_upload_result) [translate "Not uploaded: auto-upload is not enabled"]
-            save_plugin_settings visualizer_upload
-            return
+        popup [translate_toast "Uploading to Visualizer"]
+
+        set wait [namespace current]::_upload_wait[clock clicks]
+        set $wait {}
+        _post_shot $content [list set $wait]
+        vwait $wait
+        set r [set $wait]
+        unset $wait
+
+        set outcome [classify_result [dict get $r ncode] [dict get $r error]]
+        set id [_report $outcome $r]
+        plugins save_settings visualizer_upload
+        return $id
+    }
+
+    # Show and record the outcome of an upload of the just-finished shot. Returns the Visualizer id, or {}.
+    proc _report {outcome r} {
+        variable settings
+        variable auth_failed
+        set ncode [dict get $r ncode]
+        switch -- $outcome {
+            uploaded {
+                set id [parse_upload_id [dict get $r body]]
+                popup [translate_toast "Upload successful"]
+                if {$id eq ""} {
+                    msg "Upload successful but unexpected server answer!"
+                    set settings(last_upload_result) [translate "Upload successful but unexpected server answer!"]
+                    return {}
+                }
+                msg "Upload successful with id: $id"
+                set settings(last_upload_id) $id
+                set settings(last_upload_result) "[translate {Upload successful with id}] $id"
+                return $id
+            }
+            auth {
+                msg "Upload failed. Unauthorized"
+                if {!$auth_failed} {
+                    popup [translate_toast "Upload failed! Authentication failed. Please check username / password"]
+                }
+                set auth_failed 1
+                set settings(last_upload_result) [translate "Authentication failed. Please check username / password"]
+            }
+            rejected {
+                msg "Upload rejected: http $ncode [dict get $r body]"
+                popup [translate_toast "Upload failed!"]
+                set settings(last_upload_result) "[translate {Upload failed!}] HTTP $ncode"
+            }
+            default {
+                set why [expr {$ncode ? "HTTP $ncode" : [dict get $r error]}]
+                msg "Upload failed ($outcome): $why"
+                popup [translate_toast "Upload failed!"]
+                set settings(last_upload_result) "[translate {Upload failed!}] $why"
+            }
         }
-        if {[espresso_elapsed length] < 6 && [espresso_pressure length] < 6 } {
-            set settings(last_upload_result) [translate "Not uploaded: shot was too short"]
-            save_plugin_settings visualizer_upload
-            return
-        }
+        return {}
+    }
+
+    # After each espresso: check the upload rules, then start the upload. Never blocks.
+    proc start_upload {} {
+        variable settings
+        variable auth_failed
+        set settings(last_action) "upload"
+        set settings(last_upload_shot) $::settings(espresso_clock)
+        set settings(last_upload_result) ""
+        set settings(last_upload_id) ""
+
+        set skip ""
         set min_seconds [ifexists settings(auto_upload_min_seconds) 6]
-        msg "espresso_elapsed range end end = [espresso_elapsed range end end]"	
-        if {[espresso_elapsed range end end] < $min_seconds } {
-            set settings(last_upload_result) [translate "Not uploaded: shot duration was less than $min_seconds seconds"]
-            save_plugin_settings visualizer_upload
-            return
-        }
         set bev_type [ifexists ::settings(beverage_type) "espresso"]
-        if {$bev_type eq "cleaning" || $bev_type eq "calibrate"} {
-            set settings(last_upload_result) [translate "Not uploaded: Profile was 'cleaning' or 'calibrate'"]
-            save_plugin_settings visualizer_upload
+        if { ! $settings(auto_upload) } {
+            set skip [translate "Not uploaded: auto-upload is not enabled"]
+        } elseif {[espresso_elapsed length] < 6 && [espresso_pressure length] < 6 } {
+            set skip [translate "Not uploaded: shot was too short"]
+        } elseif {[espresso_elapsed range end end] < $min_seconds } {
+            set skip [translate "Not uploaded: shot duration was less than $min_seconds seconds"]
+        } elseif {$bev_type eq "cleaning" || $bev_type eq "calibrate"} {
+            set skip [translate "Not uploaded: Profile was 'cleaning' or 'calibrate'"]
+        } elseif {![has_credentials]} {
+            # no Visualizer account set up: nothing to do, and nothing to report
+            set skip "-"
+        } elseif {$auth_failed} {
+            # Known-bad credentials this session: keep the shot for later instead of hammering the server.
+            set skip [translate "Authentication failed. Please check username / password"]
+            _queue_shot $::settings(espresso_clock)
+        }
+        if {$skip ne ""} {
+            if {$skip ne "-"} { set settings(last_upload_result) $skip }
+            uploadShotData
             return
         }
-        
-        set espresso_data [::shot::create]
-        ::plugins::visualizer_upload::upload $espresso_data
+
+        msg "uploading shot"
+        popup [translate_toast "Uploading to Visualizer"]
+        set clock $::settings(espresso_clock)
+        # Core saved this shot to history moments ago (from the same ::shot::create): reuse that file instead of
+        # building the JSON again, which takes ~0.4 s of UI time on a Mac and more on a tablet.
+        set content [_read_saved_shot $clock]
+        if {$content eq ""} { set content [::shot::create] }
+        _post_shot $content [list [namespace current]::_live_done $clock]
+    }
+
+    proc _live_done {clock r} {
+        variable settings
+        set outcome [classify_result [dict get $r ncode] [dict get $r error]]
+        # A newer shot may have started uploading meanwhile; only report this one if it is still the latest.
+        if {$settings(last_upload_shot) eq $clock} {
+            _report $outcome $r
+        } else {
+            msg "upload of earlier shot $clock finished: $outcome"
+        }
+        if {$outcome in {network server auth}} {
+            _queue_shot $clock
+            if {$settings(last_upload_shot) eq $clock} {
+                append settings(last_upload_result) " ([translate {will retry later}])"
+            }
+        }
+        if {$settings(last_upload_shot) eq $clock} {
+            uploadShotData
+        } else {
+            plugins save_settings visualizer_upload
+        }
+    }
+
+    # Called when the upload of the just-finished shot has COMPLETED, or was skipped. Returns the Visualizer id.
+    # It keeps this name because the SDB and DYE plugins hook it with
+    #   trace add execution ::plugins::visualizer_upload::uploadShotData leave ...
+    # to pick up last_upload_id once the upload is done. Before v2.0 this proc did the (blocking) upload itself.
+    proc uploadShotData {} {
+        variable settings
+        plugins save_settings visualizer_upload
+        return $settings(last_upload_id)
     }
 
     proc async_dispatch {old new} {
         # Prevent uploading of data if last flow was HotWater or HotWaterRinse
         if { $old eq "Espresso" } {
-            after 100 ::plugins::visualizer_upload::uploadShotData
+            after 100 ::plugins::visualizer_upload::start_upload
         }
+    }
+
+    # --- Retrying queued shots, only while the machine is asleep -----------------------------------------
+
+    proc _is_asleep {} {
+        if {[catch {::de1::state::current_state} s]} { return 0 }
+        return [expr {$s eq "Sleep"}]
+    }
+
+    proc drain_pending {} {
+        variable settings
+        variable draining
+        variable drain_backoff
+        variable auth_failed
+        if {$draining || !$settings(auto_upload) || ![has_credentials] || $auth_failed || ![_is_asleep]} return
+        if {[pending_count] == 0} return
+        set draining 1
+        set drain_backoff 2000
+        msg "retrying [pending_count] queued shot(s)"
+        _drain_next
+    }
+
+    proc _drain_next {} {
+        variable settings
+        variable draining
+        variable auth_failed
+        set queue [lsort -integer [dict keys [_load_pending]]]
+        if {[llength $queue] == 0 || !$settings(auto_upload) || $auth_failed || ![_is_asleep]} {
+            if {[llength $queue] && ![_is_asleep]} { msg "retry paused: machine awake" }
+            set draining 0
+            return
+        }
+        set clock [lindex $queue 0]
+        set content [_read_saved_shot $clock]
+        if {$content eq ""} {
+            msg "queued shot $clock has no saved history file; dropping it"
+            _unqueue_shot $clock
+            after 50 [namespace current]::_drain_next
+            return
+        }
+        _post_shot $content [list [namespace current]::_drain_done $clock]
+    }
+
+    proc _drain_done {clock r} {
+        variable settings
+        variable draining
+        variable drain_backoff
+        variable max_attempts
+        variable auth_failed
+        set outcome [classify_result [dict get $r ncode] [dict get $r error]]
+        switch -- $outcome {
+            uploaded {
+                set id [parse_upload_id [dict get $r body]]
+                msg "queued shot $clock uploaded, id $id"
+                _unqueue_shot $clock
+                if {$id ne ""} {
+                    set settings(last_upload_result) "[translate {Upload successful with id}] $id"
+                    if {$settings(last_upload_shot) eq $clock} { set settings(last_upload_id) $id }
+                    plugins save_settings visualizer_upload
+                }
+                set drain_backoff 2000
+                after 800 [namespace current]::_drain_next
+            }
+            rejected {
+                msg "queued shot $clock rejected (HTTP [dict get $r ncode]); dropping it"
+                _unqueue_shot $clock
+                after 800 [namespace current]::_drain_next
+            }
+            auth {
+                msg "retry paused: authentication failed"
+                set auth_failed 1
+                set draining 0
+            }
+            network {
+                msg "retry paused: network error ([dict get $r error]); resumes next sleep"
+                set draining 0
+            }
+            default {
+                set d [_load_pending]
+                set n [expr {[dict exists $d $clock] ? [dict get $d $clock] + 1 : 1}]
+                if {$n >= $max_attempts} {
+                    msg "giving up on queued shot $clock after $n server errors"
+                    dict unset d $clock
+                    _save_pending $d
+                    after 800 [namespace current]::_drain_next
+                } else {
+                    dict set d $clock $n
+                    _save_pending $d
+                    set drain_backoff [expr {min($drain_backoff * 2, 300000)}]
+                    after $drain_backoff [namespace current]::_drain_next
+                }
+            }
+        }
+    }
+
+    # New credentials were saved: let uploads try again.
+    proc credentials_changed {} {
+        variable auth_failed
+        set auth_failed 0
     }
 
     # type = browse / download_all / download_essentials / donwload_by_code
@@ -446,6 +656,15 @@ namespace eval ::plugins::${plugin_name} {
                 [dict get $event_dict previous_state] \
                 [dict get $event_dict this_state] \
             } ]
+        # Load libcurl while the app is starting: the first `package require TclCurl` takes about a second, which
+        # would otherwise freeze the UI right after the first shot.
+        after 3000 { catch { package require TclCurl } }
+        # Retry shots whose upload failed once the machine goes to sleep (it is idle then).
+        ::de1::event::listener::on_major_state_change_add [lambda {event_dict} {
+            if {[dict get $event_dict this_state] eq "Sleep" && [dict get $event_dict previous_state] ne "Sleep"} {
+                after 2000 ::plugins::visualizer_upload::drain_pending
+            }
+        }]
     }
 
 }
@@ -523,7 +742,12 @@ namespace eval ::plugins::${plugin_name}::visualizer_settings {
             set data(last_action_result) $::plugins::visualizer_upload::settings(last_upload_result)
             dui item config $page_to_show last_action_label -text [translate "Last upload:"]
             dui item config $page_to_show last_action -text [::plugins::visualizer_upload::visualizer_settings::format_shot_start]
-            dui item config $page_to_show last_action_result -text $::plugins::visualizer_upload::settings(last_upload_result)
+            set result $::plugins::visualizer_upload::settings(last_upload_result)
+            set waiting [::plugins::visualizer_upload::pending_count]
+            if {$waiting > 0} {
+                append result "\n[translate {Shots waiting to be uploaded:}] $waiting"
+            }
+            dui item config $page_to_show last_action_result -text $result
         }
         
         # QR: See http://www.androwish.org/index.html/file?name=jni/zint/backend_tcl/demo/demo.tcl&ci=b68e63bacab3647f
@@ -552,11 +776,13 @@ namespace eval ::plugins::${plugin_name}::visualizer_settings {
     
     proc save_settings {} {
         dui say [translate {Saved}] sound_button_in
+        ::plugins::visualizer_upload::credentials_changed
         save_plugin_settings visualizer_upload
     }
     
     proc page_done {} {
         dui say [translate {Done}] sound_button_in
+        ::plugins::visualizer_upload::credentials_changed
         save_plugin_settings visualizer_upload
         dui page close_dialog
     }

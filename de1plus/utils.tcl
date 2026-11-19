@@ -3000,3 +3000,151 @@ proc tablet_is_samsung_brand {} {
 	}
 	return 1
 }
+
+##############################################################################################################################################################################################################################################################################
+# Non-blocking HTTP POST/GET for plugins (shot_upload, visualizer_upload).
+#
+#   decent_http_async <url> <callback> ?-body <bytes>? ?-headers {"Name: value" ...}? ?-timeout <secs>? ?-connecttimeout <secs>? ?-useragent <ua>?
+#
+# Runs the transfer on libcurl's multi interface and drives it with short `after` polls, so the Tk event
+# loop -- and the UI -- keeps running for the whole transfer. When it finishes, <callback> is evaluated at
+# global level with one dict appended:  ncode <HTTP status, 0 if none>  body <response, decoded as UTF-8>  error <"" or message>
+# The callback always runs from the event loop, never before decent_http_async returns.
+#
+# -body is sent as BYTES (POST). Pass binary data (e.g. [zlib gzip ...]) as-is, and convert text with
+# [encoding convertto utf-8 ...] first. Without -body the request is a GET.
+#
+# Returns 1 when the transfer was started, 0 when TclCurl is unavailable or the handle could not be set up
+# (the callback is then NOT called, and the caller should fall back to ::http).
+#
+# Why not simpler TclCurl calls:
+#  - `$easy perform` blocks the event loop for the whole transfer.
+#  - TclCurl's `$multi auto` event source select()s for up to 1 s per check (generic/multi.c,
+#    curlMultiGetActiveTransfers), which freezes the UI in 1-second chunks while waiting on the server.
+#  - `-postfields` goes through Tcl_GetString(), which re-encodes every byte >= 0x80 of a binary body as two
+#    bytes, so a gzip body arrives corrupt. -readproc uses Tcl_GetByteArrayFromObj() and is binary-safe.
+#
+# Caveat: libcurl's DNS lookup is still blocking (no c-ares in our builds); normally a few ms.
+##############################################################################################################################################################################################################################################################################
+
+namespace eval ::decent_http_async {
+    variable seq 0
+    # per-transfer state, keyed by id: easy multi callback body offset deadline
+    variable xfer
+    array set xfer {}
+    # poll interval while a transfer is running, in ms
+    variable poll_ms 25
+}
+
+proc decent_http_async {url callback args} {
+    array set opt {-body {} -headers {} -timeout 30 -connecttimeout 15 -useragent "de1app" -post 0}
+    foreach {k v} $args {
+        if {![info exists opt($k)]} { error "decent_http_async: unknown option $k" }
+        set opt($k) $v
+    }
+    if {[llength $args] % 2} { error "decent_http_async: options must be key/value pairs" }
+    if {[dict exists $args -body]} { set opt(-post) 1 }
+
+    if {[catch {package require TclCurl}]} { return 0 }
+
+    set id [incr ::decent_http_async::seq]
+    # TclCurl only fills -bodyvar after an easy `perform`, never on the multi interface, so collect the
+    # response with -writeproc. It is invoked as a bare command name (no extra args), hence one proc per transfer.
+    set ::decent_http_async::resp$id ""
+    proc ::decent_http_async::_w$id {data} "append ::decent_http_async::resp$id \$data"
+    set easy ""
+    set multi ""
+    if {[catch {
+        set easy [curl::init]
+        $easy configure -url $url -writeproc ::decent_http_async::_w$id \
+            -useragent $opt(-useragent) -connecttimeout $opt(-connecttimeout) -timeout $opt(-timeout) \
+            -failonerror 0 -followlocation 1 -nosignal 1
+        if {[llength $opt(-headers)]} { $easy configure -httpheader $opt(-headers) }
+        if {$opt(-post)} {
+            $easy configure -post 1 -postfieldsize [string length $opt(-body)] \
+                -readproc [list ::decent_http_async::_read $id]
+        }
+        if {[string match -nocase "https:*" $url]} {
+            set ca "[homedir]/allcerts.pem"
+            if {[file exists $ca]} { $easy configure -sslverifypeer 1 -cainfo $ca }
+        }
+        set multi [curl::multiinit]
+        $multi addhandle $easy
+    } err]} {
+        catch { msg -WARNING "decent_http_async: could not set up transfer for '$url': $err" }
+        if {$multi ne ""} { catch { $multi removehandle $easy }; catch { $multi cleanup } }
+        if {$easy ne ""} { catch { $easy cleanup } }
+        unset -nocomplain ::decent_http_async::resp$id
+        catch { rename ::decent_http_async::_w$id {} }
+        return 0
+    }
+
+    # libcurl enforces -timeout itself; the deadline is only a backstop so a wedged handle can never poll forever.
+    set deadline [expr {[clock milliseconds] + ($opt(-timeout) + $opt(-connecttimeout) + 10) * 1000}]
+    set ::decent_http_async::xfer($id) [dict create easy $easy multi $multi callback $callback \
+        body $opt(-body) offset 0 deadline $deadline]
+    after 0 [list ::decent_http_async::_poll $id]
+    return 1
+}
+
+# libcurl asks for the next chunk of the POST body (at most $size bytes).
+proc ::decent_http_async::_read {id size} {
+    variable xfer
+    if {![info exists xfer($id)]} { return "" }
+    set off [dict get $xfer($id) offset]
+    set chunk [string range [dict get $xfer($id) body] $off [expr {$off + $size - 1}]]
+    dict set xfer($id) offset [expr {$off + [string length $chunk]}]
+    return $chunk
+}
+
+proc ::decent_http_async::_poll {id} {
+    variable xfer
+    variable poll_ms
+    if {![info exists xfer($id)]} { return }
+    set multi [dict get $xfer($id) multi]
+    set easy  [dict get $xfer($id) easy]
+
+    set running 1
+    set err ""
+    if {[catch { set running [$multi perform] } e]} {
+        set running 0
+        set err "curl multi perform failed: $e"
+    } elseif {$running < 0} {
+        set running 0
+        set err "curl multi perform failed"
+    } elseif {$running > 0 && [clock milliseconds] > [dict get $xfer($id) deadline]} {
+        set running 0
+        set err "timed out"
+    }
+    if {$running > 0} {
+        after $poll_ms [list ::decent_http_async::_poll $id]
+        return
+    }
+
+    # Finished (or failed). Collect the per-transfer result code, then release everything before the callback.
+    if {$err eq ""} {
+        if {![catch { $multi getinfo } info] && [llength $info] >= 3} {
+            set exitcode [lindex $info 2]
+            if {$exitcode != 0} {
+                set err "curl error $exitcode"
+                catch { set err "curl error $exitcode: [curl::easystrerror $exitcode]" }
+            }
+        }
+    }
+    set ncode 0
+    catch { set ncode [$easy getinfo responsecode] }
+    # response arrives as raw bytes; servers we talk to answer in UTF-8
+    set body [set ::decent_http_async::resp$id]
+    catch { set body [encoding convertfrom utf-8 $body] }
+    set callback [dict get $xfer($id) callback]
+
+    catch { $multi removehandle $easy }
+    catch { $easy cleanup }
+    catch { $multi cleanup }
+    unset -nocomplain xfer($id) ::decent_http_async::resp$id
+    catch { rename ::decent_http_async::_w$id {} }
+
+    if {[catch { uplevel #0 [linsert $callback end [dict create ncode $ncode body $body error $err]] } cberr]} {
+        catch { msg -ERROR "decent_http_async: callback failed: $cberr" }
+    }
+}

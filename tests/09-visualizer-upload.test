@@ -1,0 +1,203 @@
+package require tcltest 2
+namespace import ::tcltest::*
+# visualizer_upload v2.0: uploads must not block, results are classified correctly, failed shots are queued and
+# retried only while asleep, and uploadShotData (hooked by SDB and DYE) fires only once the upload has finished.
+# The real transport (decent_http_async) is replaced by a fake that answers later from the event loop.
+set root [file dirname [file dirname [file normalize [info script]]]]
+set tmp [makeDirectory visualizer_upload_test]
+file mkdir $tmp/history $tmp/history_v2
+
+# --- stubs for the app environment the plugin expects ---
+proc data_directory {} { return $::tmp }
+proc read_file {f} { set h [open $f]; fconfigure $h -translation binary; set d [read $h]; close $h; return $d }
+proc write_file {f d} { set h [open $f w]; fconfigure $h -translation binary; puts -nonewline $h $d; close $h }
+proc ifexists {var {def {}}} { upvar 1 $var v; if {[info exists v]} { return $v }; return $def }
+proc translate {s} { return $s }
+proc translate_toast {s} { return $s }
+proc popup {s} { lappend ::popups $s }
+proc msg {args} {}
+proc plugins {args} {}
+proc save_plugin_settings {args} {}
+proc espresso_elapsed {sub args} { if {$sub eq "length"} { return 30 }; return 25.0 }
+proc espresso_pressure {sub args} { return 30 }
+namespace eval ::shot { proc create {} { return "{\"title\":\"café\"}" } }
+namespace eval ::de1::state { proc current_state {} { return $::machine_state } }
+# Fake transport: record the request, answer from the event loop with the next queued response.
+proc decent_http_async {url callback args} {
+    lappend ::requests [list $url $args]
+    set r [lindex $::responses 0]
+    set ::responses [lrange $::responses 1 end]
+    after 10 [list {*}$callback $r]
+    return 1
+}
+proc resp {ncode {body {}} {error {}}} { return [dict create ncode $ncode body $body error $error] }
+
+source [file join $root de1plus plugins visualizer_upload plugin.tcl]
+namespace eval ::plugins::visualizer_upload {
+    array set settings {
+        auto_upload 1 visualizer_endpoint api/shots/upload visualizer_password secret visualizer_url visualizer.coffee
+        visualizer_username me@example.com auto_upload_min_seconds 6 last_upload_shot {} last_upload_result {} last_upload_id {}
+        last_action {} visualizer_browse_url "https://visualizer.coffee/shots/<ID>"
+    }
+}
+# Count uploadShotData completions, the way SDB and DYE hook it.
+proc on_done {args} { lappend ::done_ids $::plugins::visualizer_upload::settings(last_upload_id) }
+trace add execution ::plugins::visualizer_upload::uploadShotData leave on_done
+
+proc reset {} {
+    set ::requests {}; set ::responses {}; set ::popups {}; set ::done_ids {}; set ::machine_state Idle
+    set ::settings(espresso_clock) 1794990000
+    set ::settings(beverage_type) espresso
+    set ::plugins::visualizer_upload::auth_failed 0
+    set ::plugins::visualizer_upload::draining 0
+    file delete [::plugins::visualizer_upload::_pending_file]
+}
+# Run the event loop until the async work settles.
+proc settle {{ms 300}} { after $ms {set ::settled 1}; vwait ::settled }
+namespace path ::plugins::visualizer_upload
+
+test classify {HTTP results map to the right outcome} -body {
+    list [classify_result 200 {}] [classify_result 201 {}] [classify_result 401 {}] [classify_result 422 {}] \
+         [classify_result 500 {}] [classify_result 0 {curl error 7}] [classify_result 0 {}]
+} -result {uploaded uploaded auth rejected server network network}
+
+test parse-id {upload id comes from the JSON answer} -body {
+    list [parse_upload_id {{"id":"abc-123"}}] [parse_upload_id {not json}] [parse_upload_id {{"other":1}}]
+} -result {abc-123 {} {}}
+
+test request {multipart request carries UTF-8 bytes, basic auth and no Expect delay} -body {
+    lassign [build_upload_request "café" BOUND] url headers body
+    list $url [lindex $headers 0] [lindex $headers 1] [lindex $headers 2] \
+        [string match "*caf\xc3\xa9*" $body] [string match "--BOUND\r\n*\r\n--BOUND--\r\n" $body]
+} -result [list https://visualizer.coffee/api/shots/upload "Authorization: Basic [binary encode base64 me@example.com:secret]" \
+    "Content-Type: multipart/form-data; boundary=BOUND" "Expect:" 1 1]
+
+test live-nonblocking {start_upload returns before the upload finishes; uploadShotData fires after} -setup reset -body {
+    set ::responses [list [resp 200 {{"id":"v1"}}]]
+    start_upload
+    set before [list [llength $::done_ids] $::plugins::visualizer_upload::settings(last_upload_id)]
+    settle
+    list $before $::done_ids [llength $::requests] [pending_count]
+} -result {{0 {}} v1 1 0}
+
+test live-skip-short {a skipped shot still fires uploadShotData, with no request} -setup reset -body {
+    set ::plugins::visualizer_upload::settings(auto_upload_min_seconds) 60
+    start_upload
+    set r [list $::done_ids [llength $::requests] $::plugins::visualizer_upload::settings(last_upload_result)]
+    set ::plugins::visualizer_upload::settings(auto_upload_min_seconds) 6
+    set r
+} -result {{{}} 0 {Not uploaded: shot duration was less than 60 seconds}}
+
+test live-network-queues {a network failure queues the shot for retry} -setup reset -body {
+    set ::responses [list [resp 0 {} {curl error 7: Couldn't connect to server}]]
+    start_upload
+    settle
+    list $::done_ids [dict keys [::plugins::visualizer_upload::_load_pending]] \
+        [string match "*will retry later*" $::plugins::visualizer_upload::settings(last_upload_result)]
+} -result {{{}} 1794990000 1}
+
+test live-rejected-not-queued {a 4xx rejection is not retried} -setup reset -body {
+    set ::responses [list [resp 422 {bad}]]
+    start_upload
+    settle
+    list [pending_count] $::popups
+} -result {0 {{Uploading to Visualizer} {Upload failed!}}}
+
+test auth-once {401 toasts once, later shots are queued without contacting the server} -setup reset -body {
+    set ::responses [list [resp 401]]
+    start_upload
+    settle
+    set ::settings(espresso_clock) 1794990100
+    start_upload
+    settle
+    list [llength $::requests] [llength [lsearch -all $::popups "*Authentication failed*"]] [pending_count] $::plugins::visualizer_upload::auth_failed
+} -result {1 1 2 1}
+
+test credentials-saved {saving the credentials clears the auth pause} -setup reset -body {
+    set ::plugins::visualizer_upload::auth_failed 1
+    credentials_changed
+    set ::plugins::visualizer_upload::auth_failed
+} -result 0
+
+proc save_history {clock} {
+    write_file "$::tmp/history_v2/[clock format $clock -format %Y%m%dT%H%M%S].json" [encoding convertto utf-8 "{\"t\":\"café $clock\"}"]
+}
+
+test drain-awake {queued shots are not retried while the machine is awake} -setup reset -body {
+    ::plugins::visualizer_upload::_queue_shot 1794990000
+    drain_pending
+    settle
+    list [llength $::requests] [pending_count]
+} -result {0 1}
+
+test drain-asleep {queued shots upload oldest first while asleep, reading the saved file as UTF-8} -setup reset -body {
+    foreach c {1794990200 1794990000} { save_history $c; ::plugins::visualizer_upload::_queue_shot $c }
+    set ::machine_state Sleep
+    set ::responses [list [resp 200 {{"id":"a"}}] [resp 200 {{"id":"b"}}]]
+    drain_pending
+    settle 2500
+    set first [encoding convertto utf-8 "café 1794990000"]
+    list [llength $::requests] [pending_count] [string match "*$first*" [dict get [lindex $::requests 0 1] -body]]
+} -result {2 0 1}
+
+test drain-missing-file {a queued shot whose history file is gone is dropped} -setup reset -body {
+    ::plugins::visualizer_upload::_queue_shot 1794999999
+    set ::machine_state Sleep
+    drain_pending
+    settle
+    list [llength $::requests] [pending_count]
+} -result {0 0}
+
+test live-reuses-saved-file {the live upload sends the history file core just saved, not a rebuilt one} -setup reset -body {
+    save_history 1794990000
+    set ::responses [list [resp 200 {{"id":"v2"}}]]
+    start_upload
+    settle
+    set want [encoding convertto utf-8 "café 1794990000"]
+    list $::done_ids [string match "*$want*" [dict get [lindex $::requests 0 1] -body]]
+} -result {v2 1}
+
+test drain-network-pauses {a network error pauses the retry without counting an attempt} -setup reset -body {
+    save_history 1794990000
+    ::plugins::visualizer_upload::_queue_shot 1794990000
+    set ::machine_state Sleep
+    set ::responses [list [resp 0 {} {curl error 6}]]
+    drain_pending
+    settle
+    list [::plugins::visualizer_upload::_load_pending] $::plugins::visualizer_upload::draining
+} -result {{1794990000 0} 0}
+
+test drain-server-counts {a 5xx counts an attempt and gives up after max_attempts} -setup reset -body {
+    save_history 1794990000
+    write_file [::plugins::visualizer_upload::_pending_file] [dict create 1794990000 3]
+    set ::machine_state Sleep
+    set ::responses [list [resp 503]]
+    drain_pending
+    settle
+    set one [::plugins::visualizer_upload::_load_pending]
+    after cancel ::plugins::visualizer_upload::_drain_next
+    set ::plugins::visualizer_upload::draining 0
+    set ::responses [list [resp 503]]
+    drain_pending
+    settle
+    list $one [pending_count]
+} -result {{1794990000 4} 0}
+
+test queue-cap {the queue never holds more than max_pending shots, dropping the oldest} -setup reset -body {
+    for {set i 0} {$i < 55} {incr i} { ::plugins::visualizer_upload::_queue_shot [expr {1794990000 + $i}] }
+    set keys [lsort -integer [dict keys [::plugins::visualizer_upload::_load_pending]]]
+    list [llength $keys] [lindex $keys 0]
+} -result {50 1794990005}
+
+test dye-upload {upload (used by DYE) returns the id, single attempt} -setup reset -body {
+    set ::responses [list [resp 500] [resp 200 {{"id":"never"}}]]
+    set a [upload "shot text"]
+    set ::responses [list [resp 200 {{"id":"v9"}}]]
+    set b [upload "shot text"]
+    list $a $b [llength $::requests] [pending_count]
+} -result {{} v9 2 0}
+
+removeDirectory visualizer_upload_test
+set failed $::tcltest::numTests(Failed)
+cleanupTests
+if {$failed} {exit 1}

@@ -1,0 +1,146 @@
+package require tcltest 2
+namespace import ::tcltest::*
+# decent_http_async (utils.tcl): non-blocking HTTP over TclCurl's multi interface.
+# Needs TclCurl, which plain tclsh doesn't have; run it under undroidwish (headless):
+#   SDL_VIDEODRIVER=dummy undroidwish-arm64 tests/10-http-async.test   (results go to /tmp/10-http-async.log)
+# Uses an event-driven HTTP server in this same interpreter, so it also proves the event loop keeps running.
+testConstraint tclcurl [expr {![catch {package require TclCurl}]}]
+set root [file dirname [file dirname [file normalize [info script]]]]
+if {[info exists ::undroid] || [info commands sdltk] ne ""} {
+    configure -outfile /tmp/10-http-async.log
+}
+
+# Load the helper's procs and its namespace block from utils.tcl, without the rest of the app.
+proc load_helper {path} {
+    set f [open $path]; set text [read $f]; close $f
+    set command ""
+    foreach line [split $text \n] {
+        append command $line \n
+        if {![info complete $command]} {continue}
+        if {[regexp {^\s*(proc\s+(::)?decent_http_async|namespace eval ::decent_http_async)} $command]} {
+            uplevel #0 $command
+        }
+        set command ""
+    }
+}
+load_helper [file join $root de1plus utils.tcl]
+proc homedir {} { return /nonexistent }
+proc msg {args} {}
+
+# --- tiny HTTP server: answers by path; records what it received ---
+proc srv_accept {sock addr port} {
+    fconfigure $sock -translation binary -blocking 0
+    set ::conn($sock) [dict create head "" len -1 body ""]
+    fileevent $sock readable [list srv_read $sock]
+}
+proc srv_read {sock} {
+    set c $::conn($sock)
+    append data [read $sock]
+    if {[eof $sock] && $data eq ""} { close $sock; unset ::conn($sock); return }
+    if {[dict get $c len] < 0} {
+        dict append c head $data
+        set i [string first "\r\n\r\n" [dict get $c head]]
+        if {$i < 0} { set ::conn($sock) $c; return }
+        set head [string range [dict get $c head] 0 $i-1]
+        dict set c body [string range [dict get $c head] $i+4 end]
+        dict set c head $head
+        set len 0
+        regexp -nocase {content-length:\s*(\d+)} $head -> len
+        dict set c len $len
+    } else {
+        dict append c body $data
+    }
+    set ::conn($sock) $c
+    if {[string length [dict get $c body]] < [dict get $c len]} return
+    fileevent $sock readable {}
+    regexp {^(\S+) (\S+)} [dict get $c head] -> method path
+    lappend ::received [dict create method $method path $path body [dict get $c body] head [dict get $c head]]
+    set code 200
+    switch -glob -- $path {
+        */401 { set code 401 }
+        */500 { set code 500 }
+        */slow { after 3000 [list srv_reply $sock 200]; return }
+    }
+    srv_reply $sock $code
+}
+proc srv_reply {sock code} {
+    set out [encoding convertto utf-8 "{\"id\":\"ok\",\"t\":\"café\"}"]
+    catch {
+        puts -nonewline $sock "HTTP/1.1 $code X\r\nContent-Type: application/json\r\nContent-Length: [string length $out]\r\nConnection: close\r\n\r\n$out"
+        close $sock
+    }
+    unset -nocomplain ::conn($sock)
+}
+set srv [socket -server srv_accept -myaddr 127.0.0.1 0]
+set port [lindex [fconfigure $srv -sockname] 2]
+set base http://127.0.0.1:$port
+
+proc call {url args} {
+    set ::res ""
+    set started [decent_http_async $url [list set ::res] {*}$args]
+    set returned_first [expr {$::res eq ""}]
+    if {$started} { vwait ::res }
+    return [list $started $returned_first $::res]
+}
+proc reset {} { set ::received {} }
+
+test async-get {GET returns status and UTF-8 body via the callback, never synchronously} -constraints tclcurl -setup reset -body {
+    lassign [call $base/ok] started first r
+    list $started $first [dict get $r ncode] [dict get $r error] [dict get $r body] [dict get [lindex $::received 0] method]
+} -result [list 1 1 200 {} "{\"id\":\"ok\",\"t\":\"café\"}" GET]
+
+test async-binary-body {a binary (gzip) POST body arrives byte-for-byte} -constraints tclcurl -setup reset -body {
+    set raw ""
+    for {set i 0} {$i < 30000} {incr i} { append raw [expr {int(rand()*1e6)}] "é," }
+    set gz [zlib gzip [encoding convertto utf-8 $raw]]
+    lassign [call $base/ok -body $gz -headers {"Content-Encoding: gzip" "Expect:"}] started first r
+    set got [dict get [lindex $::received 0] body]
+    list [dict get $r ncode] [expr {[string length $gz] > 50000}] [string equal $got $gz] \
+        [string equal [encoding convertfrom utf-8 [zlib gunzip $got]] $raw]
+} -result {200 1 1 1}
+
+test async-status {HTTP error statuses come back as ncode, not errors} -constraints tclcurl -setup reset -body {
+    list [dict get [lindex [call $base/401 -body x] 2] ncode] [dict get [lindex [call $base/500 -body x] 2] ncode]
+} -result {401 500}
+
+test async-responsive {the event loop keeps running while waiting on a slow server} -constraints tclcurl -setup reset -body {
+    set ::ticks 0
+    proc tick {} { incr ::ticks; set ::tick_id [after 50 tick] }
+    tick
+    set t0 [clock milliseconds]
+    lassign [call $base/slow -body x] started first r
+    after cancel $::tick_id
+    set ms [expr {[clock milliseconds] - $t0}]
+    # a blocked loop would give ~0 ticks; allow generous slack for a loaded machine
+    list [dict get $r ncode] [expr {$::ticks >= ($ms / 50) * 0.7}]
+} -result {200 1}
+
+test async-refused {a refused connection reports ncode 0 and a curl error} -constraints tclcurl -body {
+    set dead [socket -server {apply {{s a p} {close $s}}} -myaddr 127.0.0.1 0]
+    set p [lindex [fconfigure $dead -sockname] 2]
+    close $dead
+    set r [lindex [call http://127.0.0.1:$p/ -body x] 2]
+    list [dict get $r ncode] [string match "curl error 7*" [dict get $r error]]
+} -result {0 1}
+
+test async-timeout {libcurl's timeout ends a stalled request} -constraints tclcurl -setup reset -body {
+    set r [lindex [call $base/slow -body x -timeout 1] 2]
+    list [dict get $r ncode] [string match "curl error 28*" [dict get $r error]]
+} -result {0 1}
+
+test async-cleanup {finished transfers leave no state or writeproc behind} -constraints tclcurl -setup reset -body {
+    call $base/ok
+    list [array size ::decent_http_async::xfer] [llength [info commands ::decent_http_async::_w*]] \
+        [llength [info vars ::decent_http_async::resp*]]
+} -result {0 0 0}
+
+test async-bad-option {unknown options are a programming error} -body {
+    catch {decent_http_async http://x cb -nope 1} e
+    set e
+} -result {decent_http_async: unknown option -nope}
+
+close $srv
+set failed $::tcltest::numTests(Failed)
+cleanupTests
+if {[info commands sdltk] ne "" || [info exists ::undroid]} { exit [expr {$failed ? 1 : 0}] }
+if {$failed} {exit 1}
