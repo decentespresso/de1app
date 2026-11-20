@@ -3549,9 +3549,12 @@ proc scanning_restart {} {
 	# with no explanation. Tell the user how to fix it, and re-request in case the
 	# OS will still ask. Non-Android returns early (android_scan_permission_missing
 	# is empty), so this is a no-op everywhere else.
+	# Don't scan without them: a scan missing BLUETOOTH_CONNECT crashes the app.
 	if {[llength [android_scan_permission_missing]] > 0} {
 		catch { foreach p [android_scan_permission_missing] { borg checkpermission $p 1 } }
 		catch { popup [subst {[translate "Decent needs the Nearby devices / Location permission to find your DE1 over Bluetooth. Please enable it in Android Settings, Apps, Decent, Permissions, then tap Search again."]}] }
+		set ::scanning 0
+		return
 	}
 	if {!$::has_bluetooth} {
 

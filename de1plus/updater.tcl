@@ -144,8 +144,9 @@ proc android_permissions_needed {{which all}} {
         lappend perms android.permission.READ_EXTERNAL_STORAGE android.permission.WRITE_EXTERNAL_STORAGE
     }
     if {$sdk >= 31} {
-        lappend perms android.permission.BLUETOOTH_SCAN
-        if {$which eq "all"} { lappend perms android.permission.BLUETOOTH_CONNECT }
+        # CONNECT is scan-critical too: the scan callback reads device names
+        # (getRemoteName), which throws an uncaught SecurityException without it.
+        lappend perms android.permission.BLUETOOTH_SCAN android.permission.BLUETOOTH_CONNECT
     }
     # Location exists (and is grantable) on every version; kept on 12+ too since
     # a BLE scan without the neverForLocation manifest flag can still need it.
