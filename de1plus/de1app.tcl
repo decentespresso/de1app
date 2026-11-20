@@ -286,14 +286,18 @@ namespace eval ::app {
 				set perms_wanted [android_permissions_needed all]
 
 				catch {
-					set some_wanted 0
+					# ask for everything missing in ONE request (one combined
+					# prompt): asked one at a time, BLUETOOTH_CONNECT could stay
+					# ungranted and a BLE scan then crashed the app
+					set perms_missing {}
 					foreach perm $perms_wanted {
-						set p [borg checkpermission $perm]
-						if {$p != 1} {
-							msg -INFO "Asking for Android app permission : $perm "
-							borg checkpermission $perm 1
-							set some_wanted 1
+						if {[borg checkpermission $perm] != 1} {
+							lappend perms_missing $perm
 						}
+					}
+					if {[llength $perms_missing] > 0} {
+						msg -INFO "Asking for Android app permissions : $perms_missing "
+						android_request_permissions $perms_missing
 					}
 
 					set perms [borg checkpermission]

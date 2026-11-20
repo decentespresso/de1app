@@ -144,14 +144,30 @@ proc android_permissions_needed {{which all}} {
         lappend perms android.permission.READ_EXTERNAL_STORAGE android.permission.WRITE_EXTERNAL_STORAGE
     }
     if {$sdk >= 31} {
-        lappend perms android.permission.BLUETOOTH_SCAN
-        if {$which eq "all"} { lappend perms android.permission.BLUETOOTH_CONNECT }
+        # CONNECT is scan-critical too: the scan callback reads device names
+        # (getRemoteName), which throws an uncaught SecurityException without it.
+        lappend perms android.permission.BLUETOOTH_SCAN android.permission.BLUETOOTH_CONNECT
     }
     # Location exists (and is grantable) on every version; kept on 12+ too since
     # a BLE scan without the neverForLocation manifest flag can still need it.
     lappend perms android.permission.ACCESS_FINE_LOCATION
     if {$which eq "all"} { lappend perms android.permission.ACCESS_COARSE_LOCATION }
     return $perms
+}
+# Ask Android for several runtime permissions in ONE request, so the user gets
+# one combined prompt (e.g. a single "Nearby devices" dialog that grants both
+# BLUETOOTH_SCAN and BLUETOOTH_CONNECT). Asking one permission at a time could
+# leave BLUETOOTH_CONNECT ungranted, and a BLE scan then crashes the app.
+# Blocks until the user answers (AndroWish waits for the result). Returns the
+# permissions that are still not granted afterwards.
+proc android_request_permissions {perms} {
+    if {[llength $perms] == 0} { return {} }
+    catch { borg checkpermission {*}$perms 1 }
+    set missing {}
+    foreach perm $perms {
+        if {[catch { borg checkpermission $perm } has] || $has != 1} { lappend missing $perm }
+    }
+    return $missing
 }
 determine_if_android
 
