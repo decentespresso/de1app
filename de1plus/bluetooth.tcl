@@ -3544,14 +3544,20 @@ proc scanning_restart {} {
 	# "Searching" label paints on the next event-loop pass, before the probe runs.
 	set ::scanning 1
 
-	# If the user denied the Bluetooth/Location permission, Android 12+ no longer
-	# re-prompts, so a scan silently finds nothing forever and the app looks broken
-	# with no explanation. Tell the user how to fix it, and re-request in case the
-	# OS will still ask. Non-Android returns early (android_scan_permission_missing
-	# is empty), so this is a no-op everywhere else.
-	# Don't scan without them: a scan missing BLUETOOTH_CONNECT crashes the app.
-	if {[llength [android_scan_permission_missing]] > 0} {
-		catch { foreach p [android_scan_permission_missing] { borg checkpermission $p 1 } }
+	# Android: a BLE scan needs BLUETOOTH_SCAN + BLUETOOTH_CONNECT (12+) and
+	# location. Ask for whatever is missing in one combined prompt; if the user
+	# grants it, carry on and scan. If it is still missing (denied, and Android 12+
+	# no longer re-prompts), explain how to fix it and DON'T scan: a scan without
+	# BLUETOOTH_CONNECT crashes the app (the scan callback reads device names).
+	# Non-Android returns early (android_scan_permission_missing is empty), so
+	# this is a no-op everywhere else.
+	set missing [android_scan_permission_missing]
+	if {[llength $missing] > 0} {
+		::bt::msg -NOTICE "scanning_restart: asking for missing Android permissions: $missing"
+		set missing [android_request_permissions $missing]
+	}
+	if {[llength $missing] > 0} {
+		::bt::msg -WARNING "scanning_restart: not scanning, Android permissions still missing: $missing"
 		catch { popup [subst {[translate "Decent needs the Nearby devices / Location permission to find your DE1 over Bluetooth. Please enable it in Android Settings, Apps, Decent, Permissions, then tap Search again."]}] }
 		set ::scanning 0
 		return

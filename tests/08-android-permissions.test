@@ -1,0 +1,94 @@
+package require tcltest 2
+namespace import ::tcltest::*
+set root [file dirname [file dirname [file normalize [info script]]]]
+# Load exact production procs without starting the GUI/BLE/application packages.
+proc load_procs {path names} {
+    set f [open $path]; set text [read $f]; close $f
+    set command ""
+    foreach line [split $text \n] {
+        append command $line \n
+        if {![info complete $command]} {continue}
+        if {[regexp {^\s*proc\s+(\S+)} $command -> name] && $name in $names} {
+            uplevel #0 $command
+        }
+        set command ""
+    }
+}
+load_procs [file join $root de1plus updater.tcl] {android_permissions_needed android_request_permissions}
+load_procs [file join $root de1plus bluetooth.tcl] {android_scan_permission_missing scanning_restart}
+
+proc ifexists {name {default ""}} {
+    upvar 1 $name value
+    if {[info exists value]} {return $value}
+    return $default
+}
+namespace eval ::bt { proc msg {args} {lappend ::log $args} }
+proc translate {s} {return $s}
+proc popup {s} {lappend ::popups $s}
+proc stop_scanner {} {}
+proc ble {args} {lappend ::ble_calls $args; return scanner1}
+# Fake AndroWish borg: ::granted is the set of granted permissions. A request
+# (trailing ask flag 1) records the asked list and grants whatever ::will_grant holds.
+proc borg {sub args} {
+    if {$sub ne "checkpermission"} {error "unexpected borg $sub"}
+    if {[llength $args] == 1} {return [expr {[lindex $args 0] in $::granted}]}
+    set perms [lrange $args 0 end-1]
+    lappend ::requests $perms
+    foreach p $perms { if {$p in $::will_grant && $p ni $::granted} {lappend ::granted $p} }
+    return {}
+}
+set S android.permission.BLUETOOTH_SCAN
+set C android.permission.BLUETOOTH_CONNECT
+set F android.permission.ACCESS_FINE_LOCATION
+proc reset {sdk granted {will_grant {}}} {
+    foreach id [after info] {after cancel $id}
+    set ::android 1; set ::android_sdk $sdk; set ::has_bluetooth 1
+    set ::scanning 0; set ::ble_scanner ""
+    set ::granted $granted; set ::will_grant $will_grant
+    set ::requests {}; set ::popups {}; set ::ble_calls {}; set ::log {}
+}
+proc short {perms} {lmap p $perms {string map {android.permission. ""} $p}}
+
+test perms-1 {Android 9: no BLUETOOTH_* (they don't exist before SDK 31)} -body {
+    reset 28 {}; list [short [android_permissions_needed scan]] [short [android_permissions_needed all]]
+} -result {ACCESS_FINE_LOCATION {READ_EXTERNAL_STORAGE WRITE_EXTERNAL_STORAGE ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION}}
+test perms-2 {Android 12+: a scan needs BLUETOOTH_CONNECT too} -body {
+    reset 31 {}; short [android_permissions_needed scan]
+} -result {BLUETOOTH_SCAN BLUETOOTH_CONNECT ACCESS_FINE_LOCATION}
+test perms-3 {Android 13+: no storage permissions at startup} -body {
+    reset 34 {}; short [android_permissions_needed all]
+} -result {BLUETOOTH_SCAN BLUETOOTH_CONNECT ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION}
+test perms-4 {SCAN granted but CONNECT not (the crash state) counts as missing} -body {
+    reset 34 [list $S $F]; short [android_scan_permission_missing]
+} -result BLUETOOTH_CONNECT
+test perms-5 {request asks for every permission in one call and returns what is still missing} -body {
+    reset 34 {} [list $S $C]
+    set left [android_request_permissions [list $S $C $F]]
+    list [llength $::requests] [short [lindex $::requests 0]] [short $left]
+} -result {1 {BLUETOOTH_SCAN BLUETOOTH_CONNECT ACCESS_FINE_LOCATION} ACCESS_FINE_LOCATION}
+test perms-6 {request with nothing missing asks nothing} -body {
+    reset 34 {}; list [android_request_permissions {}] $::requests
+} -result {{} {}}
+
+test scan-1 {CONNECT missing and denied: popup, no scan, scanning flag cleared} -body {
+    reset 34 [list $S $F]
+    scanning_restart
+    list $::scanning [llength $::popups] $::ble_calls [short [lindex $::requests 0]]
+} -result {0 1 {} BLUETOOTH_CONNECT}
+test scan-2 {CONNECT missing but granted at the prompt: scan goes ahead, no popup} -body {
+    reset 34 [list $S $F] [list $C]
+    scanning_restart
+    list $::scanning [llength $::popups] [lindex $::ble_calls end]
+} -result {1 0 {start scanner1}}
+test scan-3 {all granted: no prompt, scan starts} -body {
+    reset 34 [list $S $C $F]
+    scanning_restart
+    list [llength $::requests] [llength $::popups] [lindex $::ble_calls end]
+} -result {0 0 {start scanner1}}
+test scan-4 {not Android: never asks borg anything} -body {
+    reset 34 {}; set ::android 0
+    scanning_restart
+    list $::requests [lindex $::ble_calls end]
+} -result {{} {start scanner1}}
+foreach id [after info] {after cancel $id}
+cleanupTests

@@ -154,6 +154,21 @@ proc android_permissions_needed {{which all}} {
     if {$which eq "all"} { lappend perms android.permission.ACCESS_COARSE_LOCATION }
     return $perms
 }
+# Ask Android for several runtime permissions in ONE request, so the user gets
+# one combined prompt (e.g. a single "Nearby devices" dialog that grants both
+# BLUETOOTH_SCAN and BLUETOOTH_CONNECT). Asking one permission at a time could
+# leave BLUETOOTH_CONNECT ungranted, and a BLE scan then crashes the app.
+# Blocks until the user answers (AndroWish waits for the result). Returns the
+# permissions that are still not granted afterwards.
+proc android_request_permissions {perms} {
+    if {[llength $perms] == 0} { return {} }
+    catch { borg checkpermission {*}$perms 1 }
+    set missing {}
+    foreach perm $perms {
+        if {[catch { borg checkpermission $perm } has] || $has != 1} { lappend missing $perm }
+    }
+    return $missing
+}
 determine_if_android
 
 proc calc_sha {source} {
