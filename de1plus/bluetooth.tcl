@@ -1291,7 +1291,49 @@ proc decentscale_enable_notifications {} {
 	userdata_append "SCALE: enable decent scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_read) $::cinstance($::de1(cuuid_decentscale_read))] 1
 }
 
-proc decentscale_enable_lcd {} {
+proc decentscale_start_notifications {} {
+	set ::de1(decentscale_notification_handle) 0
+	unset -nocomplain ::de1(decentscale_pending_display)
+	decentscale_enable_lcd 1
+	decentscale_enable_notifications
+}
+
+proc decentscale_write_display {description packet {retry 0}} {
+	set handle $::de1(scale_device_handle)
+	if {$::android} {
+		after cancel [ifexists ::de1(decentscale_display_retry)]
+		if {[ifexists ::de1(decentscale_notification_handle) 0] ne $handle} {
+			set ::de1(decentscale_pending_display) [list $description $packet $retry]
+			return
+		}
+	}
+	userdata_append $description [list ble write $handle $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $packet] 0
+	if {$retry} {
+		set ::de1(decentscale_display_retry) [after 300 [list decentscale_retry_display $handle $description $packet]]
+	}
+}
+
+proc decentscale_retry_display {handle description packet} {
+	if {$handle eq $::de1(scale_device_handle) && $::settings(scale_type) eq "decentscale"} {
+		decentscale_write_display $description $packet
+	}
+}
+
+proc decentscale_confirm_notifications {handle value} {
+	if {$::settings(scale_type) ne "decentscale" || $handle eq "0" || $handle ne $::de1(scale_device_handle)
+		|| [ifexists ::de1(decentscale_notification_handle) 0] eq $handle
+		|| ($value ne "" && [binary encode hex $value] ne "0100")} {
+		return
+	}
+	set ::de1(decentscale_notification_handle) $handle
+	if {[info exists ::de1(decentscale_pending_display)]} {
+		set pending $::de1(decentscale_pending_display)
+		unset ::de1(decentscale_pending_display)
+		decentscale_write_display {*}$pending
+	}
+}
+
+proc decentscale_enable_lcd {{retry 0}} {
 
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
 		return
@@ -1312,7 +1354,7 @@ proc decentscale_enable_lcd {} {
 		set screenon [decent_scale_make_command 0A 01 01 01 01]
 	}
 	::bt::msg -DEBUG "decent scale screen on: '[::logging::format_asc_bin $screenon]'"
-	userdata_append "SCALE: decentscale : enable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenon] 0
+	decentscale_write_display "SCALE: decentscale : enable LCD" $screenon $retry
 }
 
 proc decentscale_disable_lcd { {potentiallypoweroff 1} } {
@@ -1329,8 +1371,10 @@ proc decentscale_disable_lcd { {potentiallypoweroff 1} } {
 	}
 
 	if {$::settings(keep_scale_on) == 1 || $potentiallypoweroff != 1} {
-		userdata_append "SCALE: decentscale : disable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenoff] 0
+		decentscale_write_display "SCALE: decentscale : disable LCD" $screenoff
 	} else {
+		after cancel [ifexists ::de1(decentscale_display_retry)]
+		unset -nocomplain ::de1(decentscale_pending_display)
 		userdata_append "SCALE: decentscale : power off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $poweroff] 0
 	}
 
@@ -2060,6 +2104,7 @@ proc close_misc_bluetooth_handles {} {
 
 set ::ble_scanner {}
 set ::scanning -1
+set ::scale_scan_handoff {}
 
 if {$::has_bluetooth} {
 	# at startup, if we have any hanldes, close them
@@ -2129,9 +2174,61 @@ proc stop_scanner {} {
 		return
 	}
 
-	set ::scanning 0
+	if {!$::android} {
+		set ::scanning 0
+	}
 	::bt::msg -NOTICE "Stopping ble_scanner from ::stop_scanner"
 	ble stop $::ble_scanner
+}
+
+proc scale_scan_stop_timeout {} {
+	set ::scale_scan_handoff {}
+	::bt::msg -WARNING "BLE scanner did not confirm stop before scale connect"
+}
+
+proc stop_scan_before_scale_connect {} {
+	if {!$::android || $::settings(scale_type) ne "decentscale"} {
+		return 0
+	}
+	if {$::scale_scan_handoff ne {}} {
+		return 1
+	}
+	if {$::scanning != 1 || $::ble_scanner eq ""} {
+		return 0
+	}
+	set ::scale_scan_handoff [list $::ble_scanner $::settings(scale_bluetooth_address) stopping]
+	set ::scale_scan_timeout [after 2000 scale_scan_stop_timeout]
+	if {[catch {ble stop $::ble_scanner} message]} {
+		after cancel $::scale_scan_timeout
+		set ::scale_scan_handoff {}
+		::bt::msg -WARNING "Could not stop BLE scan before scale connect: $message"
+	}
+	return 1
+}
+
+proc scale_scan_stopped {scanner} {
+	lassign $::scale_scan_handoff pendingScanner address phase
+	if {$pendingScanner ne $scanner || $phase eq ""} {
+		return 0
+	}
+	if {$phase eq "stopping"} {
+		after cancel $::scale_scan_timeout
+		set ::scale_scan_handoff [list $scanner $address settling]
+		after 300 [list connect_scale_after_scan $scanner $address]
+	}
+	return 1
+}
+
+proc connect_scale_after_scan {scanner address} {
+	if {$::scale_scan_handoff ne [list $scanner $address settling]} {
+		return
+	}
+	set ::scale_scan_handoff {}
+	if {$scanner eq $::ble_scanner && $::scanning == 0 && $address eq $::settings(scale_bluetooth_address)} {
+		if {[ble_connect_to_scale] eq "1"} {
+			scanning_restart
+		}
+	}
 }
 
 proc bluetooth_connect_to_devices {} {
@@ -2310,6 +2407,9 @@ proc ble_connect_to_scale {} {
 	}
 
 	if {$::currently_connecting_scale_handle != 0} {
+		if {$::android && $::settings(scale_type) eq "decentscale"} {
+			return
+		}
 		#::bt::msg -INFO "Already trying to connect to Scale, so don't try again"
 		::bt::msg -INFO "Already trying to connect to Scale, so try a reconnect request to see if that helps"
 
@@ -2319,8 +2419,12 @@ proc ble_connect_to_scale {} {
 		ble reconnect $::currently_connecting_scale_handle
 		return 0
 	}
+	if {[stop_scan_before_scale_connect]} {
+		return
+	}
 
-	if {[llength $::de1(cmdstack)] > 2 && $::settings(scale_type) != "atomheart_eclair"} {
+	if {[llength $::de1(cmdstack)] > 2 && $::settings(scale_type) != "atomheart_eclair"
+		&& !($::android && $::settings(scale_type) eq "decentscale")} {
 		::bt::msg -INFO "Too much backpressure, waiting with the connect"
 		::comms::msg -INFO "Current cmd: ([llength $::de1(cmdstack)]) >>>" \
 			[lindex [lindex $::de1(cmdstack) 0] 0]
@@ -2616,16 +2720,21 @@ proc de1_ble_handler { event data } {
 						de1_disconnect_handler $handle
 
 					} elseif {$address == $::settings(scale_bluetooth_address)} {
-						set ::de1(wrote) 0
 						::bt::msg -NOTICE "scale $::settings(scale_type) disconnected $data_for_log"
 
 						scale_disconnect_handler $handle
 
 					}
 				} elseif {$state eq "scanning"} {
+					if {$::android && $handle ne $::ble_scanner} { return }
 					set ::scanning 1
 					::bt::msg -DEBUG "de1_ble_handler is scanning"
 				} elseif {$state eq "idle"} {
+					if {$::android && $handle ne $::ble_scanner} { return }
+					if {$::android && [scale_scan_stopped $handle]} {
+						set ::scanning 0
+						return
+					}
 					#ble stop $::ble_scanner
 					if {$::scanning > 0} {
 
@@ -2696,8 +2805,10 @@ proc de1_ble_handler { event data } {
 
 					} elseif {$::de1(scale_device_handle) == 0 && $address == $::settings(scale_bluetooth_address)} {
 
-						set ::de1(wrote) 0
 						set ::de1(scale_device_handle) $handle
+						if {![::comms::uses_scale_ble_queue $handle]} {
+							set ::de1(wrote) 0
+						}
 						set ::de1(bluetooth_scale_connection_attempts_tried) 0
 
 						# resend the hotwater settings, because now we can stop on weight
@@ -2716,13 +2827,14 @@ proc de1_ble_handler { event data } {
 							decentscale_send_heartbeat
 							after 2000 decentscale_send_heartbeat
 
-							#after 100 decentscale_send_heartbeat
-							after 200 decentscale_enable_lcd
-							after 300 decentscale_enable_notifications
-							after 400 decentscale_enable_notifications
-
-							# in case the first request was dropped
-							after 500 decentscale_enable_lcd
+							if {$::android} {
+								decentscale_start_notifications
+							} else {
+								after 200 decentscale_enable_lcd
+								after 300 decentscale_enable_notifications
+								after 400 decentscale_enable_notifications
+								after 500 decentscale_enable_lcd
+							}
 
 
 
@@ -2808,6 +2920,9 @@ proc de1_ble_handler { event data } {
 						if {$::de1(device_handle) != 0} {
 							# if we're connected to both the scale and the DE1, stop scanning
 							stop_scanner
+						} elseif {$::android && $::settings(scale_type) eq "decentscale"
+							&& $::settings(bluetooth_address) ne ""} {
+							after 0 scanning_restart
 						}
 
 						set event_dict [dict create \
@@ -2840,8 +2955,7 @@ proc de1_ble_handler { event data } {
 
 					if {$access eq "r" || $access eq "c"} {
 						if {$access eq "r"} {
-							set ::de1(wrote) 0
-							run_next_userdata_cmd
+						ble_queue_ack $handle $event $access $cuuid
 						}
 
 						if {$suuid eq $::de1(suuid) \
@@ -3054,8 +3168,7 @@ proc de1_ble_handler { event data } {
 							# run stuff that depends on the BLE API version
 							later_new_de1_connection_setup
 
-							set ::de1(wrote) 0
-							run_next_userdata_cmd
+							ble_queue_ack $handle $event $access $cuuid
 
 						} elseif {$cuuid eq $::de1(cuuid_12)} {
 							calibration_ble_received $value
@@ -3111,8 +3224,7 @@ proc de1_ble_handler { event data } {
 							set ::de1(last_ping) [clock seconds]
 							update_de1_state $value
 
-							set ::de1(wrote) 0
-							run_next_userdata_cmd
+							ble_queue_ack $handle $event $access $cuuid
 
 						} elseif {$cuuid eq $::de1(cuuid_decentscale_writeback)} {
 							# decent scale
@@ -3171,7 +3283,7 @@ proc de1_ble_handler { event data } {
 								::bt::msg -INFO "decentscale usb powered: $::de1(scale_usb_powered)"
 								::bt::msg -INFO "decentscale firmware version: $::de1(scale_fw_version)"
 
-							} elseif {[info exists weightarray(weight)] == 1} {
+							} elseif {$access eq "c" && [info exists weightarray(weight)]} {
 								set sensorweight [expr {$weightarray(weight) / 10.0}]
 								if { ! [::device::scale::process_decentscale_weight_update \
 										$handle $weightarray(command) $sensorweight $event_time] } {
@@ -3251,8 +3363,7 @@ proc de1_ble_handler { event data } {
 						}
 
 					} elseif {$access eq "w"} {
-						set ::de1(wrote) 0
-						run_next_userdata_cmd
+						ble_queue_ack $handle $event $access $cuuid
 
 						if {$cuuid eq $::de1(cuuid_05)} {
 
@@ -3380,6 +3491,10 @@ proc de1_ble_handler { event data } {
 						# logged a spurious ERROR ("unknown write: ... cuuid fff4")
 						# on every single scale connect.
 						::bt::msg -INFO "ACK Decent scale weight notifications: [::logging::format_ble_event_short $data]"
+						if {$::android && [ifexists suuid] eq $::de1(suuid_decentscale)
+							&& [string equal -nocase [ifexists duuid] 00002902-0000-1000-8000-00805F9B34FB]} {
+							decentscale_confirm_notifications $handle [ifexists value]
+						}
 
 					    } elseif {$cuuid eq $::de1(cuuid_decentscale_writeback)} {
 						::bt::msg -INFO "ACK Decent scale writeback notifications: [::logging::format_ble_event_short $data]"
@@ -3393,8 +3508,7 @@ proc de1_ble_handler { event data } {
 						::bt::msg -ERROR "ACK Descriptor unknown write: [::logging::format_ble_event_short $data]"
 					    }
 
-					    set ::de1(wrote) 0
-					    run_next_userdata_cmd
+					    ble_queue_ack $handle $event $access $cuuid [ifexists duuid]
 
 					} else {
 					    ::bt::msg -ERROR "BLE unknown descriptor action; $state: ${event}: [::logging::format_ble_event_short $data]"
@@ -3533,7 +3647,7 @@ proc android_scan_permission_missing {} {
 
 proc scanning_restart {} {
 	::bt::msg -NOTICE scanning_restart
-	if {$::scanning == 1} {
+	if {$::scanning == 1 || ($::android && $::scale_scan_handoff ne {})} {
 		return
 	}
 

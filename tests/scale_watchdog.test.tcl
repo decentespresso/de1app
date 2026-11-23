@@ -44,7 +44,9 @@ proc ifexists {name {default ""}} {
 }
 set ::test_app_dir [file normalize [file join [file dirname [info script]] .. de1plus]]
 proc homedir {} { return $::test_app_dir }
-proc scale_enable_weight_notifications {} {}
+proc scale_enable_weight_notifications {} {
+	lappend ::notification_enables $::de1(scale_device_handle)
+}
 proc ble {command handle} {
 	if {$command eq "close" && $handle != 0} {
 		lappend ::closed_handles $handle
@@ -90,6 +92,7 @@ proc reset_watchdog {handle} {
 	set ::de1(scale_max_connection_retry_attempts) 10
 	set ::processed_weights {}
 	set ::scheduled {}
+	set ::notification_enables {}
 	set ::de1(ble_protocol_version) 1
 	set ::de1(scale_connectivity) ble
 	set ::settings(scale_type) decentscale
@@ -97,28 +100,32 @@ proc reset_watchdog {handle} {
 	set ::settings(usb_scale_address) serial-port
 }
 
+proc fire_first_watchdog {handle} {
+	::device::scale::_watchdog_first_fire $handle 10 $::device::scale::_watchdog_generation
+}
+
 test scale-watchdog-exhaustion-1 {} -body {
 	reset_watchdog ble1
-	::device::scale::_watchdog_first_fire ble1 10
+	fire_first_watchdog ble1
 	list $::closed_handles $::reconnects $::de1(scale_device_handle) $::currently_connecting_scale_handle
 } -result {ble1 1 0 ble2}
 
 test scale-watchdog-stale-handle-1 {} -body {
 	reset_watchdog ble2
-	::device::scale::_watchdog_first_fire ble1 10
+	fire_first_watchdog ble1
 	list $::closed_handles $::reconnects $::de1(scale_device_handle)
 } -result {{} 0 ble2}
 
 test scale-disconnect-late-callback-1 {} -body {
 	reset_watchdog ble1
-	::device::scale::_watchdog_first_fire ble1 10
+	fire_first_watchdog ble1
 	scale_disconnect_handler ble1
 	list $::closed_handles $::reconnects $::currently_connecting_scale_handle
 } -result {ble1 1 ble2}
 
 test scale-disconnect-late-connected-callback-1 {} -body {
 	reset_watchdog ble1
-	::device::scale::_watchdog_first_fire ble1 10
+	fire_first_watchdog ble1
 	set ::de1(scale_device_handle) ble2
 	set ::currently_connecting_scale_handle 0
 	scale_disconnect_handler ble1
@@ -251,7 +258,7 @@ test scale-bengle-no-ble-recovery-1 {} -body {
 	reset_pipeline 0 decentscale 2
 	set ::device::scale::_watchdog_id ""
 	::device::scale::watchdog_first
-	::device::scale::_watchdog_first_fire 0 10
+	fire_first_watchdog 0
 	list $::scheduled $::closed_handles $::reconnects
 } -result {{} {} 0}
 
@@ -288,6 +295,67 @@ test scale-changing-weight-stream-1 {} -body {
 	list [::device::scale::is_operational] $::de1(scale_sensor_weight) \
 		$::device::scale::_last_weight_update_time $::scale_events $::cancelled $::reconnects
 } -result {1 12.4 101 scale_reporting {watchdog-current watchdog-next} 0}
+
+proc scheduled_watchdog {} {
+	lindex $::scheduled end 0
+}
+
+test scale-established-ble-recovers-once-1 {} -body {
+	reset_pipeline ble1 decentscale
+	unset ::de1(scale_connectivity)
+	::device::scale::process_decentscale_weight_update ble1 0xCE 12.3 100
+	set first [scheduled_watchdog]
+	{*}$first
+	set retry [scheduled_watchdog]
+	{*}$first
+	set before [list [::device::scale::is_operational] $::notification_enables $::closed_handles]
+	{*}$retry
+	{*}$retry
+	list $before $::notification_enables $::closed_handles $::reconnects $::scale_events
+} -result {{0 ble1 {}} ble1 ble1 1 {scale_reporting timeout_updates not_connected}}
+
+test scale-established-ble-fresh-weight-cancels-recovery-1 {} -body {
+	reset_pipeline ble1 decentscale
+	::device::scale::process_decentscale_weight_update ble1 0xCE 12.3 100
+	{*}[scheduled_watchdog]
+	set retry [scheduled_watchdog]
+	::device::scale::process_decentscale_weight_update ble1 0xCA 12.4 101
+	set fresh [scheduled_watchdog]
+	{*}$retry
+	list [::device::scale::is_operational] $::notification_enables $::closed_handles \
+		$::scale_events [expr {[scheduled_watchdog] eq $fresh}]
+} -result {1 ble1 {} {scale_reporting timeout_updates scale_reporting} 1}
+
+test scale-established-ble-replacement-ignores-stale-recovery-1 {} -body {
+	reset_pipeline ble1 decentscale
+	::device::scale::process_decentscale_weight_update ble1 0xCE 12.3 100
+	{*}[scheduled_watchdog]
+	set retry [scheduled_watchdog]
+	::device::scale::_watchdog_cancel
+	::device::scale::watchdog_first
+	set startup [scheduled_watchdog]
+	{*}$retry
+	list $::notification_enables $::closed_handles $::reconnects \
+		[expr {[scheduled_watchdog] eq $startup}]
+} -result {ble1 {} 0 1}
+
+foreach {handle scale_type connectivity protocol} {
+	serial1 decentscale usb 1
+	ble1 bookoo ble 1
+	0 decentscale ble 2
+} {
+	test scale-established-no-ble-recovery-$handle-$scale_type-1 {} -body {
+		reset_pipeline $handle $scale_type $protocol
+		set ::de1(scale_connectivity) $connectivity
+		if {$scale_type eq "decentscale" && $handle ne "0"} {
+			::device::scale::process_decentscale_weight_update $handle 0xCE 12.3 100
+		} else {
+			::device::scale::process_weight_update 12.3 100
+		}
+		{*}[scheduled_watchdog]
+		list $::notification_enables $::closed_handles $::reconnects $::scale_events
+	} -result {{} {} 0 {scale_reporting timeout_updates}}
+}
 
 test scale-bengle-hotwater-readiness-1 {} -body {
 	reset_pipeline 0 decentscale 2
@@ -337,7 +405,7 @@ test scale-usb-watchdog-reconnect-1 {} -setup {
 	set ::de1(scale_connectivity) usb
 	set ::usb_connections {}
 	set ::usb_closed {}
-	::device::scale::_watchdog_first_fire serial1 10
+	fire_first_watchdog serial1
 	scale_disconnect_handler serial1
 	list $::usb_closed $::usb_connections $::reconnects $::de1(scale_device_handle) $::scale_events
 } -cleanup {
