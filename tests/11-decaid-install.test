@@ -1,0 +1,153 @@
+package require tcltest 2
+namespace import ::tcltest::*
+set root [file dirname [file dirname [file normalize [info script]]]]
+# Load exact production procs without starting the GUI/BLE/application packages.
+proc load_procs {path names} {
+    set f [open $path]; set text [read $f]; close $f
+    set command ""
+    foreach line [split $text \n] {
+        append command $line \n
+        if {![info complete $command]} {continue}
+        if {[regexp {^\s*proc\s+(\S+)} $command -> name] && $name in $names} {
+            uplevel #0 $command
+        }
+        set command ""
+    }
+}
+load_procs [file join $root de1plus utils.tcl] {
+    decaid_platform decaid_asset_name decaid_download_url decaid_env decaid_home decaid_windows_install_dir
+    decaid_marker_file decaid_marker_executable decaid_app_candidates decaid_check_installed decaid_is_installed
+    decaid_install_link_text decaid_ps_quote decaid_install_confirmed
+}
+load_procs [file join $root de1plus updater.tcl] {read_file}
+proc ifexists {varname {default ""}} {upvar 1 $varname v; if {[info exists v]} {return $v}; return $default}
+proc translate {s} {return $s}
+proc msg {args} {}
+
+set tmp [file join [::tcltest::temporaryDirectory] decaid-test-[pid]]
+proc fresh_home {} {
+    file delete -force $::tmp
+    file mkdir $::tmp
+    array unset ::env DE1_DECAID_PRETEND_MISSING
+    array unset ::env XDG_CONFIG_HOME
+    set ::env(HOME) $::tmp
+    set ::env(LOCALAPPDATA) [file join $::tmp local]
+    set ::env(APPDATA) [file join $::tmp roaming]
+    set ::decaid_macos_apps_dir [file join $::tmp SystemApplications]
+    unset -nocomplain ::decaid_installed ::decaid_installed_checked ::decaid_install_status
+}
+set saved_env [array get ::env]
+proc restore_env {} {array unset ::env; array set ::env $::saved_env}
+
+test asset-names {each platform gets its stable "latest" asset} -body {
+    list [decaid_asset_name android] [decaid_asset_name macos] [decaid_asset_name windows] \
+        [decaid_asset_name linux x86_64] [decaid_asset_name linux aarch64] [decaid_asset_name linux arm64] \
+        [decaid_asset_name ios] [decaid_asset_name ""]
+} -result {decaid-android-latest.apk decaid-macos-latest.zip decaid-windows-x64-latest.zip decaid-linux-x86_64-latest.AppImage decaid-linux-aarch64-latest.AppImage decaid-linux-aarch64-latest.AppImage {} {}}
+
+test download-url {latest/download always resolves to the newest stable release} -body {
+    decaid_download_url decaid-macos-latest.zip
+} -result https://github.com/decentespresso/decaid/releases/latest/download/decaid-macos-latest.zip
+
+test platform-flags {iPad and Android win over the host OS name} -setup {
+    set ::iwish 0; set ::android 0
+} -body {
+    set r {}
+    set ::iwish 1; lappend r [decaid_platform]
+    set ::iwish 0; set ::android 1; lappend r [decaid_platform]
+    set ::android 0; lappend r [expr {[decaid_platform] in {macos linux windows}}]
+} -cleanup {unset -nocomplain ::iwish ::android} -result {ios android 1}
+
+test marker-parse {executable path is unescaped from the marker JSON} -body {
+    list [decaid_marker_executable {{"version":"0.9.3","executable":"C:\\Users\\a b\\decaid.exe","platform":"windows"}}] \
+        [decaid_marker_executable {{"executable": "\/home\/x\/Decaid.AppImage"}}] \
+        [decaid_marker_executable {{"version":"1"}}]
+} -result {{C:\Users\a b\decaid.exe} /home/x/Decaid.AppImage {}}
+
+test marker-locations {marker paths follow XDG_CONFIG_HOME and APPDATA} -setup fresh_home -body {
+    set a [decaid_marker_file linux]
+    set ::env(XDG_CONFIG_HOME) /xdg
+    list [expr {$a eq [file join $::tmp .config decaid install.json]}] [decaid_marker_file linux] \
+        [expr {[decaid_marker_file windows] eq [file join $::tmp roaming Decaid install.json]}] [decaid_marker_file macos]
+} -cleanup restore_env -result {1 /xdg/decaid/install.json 1 {}}
+
+test unsupported-counts-as-installed {no link is offered on iPad or unknown platforms} -setup fresh_home -body {
+    list [decaid_check_installed ios] [decaid_check_installed ""]
+} -cleanup restore_env -result {1 1}
+
+test desktop-detection {missing, then found where we install, per platform} -setup fresh_home -body {
+    set r {}
+    foreach p {macos linux windows} {lappend r [decaid_check_installed $p]}
+    file mkdir [file join $::tmp Applications Decaid.app]
+    close [open [file join $::tmp Applications Decaid.AppImage] w]
+    file mkdir [file join $::tmp local Programs Decaid sub]
+    close [open [file join $::tmp local Programs Decaid sub decaid.exe] w]
+    foreach p {macos linux windows} {lappend r [decaid_check_installed $p]}
+    set r
+} -cleanup restore_env -result {0 0 0 1 1 1}
+
+test marker-detection {a marker counts only while its program file still exists} -setup fresh_home -body {
+    set exe [file join $::tmp elsewhere decaid]
+    file mkdir [file dirname [decaid_marker_file linux]] [file dirname $exe]
+    set f [open [decaid_marker_file linux] w]; puts $f "{\"version\":\"0.9.3\",\"executable\":\"$exe\"}"; close $f
+    set r [decaid_check_installed linux]
+    close [open $exe w]
+    lappend r [decaid_check_installed linux]
+} -cleanup restore_env -result {0 1}
+
+test pretend-missing {env override hides an installed copy, for testing the link} -setup fresh_home -body {
+    file mkdir [file join $::tmp Applications]
+    close [open [file join $::tmp Applications Decaid.AppImage] w]
+    set ::env(DE1_DECAID_PRETEND_MISSING) 1
+    decaid_check_installed linux
+} -cleanup restore_env -result 0
+
+test android-detection {borg packageinfo decides on Android; an error means not installed} -setup fresh_home -body {
+    set r {}
+    proc borg {args} {error "not found"}
+    lappend r [decaid_check_installed android]
+    proc borg {args} {return {}}
+    lappend r [decaid_check_installed android]
+    proc borg {args} {return {classname x datadir /data/data/net.tadel.reaprime}}
+    lappend r [decaid_check_installed android]
+} -cleanup {rename borg {}; restore_env} -result {0 0 1}
+
+test link-text {link shows only when missing; a running install's status wins} -setup fresh_home -body {
+    set ::iwish 0; set ::android 0
+    set r [list [decaid_install_link_text]]
+    set ::decaid_installed 1; set ::decaid_installed_checked [clock milliseconds]
+    lappend r [decaid_install_link_text]
+    set ::decaid_install_status "Downloading Decaid 42%"
+    lappend r [decaid_install_link_text]
+} -cleanup {unset -nocomplain ::iwish ::android; restore_env} -result {{[install Decaid]} {} {Downloading Decaid 42%}}
+
+test cache {the check is cached between screen refreshes} -setup fresh_home -body {
+    set ::iwish 0; set ::android 0
+    set a [decaid_is_installed]
+    file mkdir [file join $::tmp Applications Decaid.app]
+    close [open [file join $::tmp Applications Decaid.AppImage] w]
+    file mkdir [file join $::tmp local Programs Decaid]
+    close [open [file join $::tmp local Programs Decaid decaid.exe] w]
+    list $a [decaid_is_installed] [decaid_is_installed 0]
+} -cleanup {unset -nocomplain ::iwish ::android; restore_env} -result {0 0 1}
+
+test confirm-choice {only the first button (Install) starts the install} -body {
+    set ::started 0
+    rename after real_after
+    proc after {ms cmd} {set ::started 1}
+    decaid_install_confirmed 2
+    set a $::started
+    decaid_install_confirmed {}
+    lappend a $::started
+    decaid_install_confirmed 1
+    lappend a $::started
+} -cleanup {rename after {}; rename real_after after} -result {0 0 1}
+
+test ps-quote {PowerShell literals escape single quotes} -body {
+    decaid_ps_quote {C:\Users\O'Brien\x.zip}
+} -result {'C:\Users\O''Brien\x.zip'}
+
+file delete -force $tmp
+set failed $::tcltest::numTests(Failed)
+cleanupTests
+if {$failed} {exit 1}

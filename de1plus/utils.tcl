@@ -2035,6 +2035,302 @@ proc apk_install {path} {
 	}		
 }
 
+##############################################################################################################################################################################################################################################################################
+# Decaid installer: the "[install Decaid]" link in Settings > App > Update App (skins/default/de1_skin_settings.tcl).
+#
+# Downloads the newest STABLE Decaid build for this OS from GitHub and installs it. Every stable Decaid release carries
+# assets named decaid-<os>-latest.<ext>, and betas never take GitHub's "Latest" flag, so releases/latest/download/<asset>
+# always resolves to the current stable build.
+#
+# Decaid's app id is net.tadel.reaprime everywhere. Detection:
+#   android  borg packageinfo (needs <queries><package android:name="net.tadel.reaprime"/> in the APK manifest on Android 11+)
+#   macos    Decaid.app in /Applications or ~/Applications
+#   linux    ~/Applications/Decaid.AppImage (where we install it), or Decaid's install.json marker (see decaid_marker_file)
+#   windows  %LOCALAPPDATA%\Programs\Decaid\decaid.exe (where we install it), or Decaid's install.json marker
+#   ios      not offered (Decaid only ships an unsigned IPA)
+# Set the environment variable DE1_DECAID_PRETEND_MISSING to test the link on a machine that already has Decaid.
+##############################################################################################################################################################################################################################################################################
+
+# macOS system Applications folder (a variable so the tests can point it elsewhere)
+set ::decaid_macos_apps_dir /Applications
+
+proc decaid_platform {} {
+	if {[ifexists ::iwish 0]} { return ios }
+	if {[ifexists ::android 0] == 1} { return android }
+	if {$::tcl_platform(os) eq "Darwin"} { return macos }
+	if {$::tcl_platform(platform) eq "windows"} { return windows }
+	if {$::tcl_platform(os) eq "Linux"} { return linux }
+	return ""
+}
+
+# GitHub release asset for a platform; "" when Decaid can't be installed there.
+proc decaid_asset_name {platform {machine ""}} {
+	switch -- $platform {
+		android { return decaid-android-latest.apk }
+		macos   { return decaid-macos-latest.zip }
+		windows { return decaid-windows-x64-latest.zip }
+		linux {
+			if {$machine in {aarch64 arm64}} { return decaid-linux-aarch64-latest.AppImage }
+			return decaid-linux-x86_64-latest.AppImage
+		}
+	}
+	return ""
+}
+
+proc decaid_download_url {asset} {
+	return "https://github.com/decentespresso/decaid/releases/latest/download/$asset"
+}
+
+proc decaid_env {name {default ""}} {
+	if {[info exists ::env($name)] && $::env($name) ne ""} { return $::env($name) }
+	return $default
+}
+
+# The user's home folder (Tcl 9 no longer expands ~).
+proc decaid_home {} {
+	return [decaid_env HOME [decaid_env USERPROFILE [pwd]]]
+}
+
+proc decaid_windows_install_dir {} {
+	return [file join [decaid_env LOCALAPPDATA [file join [decaid_home] AppData Local]] Programs Decaid]
+}
+
+# Where Decaid writes its install marker (proposed in https://github.com/decentespresso/decaid/issues/1223): a small JSON file
+# naming the program file, so hand-installed copies on Windows and Linux can be found too.
+proc decaid_marker_file {platform} {
+	switch -- $platform {
+		linux   { return [file join [decaid_env XDG_CONFIG_HOME [file join [decaid_home] .config]] decaid install.json] }
+		windows { if {[decaid_env APPDATA] ne ""} { return [file join [decaid_env APPDATA] Decaid install.json] } }
+	}
+	return ""
+}
+
+# Pulls "executable" out of the marker JSON without needing a JSON package.
+proc decaid_marker_executable {json} {
+	if {[regexp {"executable"\s*:\s*"((?:[^"\\]|\\.)*)"} $json -> path]} {
+		return [string map [list "\\\\" "\\" "\\/" "/" "\\\"" "\""] $path]
+	}
+	return ""
+}
+
+# Program files that mean "Decaid is installed", for the desktop platforms.
+proc decaid_app_candidates {platform} {
+	set home [decaid_home]
+	switch -- $platform {
+		macos { return [list [file join [ifexists ::decaid_macos_apps_dir /Applications] Decaid.app] [file join $home Applications Decaid.app]] }
+		linux { return [list [file join $home Applications Decaid.AppImage]] }
+		windows {
+			set dir [decaid_windows_install_dir]
+			return [concat [list [file join $dir decaid.exe]] [glob -nocomplain -directory $dir -- */decaid.exe]]
+		}
+	}
+	return {}
+}
+
+# Uncached check. Unsupported platforms count as installed, so the link is never offered there.
+proc decaid_check_installed {platform} {
+	if {[decaid_env DE1_DECAID_PRETEND_MISSING] ne ""} { return 0 }
+	switch -- $platform {
+		android {
+			if {[catch {borg packageinfo net.tadel.reaprime} info]} { return 0 }
+			return [expr {[llength $info] > 0}]
+		}
+		macos - linux - windows {
+			foreach p [decaid_app_candidates $platform] {
+				if {[file exists $p]} { return 1 }
+			}
+			set marker [decaid_marker_file $platform]
+			if {$marker ne "" && [file readable $marker]} {
+				set exe [decaid_marker_executable [read_file $marker]]
+				if {$exe ne "" && [file exists $exe]} { return 1 }
+			}
+			return 0
+		}
+	}
+	return 1
+}
+
+# Cached for max_age_ms, because the settings page re-evaluates the link text on every screen refresh.
+proc decaid_is_installed {{max_age_ms 10000}} {
+	set now [clock milliseconds]
+	if {![info exists ::decaid_installed] || $now - [ifexists ::decaid_installed_checked 0] >= $max_age_ms} {
+		set ::decaid_installed [decaid_check_installed [decaid_platform]]
+		set ::decaid_installed_checked $now
+	}
+	return $::decaid_installed
+}
+
+proc decaid_install_link_text {} {
+	if {[ifexists ::decaid_install_status] ne ""} { return $::decaid_install_status }
+	if {[decaid_is_installed]} { return "" }
+	return "\[[translate {install Decaid}]\]"
+}
+
+proc decaid_set_status {txt} {
+	set ::decaid_install_status $txt
+	catch { update_onscreen_variables }
+	catch { update }
+}
+
+proc decaid_install_tapped {} {
+	if {[ifexists ::decaid_install_busy 0] || [decaid_is_installed 0]} { return }
+	if {[decaid_asset_name [decaid_platform] $::tcl_platform(machine)] eq ""} { return }
+	dui page open_dialog dui_confirm_dialog \
+		[translate "Download and install Decaid, Decent's new app? The download is 50 to 120 MB."] \
+		[list [translate "Install"] [translate "Cancel"]] \
+		-coords {0.5 0.5} -anchor center -size {1500 450} -disable_items 1 -return_callback ::decaid_install_confirmed
+}
+
+proc decaid_install_confirmed {{choice {}}} {
+	if {$choice eq "1"} { after 100 decaid_install }
+}
+
+proc decaid_download_dir {platform} {
+	if {$platform eq "android"} {
+		# must be under the app's files/ folder, which the APK's FileProvider shares with the package installer
+		return [homedir]
+	}
+	foreach v {TMPDIR TEMP TMP} {
+		if {[file isdirectory [decaid_env $v]]} { return [decaid_env $v] }
+	}
+	return /tmp
+}
+
+proc decaid_install {} {
+	if {[ifexists ::decaid_install_busy 0]} { return }
+	set ::decaid_install_busy 1
+	set platform [decaid_platform]
+	set asset [decaid_asset_name $platform $::tcl_platform(machine)]
+	set file [file join [decaid_download_dir $platform] $asset]
+	msg -NOTICE "Decaid install: downloading [decaid_download_url $asset] to '$file'"
+	set failed [catch {
+		decaid_set_status [translate "Downloading Decaid"]
+		decaid_download [decaid_download_url $asset] $file
+		decaid_set_status [translate "Installing Decaid"]
+		decaid_install_file $platform $file
+	} err]
+	set ::decaid_install_busy 0
+	set ::decaid_installed_checked 0
+	if {!$failed} {
+		msg -NOTICE "Decaid install: done"
+		if {$platform eq "android"} {
+			# Android's installer takes over from here; the link hides once the package shows up
+			decaid_set_status [translate "Finish installing Decaid on screen"]
+		} else {
+			decaid_set_status [translate "Decaid installed"]
+		}
+	} else {
+		msg -ERROR "Decaid install failed: $err"
+		decaid_set_status [translate "Decaid install failed"]
+	}
+	after 15000 {decaid_set_status ""}
+}
+
+proc decaid_download_progress {dltotal dlnow ultotal ulnow} {
+	catch {
+		set now [clock milliseconds]
+		if {$now - $::_decaid_dl_last >= 250} {
+			set ::_decaid_dl_last $now
+			if {$dltotal > 0} {
+				decaid_set_status "[translate {Downloading Decaid}] [expr {int(100.0 * $dlnow / $dltotal)}]%"
+			} else {
+				catch { update }
+			}
+		}
+	}
+	return 0
+}
+
+# Blocking download with libcurl; the progress callback keeps the UI drawing (same approach as the app updater's
+# decent_http_get_to_file). decent_http_async isn't used because it buffers the whole body as a UTF-8 string.
+proc decaid_download {url file} {
+	package require TclCurl
+	set part "$file.part"
+	file delete -force $part
+	set ::_decaid_dl_last 0
+	set hdl [curl::init]
+	set code [catch {
+		$hdl configure -url $url -file $part -useragent "de1app" \
+			-connecttimeout 20 -lowspeedlimit 1 -lowspeedtime 60 \
+			-followlocation 1 -failonerror 1 \
+			-noprogress 0 -progressproc decaid_download_progress
+		set ca "[homedir]/allcerts.pem"
+		if {[file exists $ca]} { $hdl configure -sslverifypeer 1 -cainfo $ca }
+		$hdl perform
+	} err opts]
+	catch { $hdl cleanup }
+	if {$code} {
+		file delete -force $part
+		return -options $opts $err
+	}
+	if {![file exists $part] || [file size $part] < 1000000} {
+		file delete -force $part
+		error "download of $url is missing or too small"
+	}
+	file rename -force $part $file
+}
+
+proc decaid_install_file {platform file} {
+	switch -- $platform {
+		android {
+			apk_install $file
+		}
+		macos {
+			set dest [ifexists ::decaid_macos_apps_dir /Applications]
+			if {![file writable $dest]} {
+				set dest [file join [decaid_home] Applications]
+				file mkdir $dest
+			}
+			exec /usr/bin/ditto -x -k $file $dest
+			file delete $file
+			exec /usr/bin/open [file join $dest Decaid.app] &
+		}
+		linux {
+			set dir [file join [decaid_home] Applications]
+			file mkdir $dir
+			set app [file join $dir Decaid.AppImage]
+			file rename -force $file $app
+			file attributes $app -permissions 0755
+			catch { decaid_write_linux_desktop_entry $app }
+			exec $app >/dev/null 2>@1 &
+		}
+		windows {
+			set dir [decaid_windows_install_dir]
+			file mkdir $dir
+			exec powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command \
+				"Expand-Archive -LiteralPath [decaid_ps_quote [file nativename $file]] -DestinationPath [decaid_ps_quote [file nativename $dir]] -Force"
+			file delete $file
+			set exe [lindex [decaid_app_candidates windows] 0]
+			if {![file exists $exe]} { set exe [lindex [glob -nocomplain -directory $dir -- */decaid.exe] 0] }
+			if {$exe eq ""} { error "decaid.exe not found in $dir" }
+			catch { decaid_windows_shortcut $exe }
+			exec $exe &
+		}
+		default {
+			error "Decaid can't be installed on this platform"
+		}
+	}
+}
+
+# PowerShell single-quoted string literal
+proc decaid_ps_quote {s} {
+	return "'[string map {' ''} $s]'"
+}
+
+proc decaid_windows_shortcut {exe} {
+	set lnk [file join [decaid_env APPDATA] Microsoft Windows {Start Menu} Programs Decaid.lnk]
+	exec powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command \
+		"\$s = (New-Object -ComObject WScript.Shell).CreateShortcut([decaid_ps_quote [file nativename $lnk]]); \$s.TargetPath = [decaid_ps_quote [file nativename $exe]]; \$s.Save()"
+}
+
+proc decaid_write_linux_desktop_entry {app} {
+	set dir [file join [decaid_env XDG_DATA_HOME [file join [decaid_home] .local share]] applications]
+	file mkdir $dir
+	set f [open [file join $dir decaid.desktop] w]
+	puts $f "\[Desktop Entry\]\nType=Application\nName=Decaid\nComment=Decent espresso app\nExec=\"$app\"\nTerminal=false\nCategories=Utility;"
+	close $f
+}
+
 proc web_browser {url} {
     msg -INFO "Browser '$url'"
 	if { [ifexists ::iwish 0] } {

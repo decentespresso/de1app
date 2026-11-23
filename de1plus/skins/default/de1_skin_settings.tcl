@@ -1172,6 +1172,12 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 	# tap on version number on "app settings" tab, to visit a web page of this version's changelog
 	add_de1_button "settings_4" {if {[ifexists ::changelog_link] != ""} {web_browser $::changelog_link}} 750 220 1250 290   ""
 
+	# "[install Decaid]" link, just left of the version text. Empty once Decaid is installed (decaid_* procs in utils.tcl).
+	# Pages are built hidden (no bbox), so place it from the measured width of the version text.
+	set decaid_link_right [expr {1240 - 40 - int([font measure Helv_8 "[app_updates_policy_as_text] v[package version de1app]"] * 1000.0 / [rescale_x_skin 1000])}]
+	add_de1_variable "settings_4" $decaid_link_right 226 -text "" -font Helv_8 -fill "#4e85f4" -justify "right" -anchor "ne" -textvariable {[decaid_install_link_text]}
+	add_de1_button "settings_4" {decaid_install_tapped} [expr {$decaid_link_right - 450}] 210 $decaid_link_right 290 ""
+
 
 
 	set pos_vert 1300
