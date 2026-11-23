@@ -31,6 +31,10 @@ namespace eval ::gui::notify {
 	}
 }
 
+namespace eval ::hds_sleep {
+	proc isQuiet {handle} { expr {$handle eq $::quiet_handle} }
+}
+
 namespace eval ::bt {
 	proc msg {args} {}
 }
@@ -93,6 +97,7 @@ proc reset_watchdog {handle} {
 	set ::processed_weights {}
 	set ::scheduled {}
 	set ::notification_enables {}
+	set ::quiet_handle ""
 	set ::de1(ble_protocol_version) 1
 	set ::de1(scale_connectivity) ble
 	set ::settings(scale_type) decentscale
@@ -339,6 +344,62 @@ test scale-established-ble-replacement-ignores-stale-recovery-1 {} -body {
 		[expr {[scheduled_watchdog] eq $startup}]
 } -result {ble1 {} 0 1}
 
+test scale-softsleep-pauses-first-weight-retry-1 {} -body {
+	reset_pipeline ble1 decentscale
+	set ::quiet_handle ble1
+	::device::scale::watchdog_first
+	{*}[scheduled_watchdog]
+	{*}[scheduled_watchdog]
+	set before [list $::notification_enables $::closed_handles $::scale_events]
+	set ::quiet_handle ""
+	{*}[scheduled_watchdog]
+	set first [scheduled_watchdog]
+	::device::scale::process_decentscale_weight_update ble1 0xCE 12.3 100
+	{*}$first
+	list $before [::device::scale::is_operational] $::notification_enables \
+		$::closed_handles $::scale_events
+} -result {{{} {} {}} 1 ble1 {} {retrying_updates scale_reporting}}
+
+test scale-softsleep-pauses-established-watchdog-1 {} -body {
+	reset_pipeline ble1 decentscale
+	::device::scale::process_decentscale_weight_update ble1 0xCE 12.3 100
+	set ::quiet_handle ble1
+	{*}[scheduled_watchdog]
+	{*}[scheduled_watchdog]
+	set before [list [::device::scale::is_operational] $::device::scale::_watchdog_updates_seen]
+	set ::quiet_handle ""
+	{*}[scheduled_watchdog]
+	list $before [::device::scale::is_operational] $::notification_enables \
+		$::closed_handles $::scale_events
+} -result {{0 True} 0 ble1 {} {scale_reporting timeout_updates}}
+
+test scale-softsleep-requires-fresh-weight-after-wake-1 {} -body {
+	reset_pipeline ble1 decentscale
+	::device::scale::process_decentscale_weight_update ble1 0xCE 12.3 100
+	set ::quiet_handle ble1
+	::device::scale::invalidate_hds_readiness ble1
+	set accepted [::device::scale::process_decentscale_weight_update ble1 0xCE 12.4 101]
+	set asleep [list [::device::scale::is_operational] $accepted $::de1(scale_sensor_weight) \
+		[::device::scale::last_weight_update_time]]
+	set ::quiet_handle ""
+	set confirmed [::device::scale::is_operational]
+	::device::scale::process_decentscale_weight_update ble1 0xCA 12.5 102
+	list $asleep $confirmed [::device::scale::is_operational] $::de1(scale_sensor_weight)
+} -result {{0 False 12.3 0} 0 1 12.5}
+
+test scale-softsleep-pauses-pending-reconnect-1 {} -body {
+	reset_pipeline ble1 decentscale
+	::device::scale::process_decentscale_weight_update ble1 0xCE 12.3 100
+	{*}[scheduled_watchdog]
+	set ::quiet_handle ble1
+	{*}[scheduled_watchdog]
+	set wake [scheduled_watchdog]
+	set ::quiet_handle ""
+	::device::scale::process_decentscale_weight_update ble1 0xCA 12.4 101
+	{*}$wake
+	list [::device::scale::is_operational] $::notification_enables $::closed_handles
+} -result {1 ble1 {}}
+
 foreach {handle scale_type connectivity protocol} {
 	serial1 decentscale usb 1
 	ble1 bookoo ble 1
@@ -347,6 +408,7 @@ foreach {handle scale_type connectivity protocol} {
 	test scale-established-no-ble-recovery-$handle-$scale_type-1 {} -body {
 		reset_pipeline $handle $scale_type $protocol
 		set ::de1(scale_connectivity) $connectivity
+		set ::quiet_handle $handle
 		if {$scale_type eq "decentscale" && $handle ne "0"} {
 			::device::scale::process_decentscale_weight_update $handle 0xCE 12.3 100
 		} else {

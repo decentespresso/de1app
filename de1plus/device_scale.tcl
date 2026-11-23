@@ -141,7 +141,8 @@ namespace eval ::device::scale {
 
 	proc is_operational {} {
 		if { [::de1::packet::use_ble_v2] && $::de1(scale_device_handle) == 0 } { return 1 }
-		expr { [::device::scale::is_connected] && $::device::scale::_watchdog_updates_seen }
+		expr { [::device::scale::is_connected] && $::device::scale::_watchdog_updates_seen \
+			&& ![_watchdog_quiet $::de1(scale_device_handle)] }
 	}
 
 	proc should_handle_disconnect {handle} {
@@ -369,6 +370,7 @@ namespace eval ::device::scale {
 			msg -DEBUG "Ignoring weight packet from stale scale handle $handle"
 			return False
 		}
+		if { [_watchdog_quiet $handle] } { return False }
 
 		::device::scale::watchdog_tickle $handle $command
 		::device::scale::process_weight_update $reported_weight $event_time
@@ -497,6 +499,11 @@ namespace eval ::device::scale {
 			return
 		}
 
+		if { [_watchdog_quiet $handle] } {
+			_watchdog_first_arm $handle $tries
+			return
+		}
+
 		if { $tries >=	${::device::scale::_watchdog_update_tries} } {
 		    msg -ERROR "Scale updates not seen, $tries of" \
 			    "${::device::scale::_watchdog_update_tries}, ABANDONING"
@@ -555,10 +562,26 @@ namespace eval ::device::scale {
 			&& [ifexists ::de1(scale_connectivity)] ne "usb" }
 	}
 
+	proc _watchdog_quiet {handle} {
+		expr { [_watchdog_decent_ble $handle] && [llength [info commands ::hds_sleep::isQuiet]] \
+			&& [::hds_sleep::isQuiet $handle] }
+	}
+
+	proc invalidate_hds_readiness {handle} {
+		if { $handle ne [ifexists ::de1(scale_device_handle)] || ![_watchdog_quiet $handle] } { return }
+		set ::device::scale::_watchdog_updates_seen False
+		set ::device::scale::_last_weight_update_time 0
+	}
+
 	proc _watchdog_fire {handle generation retried} {
 		if { $generation != $::device::scale::_watchdog_generation \
 				|| $::device::scale::_watchdog_id eq "" \
 				|| ($handle ne "" && $handle ne $::de1(scale_device_handle)) } {
+			return
+		}
+
+		if { [_watchdog_quiet $handle] } {
+			_watchdog_arm $handle $retried
 			return
 		}
 

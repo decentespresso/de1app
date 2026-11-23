@@ -104,8 +104,9 @@ proc ::comms::run_scale_ble_queue {} {
 		return
 	}
 	while {[llength $scale_ble_commands] > 0} {
-		lassign [lindex $scale_ble_commands 0] comment cmd vital
+		lassign [lindex $scale_ble_commands 0] comment cmd vital guard
 		set scale_ble_commands [lrange $scale_ble_commands 1 end]
+		if {$guard ne "" && ![{*}$guard]} {continue}
 		set action [lindex $cmd 1]
 		set event [expr {$action in {enable disable} ? "descriptor" : "characteristic"}]
 		set access [expr {$action eq "read" ? "r" : "w"}]
@@ -142,8 +143,9 @@ proc ble_queue_ack {handle event access characteristic {descriptorUuid ""}} {
 	}
 }
 
-proc userdata_append {comment cmd {vital 0}} {
+proc userdata_append {comment cmd {vital 0} {guard ""}} {
 	set entry [list $comment $cmd $vital]
+	if {$guard ne ""} {lappend entry $guard}
 	set handle [lindex $cmd 2]
 	if {[lindex $cmd 0] eq "ble" && [lindex $cmd 1] in {read write enable disable} &&
 		[::comms::uses_scale_ble_queue $handle]} {
@@ -194,6 +196,12 @@ proc run_next_userdata_cmd {} {
 		set cmd [lindex $::de1(cmdstack) 0]
 		set cmds [lrange $::de1(cmdstack) 1 end]
 		set vital [lindex $cmd 2]
+		set guard [lindex $cmd 3]
+		if {$guard ne "" && ![{*}$guard]} {
+			set ::de1(cmdstack) $cmds
+			after 0 run_next_userdata_cmd
+			return
+		}
 
 		set result 0
 

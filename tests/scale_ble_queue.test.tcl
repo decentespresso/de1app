@@ -90,6 +90,14 @@ test scale-ble-unowned-machine-ack-does-not-unblock {} -setup resetQueues -body 
 	list $before $::issued
 } -cleanup resetQueues -result {{} {{write ble0 36f5}}}
 
+test scale-ble-obsolete-guarded-write-is-not-dispatched {} -setup resetQueues -body {
+	userdata_append first [writeTo ble1]
+	userdata_append stale [writeTo ble1] 0 {expr {0}}
+	userdata_append following [writeTo ble1 fff4]
+	ble_queue_ack ble1 characteristic w 36f5
+	list $::issued $::de1(wrote)
+} -cleanup resetQueues -result {{{write ble1 36f5} {write ble1 fff4}} 1}
+
 test scale-ble-timeout-retires-only-its-own-attempt {} -setup resetQueues -body {
 	userdata_append old [writeTo ble1]
 	set old [lindex $::comms::scale_ble_pending 0]

@@ -3,6 +3,7 @@ package provide de1_bluetooth 1.1
 package require de1_comms
 package require de1_device_scale 1.0
 package require de1_logging 1.2
+source [file join [file dirname [info script]] hds_sleep.tcl]
 
 namespace eval ::bt {
 
@@ -24,6 +25,21 @@ proc scale_enable_lcd {} {
 		decentscale_enable_lcd
 		# double-sending command, half a second later, because sometimes the decent scale command buffer has not finished the previous command and drops the next one
 		after 1000 decentscale_enable_lcd
+	}
+}
+
+proc scale_wake_display {} {
+	if {![::hds_sleep::setIntent 0]} {
+		scale_enable_lcd
+	}
+}
+
+proc scale_sleep_display {} {
+	if {[::hds_sleep::setIntent 1]} {
+		after cancel [ifexists ::de1(decentscale_display_retry)]
+		unset -nocomplain ::de1(decentscale_pending_display)
+	} else {
+		scale_disable_lcd
 	}
 }
 
@@ -1326,6 +1342,10 @@ proc decentscale_confirm_notifications {handle value} {
 		return
 	}
 	set ::de1(decentscale_notification_handle) $handle
+	if {[::hds_sleep::subscribed $handle]} {
+		unset -nocomplain ::de1(decentscale_pending_display)
+		return
+	}
 	if {[info exists ::de1(decentscale_pending_display)]} {
 		set pending $::de1(decentscale_pending_display)
 		unset ::de1(decentscale_pending_display)
@@ -2828,6 +2848,7 @@ proc de1_ble_handler { event data } {
 							after 2000 decentscale_send_heartbeat
 
 							if {$::android} {
+								::hds_sleep::connected $handle $address
 								decentscale_start_notifications
 							} else {
 								after 200 decentscale_enable_lcd
@@ -3241,6 +3262,9 @@ proc de1_ble_handler { event data } {
 							# decent scale
 
 							#::bt::msg -INFO "Decentscale read received"
+							if {$access eq "c"} {
+								::hds_sleep::notification $handle $value
+							}
 							parse_decent_scale_recv $value weightarray
 
 							if {[ifexists weightarray(command)] == [expr 0x0F] && [ifexists weightarray(data6)] == [expr 0xFE]} {
@@ -3363,6 +3387,9 @@ proc de1_ble_handler { event data } {
 						}
 
 					} elseif {$access eq "w"} {
+						if {$cuuid eq $::de1(cuuid_decentscale_write)} {
+							::hds_sleep::writeAck $handle $value
+						}
 						ble_queue_ack $handle $event $access $cuuid
 
 						if {$cuuid eq $::de1(cuuid_05)} {
