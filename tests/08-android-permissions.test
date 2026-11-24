@@ -44,6 +44,7 @@ proc reset {sdk granted {will_grant {}}} {
     foreach id [after info] {after cancel $id}
     set ::android 1; set ::android_sdk $sdk; set ::has_bluetooth 1
     set ::scanning 0; set ::ble_scanner ""
+    set ::scale_scan_handoff {}
     set ::granted $granted; set ::will_grant $will_grant
     set ::requests {}; set ::popups {}; set ::ble_calls {}; set ::log {}
 }
