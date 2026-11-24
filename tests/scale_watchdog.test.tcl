@@ -47,6 +47,10 @@ proc homedir {} { return $::test_app_dir }
 proc scale_enable_weight_notifications {} {
 	lappend ::notification_enables $::de1(scale_device_handle)
 }
+proc decentscale_enable_notifications {guard onAck} {
+	lappend ::notification_enables $::de1(scale_device_handle)
+	set ::recovery_callbacks [list $guard $onAck]
+}
 proc ble {command handle} {
 	if {$command eq "close" && $handle != 0} {
 		lappend ::closed_handles $handle
@@ -74,6 +78,7 @@ proc after {args} {
 		return
 	}
 	lappend ::scheduled [lrange $args 1 end]
+	lappend ::scheduled_delays [lindex $args 0]
 	return watchdog-next
 }
 
@@ -92,7 +97,11 @@ proc reset_watchdog {handle} {
 	set ::de1(scale_max_connection_retry_attempts) 10
 	set ::processed_weights {}
 	set ::scheduled {}
+	set ::scheduled_delays {}
 	set ::notification_enables {}
+	set ::recovery_callbacks {}
+	set ::android 1
+	set ::has_bluetooth 1
 	set ::de1(ble_protocol_version) 1
 	set ::de1(scale_connectivity) ble
 	set ::settings(scale_type) decentscale
@@ -300,53 +309,77 @@ proc scheduled_watchdog {} {
 	lindex $::scheduled end 0
 }
 
-test scale-established-ble-recovers-once-1 {} -body {
+test scale-established-ble-waits-for-subscription-ack-1 {} -body {
 	reset_pipeline ble1 decentscale
 	unset ::de1(scale_connectivity)
 	::device::scale::process_decentscale_weight_update ble1 0xCE 12.3 100
 	set first [scheduled_watchdog]
 	{*}$first
-	set retry [scheduled_watchdog]
+	set waiting [scheduled_watchdog]
+	lassign $::recovery_callbacks guard onAck
 	{*}$first
-	set before [list [::device::scale::is_operational] $::notification_enables $::closed_handles]
-	{*}$retry
-	{*}$retry
-	list $before $::notification_enables $::closed_handles $::reconnects $::scale_events
-} -result {{0 ble1 {}} ble1 ble1 1 {scale_reporting timeout_updates not_connected}}
+	set before [list [lindex $::scheduled_delays end] [{*}$guard] $::closed_handles]
+	{*}$onAck
+	set grace [scheduled_watchdog]
+	{*}$onAck
+	{*}$waiting
+	set after [list [lindex $::scheduled_delays end] $::closed_handles \
+		[expr {[scheduled_watchdog] eq $grace}]]
+	{*}$grace
+	{*}$grace
+	list $before $after $::notification_enables $::closed_handles $::reconnects $::scale_events
+} -result {{10000 1 {}} {2000 {} 1} ble1 ble1 1 {scale_reporting timeout_updates not_connected}}
+
+test scale-established-ble-times-out-without-subscription-ack-1 {} -body {
+	reset_pipeline ble1 decentscale
+	::device::scale::process_decentscale_weight_update ble1 0xCE 12.3 100
+	{*}[scheduled_watchdog]
+	lassign $::recovery_callbacks guard onAck
+	set wait [lindex $::scheduled_delays end]
+	{*}[scheduled_watchdog]
+	{*}$onAck
+	list $wait [{*}$guard] $::notification_enables $::closed_handles $::reconnects
+} -result {10000 0 ble1 ble1 1}
 
 test scale-established-ble-fresh-weight-cancels-recovery-1 {} -body {
 	reset_pipeline ble1 decentscale
 	::device::scale::process_decentscale_weight_update ble1 0xCE 12.3 100
 	{*}[scheduled_watchdog]
 	set retry [scheduled_watchdog]
+	lassign $::recovery_callbacks guard onAck
 	::device::scale::process_decentscale_weight_update ble1 0xCA 12.4 101
 	set fresh [scheduled_watchdog]
+	{*}$onAck
 	{*}$retry
-	list [::device::scale::is_operational] $::notification_enables $::closed_handles \
+	list [{*}$guard] [::device::scale::is_operational] $::notification_enables $::closed_handles \
 		$::scale_events [expr {[scheduled_watchdog] eq $fresh}]
-} -result {1 ble1 {} {scale_reporting timeout_updates scale_reporting} 1}
+} -result {0 1 ble1 {} {scale_reporting timeout_updates scale_reporting} 1}
 
 test scale-established-ble-replacement-ignores-stale-recovery-1 {} -body {
 	reset_pipeline ble1 decentscale
 	::device::scale::process_decentscale_weight_update ble1 0xCE 12.3 100
 	{*}[scheduled_watchdog]
 	set retry [scheduled_watchdog]
+	lassign $::recovery_callbacks guard onAck
 	::device::scale::_watchdog_cancel
 	::device::scale::watchdog_first
 	set startup [scheduled_watchdog]
+	{*}$onAck
 	{*}$retry
-	list $::notification_enables $::closed_handles $::reconnects \
+	list [{*}$guard] $::notification_enables $::closed_handles $::reconnects \
 		[expr {[scheduled_watchdog] eq $startup}]
-} -result {ble1 {} 0 1}
+} -result {0 ble1 {} 0 1}
 
-foreach {handle scale_type connectivity protocol} {
-	serial1 decentscale usb 1
-	ble1 bookoo ble 1
-	0 decentscale ble 2
+foreach {handle scale_type connectivity protocol on_android} {
+	serial1 decentscale usb 1 1
+	ble1 bookoo ble 1 1
+	0 decentscale ble 2 1
+	ble1 decentscale ble 1 0
 } {
 	test scale-established-no-ble-recovery-$handle-$scale_type-1 {} -body {
 		reset_pipeline $handle $scale_type $protocol
 		set ::de1(scale_connectivity) $connectivity
+		set ::android $on_android
 		if {$scale_type eq "decentscale" && $handle ne "0"} {
 			::device::scale::process_decentscale_weight_update $handle 0xCE 12.3 100
 		} else {

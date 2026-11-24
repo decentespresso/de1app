@@ -46,6 +46,8 @@ proc resetQueues {} {
 	set ::android 1
 	set ::issued {}
 	set ::disconnected {}
+	set ::acknowledged {}
+	set ::canSubscribe 1
 }
 
 proc writeTo {handle {characteristic 36f5}} {
@@ -81,6 +83,39 @@ test scale-ble-cccd-cannot-be-released-by-other-descriptor {} -setup resetQueues
 	ble_queue_ack ble1 descriptor w fff4 00002902-0000-1000-8000-00805F9B34FB
 	list $before $::issued
 } -cleanup resetQueues -result {{{enable ble1 fff4}} {{enable ble1 fff4} {write ble1 36f5}}}
+
+test scale-ble-completion-waits-for-matching-dispatched-cccd {} -setup resetQueues -body {
+	userdata_append heartbeat [writeTo ble1]
+	userdata_append resubscribe {ble enable ble1 fff0 1 fff4 2} 1 {} {lappend ::acknowledged resubscribed}
+	ble_queue_ack ble1 descriptor w fff4 2902
+	set before [list $::issued $::acknowledged]
+	ble_queue_ack ble1 characteristic w 36f5
+	ble_queue_ack ble0 descriptor w fff4 2902
+	ble_queue_ack ble1 descriptor w fff4 2901
+	set during [list $::issued $::acknowledged]
+	ble_queue_ack ble1 descriptor w FFF4 00002902-0000-1000-8000-00805F9B34FB
+	ble_queue_ack ble1 descriptor w fff4 2902
+	list $before $during $::acknowledged
+} -cleanup resetQueues -result {{{{write ble1 36f5}} {}} {{{write ble1 36f5} {enable ble1 fff4}} {}} resubscribed}
+
+test scale-ble-completion-drops-stale-undispatched-resubscribe {} -setup resetQueues -body {
+	userdata_append heartbeat [writeTo ble1]
+	userdata_append resubscribe {ble enable ble1 fff0 1 fff4 2} 1 {expr {$::canSubscribe}} {lappend ::acknowledged stale}
+	set ::canSubscribe 0
+	ble_queue_ack ble1 characteristic w 36f5
+	ble_queue_ack ble1 descriptor w fff4 2902
+	list $::issued $::acknowledged
+} -cleanup resetQueues -result {{{write ble1 36f5}} {}}
+
+test scale-ble-completion-discards-in-flight-owner-on-replacement {} -setup resetQueues -body {
+	userdata_append old {ble enable ble1 fff0 1 fff4 2} 1 {} {lappend ::acknowledged old}
+	::comms::discard_scale_ble_queue ble1
+	set ::de1(scale_device_handle) ble2
+	userdata_append new {ble enable ble2 fff0 1 fff4 2} 1 {} {lappend ::acknowledged new}
+	ble_queue_ack ble1 descriptor w fff4 2902
+	ble_queue_ack ble2 descriptor w fff4 2902
+	list $::issued $::acknowledged
+} -cleanup resetQueues -result {{{enable ble1 fff4} {enable ble2 fff4}} new}
 
 test scale-ble-unowned-machine-ack-does-not-unblock {} -setup resetQueues -body {
 	userdata_append machine [writeTo ble0]

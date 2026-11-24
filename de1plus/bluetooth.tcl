@@ -1278,7 +1278,7 @@ proc decent_scale_tare_cmd {} {
 	return $cmd
 }
 
-proc decentscale_enable_notifications {} {
+proc decentscale_enable_notifications {{guard ""} {onAck ""}} {
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
 		return
 	}
@@ -1288,7 +1288,7 @@ proc decentscale_enable_notifications {} {
 		return
 	}
 
-	userdata_append "SCALE: enable decent scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_read) $::cinstance($::de1(cuuid_decentscale_read))] 1
+	userdata_append "SCALE: enable decent scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_read) $::cinstance($::de1(cuuid_decentscale_read))] 1 $guard $onAck
 }
 
 proc decentscale_start_notifications {} {
@@ -2181,9 +2181,30 @@ proc stop_scanner {} {
 	ble stop $::ble_scanner
 }
 
-proc scale_scan_stop_timeout {} {
-	set ::scale_scan_handoff {}
-	::bt::msg -WARNING "BLE scanner did not confirm stop before scale connect"
+proc request_scale_scan_stop {scanner address attempt} {
+	set ::scale_scan_handoff [list $scanner $address stopping $attempt]
+	set ::scale_scan_timeout [after 2000 [list scale_scan_stop_timeout $scanner $address $attempt]]
+	if {[catch {ble stop $scanner} message]} {
+		::bt::msg -WARNING "Could not stop BLE scan before scale connect: $message"
+	}
+}
+
+proc scale_scan_stop_timeout {scanner address attempt} {
+	if {$::scale_scan_handoff ne [list $scanner $address stopping $attempt]} {
+		return
+	}
+	if {$scanner ne $::ble_scanner || $address ne $::settings(scale_bluetooth_address)} {
+		set ::scale_scan_handoff {}
+		return
+	}
+	if {![catch {dict get [ble info $scanner] state} state] && $state eq "idle"} {
+		scale_scan_stopped $scanner
+	} elseif {$attempt < 2} {
+		request_scale_scan_stop $scanner $address [expr {$attempt + 1}]
+	} else {
+		set ::scale_scan_handoff [list $scanner $address stalled $attempt]
+		::bt::msg -WARNING "BLE scanner did not confirm stop before scale connect; Search can retry"
+	}
 }
 
 proc stop_scan_before_scale_connect {} {
@@ -2196,13 +2217,7 @@ proc stop_scan_before_scale_connect {} {
 	if {$::scanning != 1 || $::ble_scanner eq ""} {
 		return 0
 	}
-	set ::scale_scan_handoff [list $::ble_scanner $::settings(scale_bluetooth_address) stopping]
-	set ::scale_scan_timeout [after 2000 scale_scan_stop_timeout]
-	if {[catch {ble stop $::ble_scanner} message]} {
-		after cancel $::scale_scan_timeout
-		set ::scale_scan_handoff {}
-		::bt::msg -WARNING "Could not stop BLE scan before scale connect: $message"
-	}
+	request_scale_scan_stop $::ble_scanner $::settings(scale_bluetooth_address) 1
 	return 1
 }
 
@@ -2211,8 +2226,9 @@ proc scale_scan_stopped {scanner} {
 	if {$pendingScanner ne $scanner || $phase eq ""} {
 		return 0
 	}
-	if {$phase eq "stopping"} {
+	if {$phase in {stopping stalled}} {
 		after cancel $::scale_scan_timeout
+		set ::scanning 0
 		set ::scale_scan_handoff [list $scanner $address settling]
 		after 300 [list connect_scale_after_scan $scanner $address]
 	}
@@ -2631,6 +2647,7 @@ proc de1_ble_handler { event data } {
 
 	#set ::de1(last_ping) [clock seconds]
 
+	set handle ""
 	dict with data {
 
 		switch -- $event {
@@ -2732,7 +2749,6 @@ proc de1_ble_handler { event data } {
 				} elseif {$state eq "idle"} {
 					if {$::android && $handle ne $::ble_scanner} { return }
 					if {$::android && [scale_scan_stopped $handle]} {
-						set ::scanning 0
 						return
 					}
 					#ble stop $::ble_scanner
@@ -2805,6 +2821,7 @@ proc de1_ble_handler { event data } {
 
 					} elseif {$::de1(scale_device_handle) == 0 && $address == $::settings(scale_bluetooth_address)} {
 
+						set ::de1(scale_connectivity) "ble"
 						set ::de1(scale_device_handle) $handle
 						if {![::comms::uses_scale_ble_queue $handle]} {
 							set ::de1(wrote) 0
@@ -3647,6 +3664,18 @@ proc android_scan_permission_missing {} {
 
 proc scanning_restart {} {
 	::bt::msg -NOTICE scanning_restart
+	if {$::android && [lindex $::scale_scan_handoff 2] eq "stalled"} {
+		set scanner [lindex $::scale_scan_handoff 0]
+		if {$scanner eq $::ble_scanner} {
+			if {[catch {ble close $scanner} message]} {
+				::bt::msg -WARNING "Could not retire BLE scanner: $message"
+				return
+			}
+			set ::ble_scanner {}
+			set ::scanning 0
+		}
+		set ::scale_scan_handoff {}
+	}
 	if {$::scanning == 1 || ($::android && $::scale_scan_handoff ne {})} {
 		return
 	}

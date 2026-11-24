@@ -97,6 +97,7 @@ namespace eval ::device::scale {
 
 	variable _watchdog_timeout 1000
 	variable _watchdog_tickle_timeout 2000
+	variable _watchdog_ack_timeout 10000
 	variable _watchdog_update_tries 10
 
 	variable _watchdog_id ""
@@ -544,21 +545,36 @@ namespace eval ::device::scale {
 		_watchdog_arm $handle
 	}
 
-	proc _watchdog_arm {handle {retried 0}} {
+	proc _watchdog_arm {handle {phase stream}} {
 		set generation [incr ::device::scale::_watchdog_generation]
-		set ::device::scale::_watchdog_id [ after $::device::scale::_watchdog_tickle_timeout \
-				  [list ::device::scale::_watchdog_fire $handle $generation $retried] ]
+		set timeout [expr {$phase eq "awaitAck" ? $::device::scale::_watchdog_ack_timeout \
+			: $::device::scale::_watchdog_tickle_timeout}]
+		set ::device::scale::_watchdog_id [after $timeout \
+			[list ::device::scale::_watchdog_fire $handle $generation $phase]]
+		return $generation
 	}
 
-	proc _watchdog_decent_ble {handle} {
-		expr { $handle ni {"" 0} && $::settings(scale_type) eq "decentscale" \
-			&& [ifexists ::de1(scale_connectivity)] ne "usb" }
+	proc _watchdog_current {handle generation} {
+		expr {$generation == $::device::scale::_watchdog_generation \
+			&& $::device::scale::_watchdog_id ne "" \
+			&& ($handle eq "" || $handle eq $::de1(scale_device_handle))}
 	}
 
-	proc _watchdog_fire {handle generation retried} {
-		if { $generation != $::device::scale::_watchdog_generation \
-				|| $::device::scale::_watchdog_id eq "" \
-				|| ($handle ne "" && $handle ne $::de1(scale_device_handle)) } {
+	proc _watchdog_recovery_current {handle generation} {
+		expr {[_watchdog_current $handle $generation] && [::comms::uses_scale_ble_queue $handle]}
+	}
+
+	proc _watchdog_recovery_ack {handle generation} {
+		if {![_watchdog_recovery_current $handle $generation]} { return }
+		after cancel $::device::scale::_watchdog_id
+		_watchdog_arm $handle awaitWeight
+	}
+
+	proc _watchdog_fire {handle generation phase} {
+		if {![_watchdog_current $handle $generation]} { return }
+		if {$phase ne "stream"} {
+			set ::device::scale::_watchdog_id ""
+			if {[::comms::uses_scale_ble_queue $handle]} { scale_disconnect_handler $handle }
 			return
 		}
 
@@ -570,23 +586,19 @@ namespace eval ::device::scale {
 		set since [expr { ([clock milliseconds] / 1000.0) \
 			- $::device::scale::_last_weight_update_time }]
 		if { $since < ($::device::scale::_watchdog_tickle_timeout / 1000.0) } {
-			_watchdog_arm $handle $retried
+			_watchdog_arm $handle
 			return
 		}
 
 		set ::device::scale::_watchdog_id ""
-		set recover [_watchdog_decent_ble $handle]
-		if { $retried } {
-			if { $recover } { scale_disconnect_handler $handle }
-			return
-		}
-
 		msg -WARNING "Scale watchdog TIMEOUT"
 		::gui::notify::scale_event timeout_updates
 		set ::device::scale::_watchdog_updates_seen False
-		if { $recover } {
-			_watchdog_arm $handle 1
-			scale_enable_weight_notifications
+		if {[::comms::uses_scale_ble_queue $handle]} {
+			set generation [_watchdog_arm $handle awaitAck]
+			decentscale_enable_notifications \
+				[list ::device::scale::_watchdog_recovery_current $handle $generation] \
+				[list ::device::scale::_watchdog_recovery_ack $handle $generation]
 		}
 	}
 
