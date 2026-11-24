@@ -2161,7 +2161,10 @@ proc check_if_initial_connect_didnt_happen_quickly {} {
 		::bt::msg -NOTICE "DE1 device handle is $::de1(device_handle)"
 	}
 
-	if {$::settings(scale_bluetooth_address) != "" && $::de1(scale_device_handle) == 0} {
+	if {$ble_scan_started && $::scale_connect_deadline ne ""} {
+		clear_scale_connect_attempt 1
+	} elseif {$::scale_connect_deadline eq "" && $::settings(scale_bluetooth_address) != ""
+		&& $::de1(scale_device_handle) == 0} {
 		::bt::msg -NOTICE "on initial startup, if a direct connection to scale doesn't work quickly, start a scan instead"
 		catch {
 			ble close $::currently_connecting_scale_handle
@@ -2415,6 +2418,45 @@ proc ble_connect_to_de1 {} {
 
 
 set ::currently_connecting_scale_handle 0
+set ::scale_connect_generation 0
+set ::scale_connect_deadline ""
+
+proc clear_scale_connect_attempt {{close_pending 0}} {
+	set handle $::currently_connecting_scale_handle
+	after cancel $::scale_connect_deadline
+	set ::scale_connect_deadline ""
+	set ::currently_connecting_scale_handle 0
+	if {$close_pending && $handle ne "0"} {catch {ble close $handle}}
+}
+
+proc retire_android_scale_attempt {address} {
+	clear_scale_connect_attempt 1
+	if {$::de1(scale_device_handle) == 0 && $address eq $::settings(scale_bluetooth_address)
+		&& $::settings(scale_type) eq "decentscale"} {
+		::comms::retry_scale_ble_connection
+	}
+}
+
+proc scale_connect_timeout {generation handle address} {
+	if {$generation != $::scale_connect_generation || $handle ne $::currently_connecting_scale_handle} {return}
+	::bt::msg -WARNING "Scale BLE connect timed out on $handle"
+	retire_android_scale_attempt $address
+}
+
+proc android_scale_ble_event {generation address event data} {
+	if {$generation != $::scale_connect_generation} {return}
+	set handle [dict get $data handle]
+	if {$handle eq $::currently_connecting_scale_handle} {
+		if {$event eq "connection" && [dict get $data state] eq "disconnected"} {
+			retire_android_scale_attempt $address
+			return
+		}
+	} elseif {$handle ne $::de1(scale_device_handle)} {
+		return
+	}
+	de1_ble_handler $event $data
+}
+
 proc ble_connect_to_scale {} {
 	::bt::msg -NOTICE ble_connect_to_scale
 
@@ -2479,17 +2521,23 @@ proc ble_connect_to_scale {} {
 	# 2021-11-25 Johanna: Removed to see if it is the cause for the lunar connection issues
 	#remove_matching_ble_queue_entries {^SCALE:}
 
-	if {[catch {
-		set ::currently_connecting_scale_handle [ble connect [string toupper $::settings(scale_bluetooth_address)] de1_ble_handler false]
-		::bt::msg -NOTICE "Connecting to scale on $::settings(scale_bluetooth_address)"
-		set retcode 0
-	} err] != 0} {
-		set ::currently_connecting_scale_handle 0
-		set retcode 1
-		::bt::msg -ERROR "Failed to start to BLE connect to scale because: '$err'"
+	set address $::settings(scale_bluetooth_address)
+	set guarded [expr {$::android && $::settings(scale_type) eq "decentscale"}]
+	set callback de1_ble_handler
+	if {$guarded} {
+		set generation [incr ::scale_connect_generation]
+		set callback [list android_scale_ble_event $generation $address]
 	}
-	return $retcode
-
+	if {[catch {ble connect [string toupper $address] $callback false} handle]} {
+		::bt::msg -ERROR "Failed to start to BLE connect to scale because: '$handle'"
+		return 1
+	}
+	set ::currently_connecting_scale_handle $handle
+	if {$guarded} {
+		set ::scale_connect_deadline [after 10000 [list scale_connect_timeout $generation $handle $address]]
+	}
+	::bt::msg -NOTICE "Connecting to scale on $address"
+	return 0
 }
 
 proc append_to_peripheral_list {address name connectiontype devicetype devicefamily} {
@@ -2846,6 +2894,7 @@ proc de1_ble_handler { event data } {
 
 					} elseif {$::de1(scale_device_handle) == 0 && $address == $::settings(scale_bluetooth_address)} {
 
+						clear_scale_connect_attempt
 						set ::de1(scale_connectivity) "ble"
 						set ::de1(scale_device_handle) $handle
 						if {![::comms::uses_scale_ble_queue $handle]} {
@@ -2958,8 +3007,6 @@ proc de1_ble_handler { event data } {
 						} else {
 							error "unknown scale: '$::settings(scale_type)'"
 						}
-						set ::currently_connecting_scale_handle 0
-
 						if {$::de1(device_handle) != 0} {
 							# if we're connected to both the scale and the DE1, stop scanning
 							stop_scanner
@@ -3541,7 +3588,7 @@ proc de1_ble_handler { event data } {
 						# on every single scale connect.
 						::bt::msg -INFO "ACK Decent scale weight notifications: [::logging::format_ble_event_short $data]"
 						if {$::android && [ifexists suuid] eq $::de1(suuid_decentscale)
-							&& [string equal -nocase [ifexists duuid] 00002902-0000-1000-8000-00805F9B34FB]} {
+								&& [::comms::is_cccd [ifexists duuid]]} {
 							decentscale_confirm_notifications $handle [ifexists value]
 						}
 
