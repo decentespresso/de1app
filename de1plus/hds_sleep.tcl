@@ -11,6 +11,10 @@ namespace eval ::hds_sleep {
 	variable phase idle
 	variable attempt 0
 	variable timer ""
+	variable wakeLinks 0
+	variable statusWrite ""
+	variable writeAckTimeout 5100
+	variable statusTimeout 1500
 }
 
 proc ::hds_sleep::active {link} {
@@ -19,7 +23,7 @@ proc ::hds_sleep::active {link} {
 		&& $link eq $::de1(scale_device_handle) && $::settings(scale_type) eq "decentscale"}
 }
 
-proc ::hds_sleep::newIntent {} {
+proc ::hds_sleep::resetPhase {} {
 	variable timer
 	variable generation
 	variable attempt
@@ -40,12 +44,14 @@ proc ::hds_sleep::connected {link peer} {
 	variable wantsSleep
 	variable exitRequired
 	variable session
+	variable wakeLinks
 	set peer [string toupper $peer]
 	if {$peer ne $address || $peer eq ""} {
 		set wantsSleep 0
 		set exitRequired 0
+		set wakeLinks 0
 	}
-	newIntent
+	resetPhase
 	incr session
 	set address $peer
 	set handle $link
@@ -65,7 +71,7 @@ proc ::hds_sleep::subscribed {link} {
 	if {$wantsSleep} {
 		queueEnter
 	} else {
-		queueExit
+		wakeOnLink
 	}
 	return 1
 }
@@ -88,6 +94,7 @@ proc ::hds_sleep::setIntent {sleeping} {
 	variable wantsSleep
 	variable exitRequired
 	variable phase
+	variable wakeLinks
 	if {$address eq "" || $address ne [string toupper $::settings(scale_bluetooth_address)]} {return 0}
 	if {$sleeping && $::settings(keep_scale_on) != 1} {return 0}
 	if {$sleeping} {
@@ -96,21 +103,22 @@ proc ::hds_sleep::setIntent {sleeping} {
 			set wantsSleep 1
 			return 0
 		}
-		newIntent
+		resetPhase
 		set wantsSleep 1
 		if {$subscribed && [active $handle]} {queueEnter}
 		return 1
 	}
 	if {!$exitRequired} {
 		if {$phase eq "awakeConfirmed" && [active $handle]} {return 1}
-		if {$wantsSleep} {newIntent}
+		if {$wantsSleep} {resetPhase}
 		set wantsSleep 0
 		return 0
 	}
-	if {!$wantsSleep && $phase in {exitQueued exitAck statusQueued statusFrame retryWait}} {return 1}
-	newIntent
+	if {!$wantsSleep} {return 1}
+	resetPhase
 	set wantsSleep 0
-	if {$subscribed && [active $handle]} {queueExit}
+	set wakeLinks 0
+	if {$subscribed && [active $handle]} {wakeOnLink}
 	return 1
 }
 
@@ -139,15 +147,26 @@ proc ::hds_sleep::send {kind} {
 	set service $::de1(suuid_decentscale)
 	set characteristic $::de1(cuuid_decentscale_write)
 	if {![info exists ::sinstance($service)] || ![info exists ::cinstance($characteristic)]} {return}
-	set cmd [list ble write $handle $service $::sinstance($service) $characteristic $::cinstance($characteristic) [packet $kind]]
-	userdata_append "SCALE: HDS $kind" $cmd 0 [list ::hds_sleep::shouldDispatch $handle $session $generation $attempt $kind]
+	set payload [packet $kind]
+	set cmd [list ble write $handle $service $::sinstance($service) $characteristic $::cinstance($characteristic) $payload]
+	userdata_append "SCALE: HDS $kind" $cmd 0 [list ::hds_sleep::shouldDispatch $handle $session $generation $attempt $kind $payload]
 }
 
 proc ::hds_sleep::queueEnter {} {
 	variable phase
 	set phase enterQueued
-	armTimeout 1500
 	send enter
+}
+
+proc ::hds_sleep::wakeOnLink {} {
+	variable phase
+	variable wakeLinks
+	if {$wakeLinks >= 2} {
+		set phase unconfirmed
+		return
+	}
+	incr wakeLinks
+	queueExit
 }
 
 proc ::hds_sleep::queueExit {} {
@@ -155,7 +174,6 @@ proc ::hds_sleep::queueExit {} {
 	variable attempt
 	incr attempt
 	set phase exitQueued
-	armTimeout 1500
 	send exit
 }
 
@@ -164,11 +182,12 @@ proc ::hds_sleep::armTimeout {delay} {
 	variable handle
 	variable generation
 	variable attempt
+	variable phase
 	after cancel $timer
-	set timer [after $delay [list ::hds_sleep::timeout $handle $generation $attempt]]
+	set timer [after $delay [list ::hds_sleep::timeout $handle $generation $attempt $phase]]
 }
 
-proc ::hds_sleep::shouldDispatch {link connection epoch try kind} {
+proc ::hds_sleep::shouldDispatch {link connection epoch try kind payload} {
 	variable session
 	variable generation
 	variable attempt
@@ -177,6 +196,8 @@ proc ::hds_sleep::shouldDispatch {link connection epoch try kind} {
 	variable phase
 	variable wantsSleep
 	variable exitRequired
+	variable statusWrite
+	variable writeAckTimeout
 	if {![active $link] || !$subscribed || $connection != $session} {return 0}
 	if {$kind eq "probe"} {
 		if {$probe ne "queued"} {return 0}
@@ -190,14 +211,18 @@ proc ::hds_sleep::shouldDispatch {link connection epoch try kind} {
 			set phase enterAck
 			set exitRequired 1
 			::device::scale::invalidate_hds_readiness $link
+			armTimeout $writeAckTimeout
 		}
 		exit {
 			if {$wantsSleep || $phase ne "exitQueued"} {return 0}
 			set phase exitAck
+			armTimeout $writeAckTimeout
 		}
 		status {
 			if {$wantsSleep || $phase ne "statusQueued"} {return 0}
-			set phase statusFrame
+			set statusWrite $payload
+			set phase statusAck
+			armTimeout $writeAckTimeout
 		}
 		fallback {
 			if {!$wantsSleep || $phase ne "fallback"} {return 0}
@@ -210,13 +235,21 @@ proc ::hds_sleep::writeAck {link payload} {
 	variable wantsSleep
 	variable phase
 	variable timer
+	variable statusWrite
+	variable statusTimeout
 	if {![active $link]} {return}
 	if {$wantsSleep && $phase eq "enterAck" && $payload eq [packet enter]} {
 		after cancel $timer
+		set timer ""
 		set phase asleep
 	} elseif {!$wantsSleep && $phase eq "exitAck" && $payload eq [packet exit]} {
+		after cancel $timer
+		set timer ""
 		set phase statusQueued
 		send status
+	} elseif {!$wantsSleep && $phase eq "statusAck" && $payload eq $statusWrite} {
+		set phase statusFrame
+		armTimeout $statusTimeout
 	}
 }
 
@@ -240,10 +273,12 @@ proc ::hds_sleep::notification {link payload} {
 		set tens [expr {$version >> 4}]
 		set units [expr {$version & 0x0F}]
 		if {$tens > 9 || $units > 9} {return}
-		set major [expr {$tens * 10 + $units}]
-		if {$major < 3 || $major > 30} {return}
-		if {!$wantsSleep && $phase eq "statusFrame"} {
+		set candidate [expr {$tens * 10 + $units}]
+		if {$candidate < 3 || $candidate > 30 || ($battery > 100 && $battery != 0xFF)} {return}
+		set major $candidate
+		if {!$wantsSleep && $phase in {statusAck statusFrame}} {
 			after cancel $timer
+			set timer ""
 			set exitRequired 0
 			set phase awakeConfirmed
 		}
@@ -254,24 +289,33 @@ proc ::hds_sleep::notification {link payload} {
 	}
 }
 
-proc ::hds_sleep::timeout {link epoch try} {
+proc ::hds_sleep::timeout {link epoch try stage} {
 	variable generation
 	variable attempt
 	variable phase
 	variable wantsSleep
-	if {![active $link] || $epoch != $generation || $try != $attempt} {return}
-	if {$wantsSleep && $phase in {enterQueued enterAck}} {
+	variable wakeLinks
+	variable timer
+	if {![active $link] || $epoch != $generation || $try != $attempt || $stage ne $phase} {return}
+	after cancel $timer
+	set timer ""
+	if {$wantsSleep && $phase eq "enterAck"} {
 		set phase fallback
 		send fallback
 	} elseif {!$wantsSleep && $phase eq "retryWait"} {
 		queueExit
-	} elseif {!$wantsSleep && $phase in {exitQueued exitAck statusQueued statusFrame}} {
+	} elseif {!$wantsSleep && $phase in {exitAck statusAck statusFrame}} {
 		if {$attempt < 2} {
 			set phase retryWait
 			armTimeout 200
 		} else {
 			set phase unconfirmed
-			::bt::msg -WARNING "HDS SoftSleep exit was not confirmed"
+			if {$wakeLinks == 1} {
+				::bt::msg -WARNING "HDS SoftSleep exit was not confirmed; reconnecting scale once"
+				scale_disconnect_handler $link
+			} else {
+				::bt::msg -WARNING "HDS SoftSleep exit was not confirmed after reconnect"
+			}
 		}
 	}
 }

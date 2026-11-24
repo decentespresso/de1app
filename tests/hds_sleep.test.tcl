@@ -20,6 +20,10 @@ proc userdata_append {description command vital guard} {
 	lappend ::writes [list [binary encode hex [lindex $command end]] $guard]
 }
 
+proc scale_disconnect_handler {link} {
+	lappend ::reconnects $link
+}
+
 proc setupHds {} {
 	::hds_sleep::connected 0 ""
 	array set ::de1 {scale_device_handle ble1 suuid_decentscale fff0 cuuid_decentscale_write 36f5}
@@ -27,6 +31,7 @@ proc setupHds {} {
 	set ::cinstance(36f5) 3
 	array set ::settings {scale_type decentscale scale_bluetooth_address A1 keep_scale_on 1 enable_fluid_ounces 0}
 	set ::writes {}
+	set ::reconnects {}
 	::hds_sleep::connected ble1 A1
 }
 
@@ -52,6 +57,11 @@ proc proveHds {} {
 	set probe [nextHdsWrite]
 	hdsFrame 03220025000004
 	return $probe
+}
+
+proc fireHdsTimeout {} {
+	set callback [lindex [after info $::hds_sleep::timer] 0]
+	{*}$callback
 }
 
 test soft-sleep-needs-live-probe-and-major {} -setup setupHds -body {
@@ -89,6 +99,49 @@ test wake-requires-exit-ack-and-post-dispatch-status {} -setup setupHds -body {
 	list $enter $exit $beforeAck $beforeStatusRequest $status $afterHeartbeat [::hds_sleep::isQuiet ble1]
 } -result {030a040100000c 030a040000000d none 1 030a0101000108 1 0}
 
+test invalid-status-does-not-erase-hds-evidence {} -setup setupHds -body {
+	proveHds
+	foreach frame {030a03ffff000a 030a03ffff000a 030a0000640210 030a0000643110 030a0000643a10 030a0000650310} {
+		hdsFrame $frame
+	}
+	list [::hds_sleep::supportsSoftSleep] $::hds_sleep::major [::hds_sleep::setIntent 1] [nextHdsWrite]
+} -result {1 3 1 030a040100000c}
+
+test waiting-behind-other-ble-operations-spends-no-deadline {} -setup setupHds -body {
+	proveHds
+	::hds_sleep::setIntent 1
+	set entryQueued [list $::hds_sleep::phase $::hds_sleep::timer]
+	hdsAck [nextHdsWrite]
+	::hds_sleep::setIntent 0
+	set exitQueued [list $::hds_sleep::phase $::hds_sleep::attempt $::hds_sleep::timer]
+	set exit [nextHdsWrite]
+	set exitTimer $::hds_sleep::timer
+	set exitDeadline [lindex [after info $exitTimer] 0]
+	hdsAck $exit
+	set statusQueued [list $::hds_sleep::phase $::hds_sleep::timer]
+	{*}$exitDeadline
+	list $entryQueued $exitQueued $exit [catch {after info $exitTimer}] $statusQueued $::hds_sleep::phase [nextHdsWrite]
+} -result {{enterQueued {}} {exitQueued 1 {}} 030a040000000d 1 {statusQueued {}} statusQueued 030a0101000108}
+
+test status-ack-starts-an-independent-response-deadline {} -setup setupHds -body {
+	proveHds
+	::hds_sleep::setIntent 1
+	hdsAck [nextHdsWrite]
+	::hds_sleep::setIntent 0
+	hdsAck [nextHdsWrite]
+	set status [nextHdsWrite]
+	set pending $::hds_sleep::timer
+	set oldDeadline [lindex [after info $pending] 0]
+	hdsAck 030a03ffff000a
+	set unrelated [expr {$pending eq $::hds_sleep::timer}]
+	hdsAck $status
+	set responseDeadline [expr {$pending ne $::hds_sleep::timer}]
+	{*}$oldDeadline
+	set awaiting $::hds_sleep::phase
+	hdsFrame 030a0000640310
+	list $unrelated $responseDeadline $awaiting $::hds_sleep::phase [::hds_sleep::isQuiet ble1]
+} -result {1 1 statusFrame awakeConfirmed 0}
+
 test reconnect-retains-wake-obligation-only-for-same-scale {} -setup setupHds -body {
 	proveHds
 	::hds_sleep::setIntent 1
@@ -111,19 +164,54 @@ test superseded-enter-never-reaches-ble {} -setup setupHds -body {
 	list $wake [nextHdsWrite] [::hds_sleep::isQuiet ble1]
 } -result {0 dropped 0}
 
-test wake-failure-retries-once-and-preserves-quiet {} -setup setupHds -body {
+test wake-exhaustion-reconnects-once-per-intent-and-keeps-weight-quiet {} -setup setupHds -body {
 	proveHds
 	::hds_sleep::setIntent 1
 	hdsAck [nextHdsWrite]
 	::hds_sleep::setIntent 0
-	set first [nextHdsWrite]
-	set epoch $::hds_sleep::generation
-	::hds_sleep::timeout ble1 $epoch 1
-	::hds_sleep::timeout ble1 $epoch 1
-	set second [nextHdsWrite]
-	::hds_sleep::timeout ble1 $epoch 2
-	list $first $second [nextHdsWrite] [::hds_sleep::isQuiet ble1]
-} -result {030a040000000d 030a040000000d none 1}
+	set attempts {}
+	foreach link {ble1 ble2} {
+		if {$link ne "ble1"} {
+			set ::de1(scale_device_handle) $link
+			::hds_sleep::connected $link A1
+			::hds_sleep::subscribed $link
+		}
+		for {set i 0} {$i < 2} {incr i} {
+			set exit [nextHdsWrite]
+			lappend attempts $exit
+			hdsAck $exit $link
+			hdsAck [nextHdsWrite] $link
+			fireHdsTimeout
+			if {$i == 0} {fireHdsTimeout}
+		}
+	}
+	::hds_sleep::setIntent 0
+	set afterDuplicate [nextHdsWrite]
+	set ::de1(scale_device_handle) ble3
+	::hds_sleep::connected ble3 A1
+	set ownsStartup [::hds_sleep::subscribed ble3]
+	list $attempts $::reconnects $afterDuplicate $ownsStartup [::hds_sleep::isQuiet ble3] [nextHdsWrite]
+} -result {{030a040000000d 030a040000000d 030a040000000d 030a040000000d} ble1 none 1 1 none}
+
+test transport-reconnect-uses-the-same-wake-recovery-budget {} -setup setupHds -body {
+	proveHds
+	::hds_sleep::setIntent 1
+	hdsAck [nextHdsWrite]
+	::hds_sleep::setIntent 0
+	nextHdsWrite
+	set oldDeadline [lindex [after info $::hds_sleep::timer] 0]
+	set ::de1(scale_device_handle) ble2
+	::hds_sleep::connected ble2 A1
+	::hds_sleep::subscribed ble2
+	{*}$oldDeadline
+	for {set i 0} {$i < 2} {incr i} {
+		hdsAck [nextHdsWrite] ble2
+		hdsAck [nextHdsWrite] ble2
+		fireHdsTimeout
+		if {$i == 0} {fireHdsTimeout}
+	}
+	list $::hds_sleep::phase [::hds_sleep::isQuiet ble2] $::reconnects [nextHdsWrite]
+} -result {unconfirmed 1 {} none}
 
 test sleeping-reconnect-reasserts-sleep-and-wake-renegotiates {} -setup setupHds -body {
 	proveHds
