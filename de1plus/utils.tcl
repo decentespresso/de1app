@@ -2176,12 +2176,29 @@ proc decaid_install_tapped {} {
 	if {[ifexists ::decaid_install_busy 0] || [decaid_is_installed 0]} { return }
 	if {[decaid_asset_name [decaid_platform] $::tcl_platform(machine)] eq ""} { return }
 	dui page open_dialog dui_confirm_dialog \
-		[translate "Download and install Decaid, Decent's new app? The download is 50 to 120 MB."] \
+		[translate "Download and install Decaid, Decent's new app?"] \
 		[list [translate "Install"] [translate "Cancel"]] \
 		-coords {0.5 0.5} -anchor center -size {1500 450} -disable_items 1 -return_callback ::decaid_install_confirmed
+	# white out the page behind this dialog; the shared backdrop is transparent for other dialogs.
+	# Tk widgets (e.g. the Connect lists) always draw above canvas shapes, so hide them too.
+	set can [dui canvas]
+	set ::decaid_hidden_widgets {}
+	catch { $can itemconfigure _dlg_bg -fill white }
+	foreach item [$can find all] {
+		if {[$can type $item] eq "window" && [$can itemcget $item -state] ne "hidden"} {
+			lappend ::decaid_hidden_widgets $item [$can itemcget $item -state]
+			$can itemconfigure $item -state hidden
+		}
+	}
 }
 
 proc decaid_install_confirmed {{choice {}}} {
+	catch {
+		set can [dui canvas]
+		$can itemconfigure _dlg_bg -fill {}
+		foreach {item state} [ifexists ::decaid_hidden_widgets] { $can itemconfigure $item -state $state }
+	}
+	set ::decaid_hidden_widgets {}
 	if {$choice eq "1"} { after 100 decaid_install }
 }
 
@@ -2204,7 +2221,7 @@ proc decaid_install {} {
 	set file [file join [decaid_download_dir $platform] $asset]
 	msg -NOTICE "Decaid install: downloading [decaid_download_url $asset] to '$file'"
 	set failed [catch {
-		decaid_set_status [translate "Downloading Decaid"]
+		decaid_set_status [translate "Downloading"]
 		decaid_download [decaid_download_url $asset] $file
 		decaid_set_status [translate "Installing Decaid"]
 		decaid_install_file $platform $file
@@ -2232,7 +2249,7 @@ proc decaid_download_progress {dltotal dlnow ultotal ulnow} {
 		if {$now - $::_decaid_dl_last >= 250} {
 			set ::_decaid_dl_last $now
 			if {$dltotal > 0} {
-				decaid_set_status "[translate {Downloading Decaid}] [expr {int(100.0 * $dlnow / $dltotal)}]%"
+				decaid_set_status "[translate {Downloading}] [expr {int(100.0 * $dlnow / $dltotal)}]%"
 			} else {
 				catch { update }
 			}
