@@ -8,6 +8,7 @@ set ::has_bluetooth 0
 
 namespace eval ::logging {
 	proc ble_log_enabled {level} {return 0}
+	proc format_asc_bin {value} {binary encode hex $value}
 }
 namespace eval ::device::scale {
 	proc invalidate_hds_readiness {handle} {}
@@ -24,11 +25,19 @@ proc scale_disconnect_handler {link} {
 	lappend ::reconnects $link
 }
 
+proc ifexists {name {default ""}} {
+	upvar 1 $name value
+	if {[info exists value]} {return $value}
+	return $default
+}
+
 proc setupHds {} {
 	::hds_sleep::connected 0 ""
 	array set ::de1 {scale_device_handle ble1 suuid_decentscale fff0 cuuid_decentscale_write 36f5}
 	set ::sinstance(fff0) 1
 	set ::cinstance(36f5) 3
+	set ::de1(decentscale_notification_handle) ble1
+	set ::android 1
 	array set ::settings {scale_type decentscale scale_bluetooth_address A1 keep_scale_on 1 enable_fluid_ounces 0}
 	set ::writes {}
 	set ::reconnects {}
@@ -235,6 +244,16 @@ test keep-scale-off-preserves-legacy-power-choice {} -setup setupHds -body {
 	set ::settings(keep_scale_on) 0
 	list [::hds_sleep::setIntent 1] [nextHdsWrite] [::hds_sleep::isQuiet ble1]
 } -result {0 none 0}
+
+test sleep-cancels-delayed-and-queued-legacy-lcd-on {} -setup setupHds -body {
+	proveHds
+	scale_enable_lcd
+	set timer $::de1(decentscale_display_retry)
+	set retry [lindex [after info $timer] 0]
+	scale_sleep_display
+	{*}$retry
+	list [catch {after info $timer}] [nextHdsWrite] [nextHdsWrite] [nextHdsWrite]
+} -result {1 dropped 030a040100000c none}
 
 ::hds_sleep::connected 0 ""
 cleanupTests

@@ -81,6 +81,20 @@ proc ::hds_sleep::isQuiet {link} {
 	expr {$exitRequired && [active $link]}
 }
 
+proc ::hds_sleep::displayGuard {link} {
+	variable generation
+	if {![active $link]} {return ""}
+	return [list ::hds_sleep::allowDisplayOn $link $generation]
+}
+
+proc ::hds_sleep::allowDisplayOn {link epoch} {
+	variable generation
+	variable wantsSleep
+	variable exitRequired
+	expr {[active $link] && $epoch == $generation && !$exitRequired
+		&& !($wantsSleep && [supportsSoftSleep])}
+}
+
 proc ::hds_sleep::supportsSoftSleep {} {
 	variable major
 	variable probe

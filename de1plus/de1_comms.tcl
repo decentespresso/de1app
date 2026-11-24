@@ -104,14 +104,14 @@ proc ::comms::run_scale_ble_queue {} {
 		return
 	}
 	while {[llength $scale_ble_commands] > 0} {
-		lassign [lindex $scale_ble_commands 0] comment cmd vital guard
+		lassign [lindex $scale_ble_commands 0] comment cmd vital guard onAck
 		set scale_ble_commands [lrange $scale_ble_commands 1 end]
 		if {$guard ne "" && ![{*}$guard]} {continue}
 		set action [lindex $cmd 1]
 		set event [expr {$action in {enable disable} ? "descriptor" : "characteristic"}]
 		set access [expr {$action eq "read" ? "r" : "w"}]
 		set attempt [incr scale_ble_attempt]
-		set scale_ble_pending [list $attempt $event $access [string tolower [lindex $cmd 5]]]
+		set scale_ble_pending [list $attempt $event $access [string tolower [lindex $cmd 5]] $onAck]
 		set scale_ble_deadline [after 5000 [list ::comms::scale_ble_ack_timeout $handle $attempt]]
 		::comms::msg -INFO "Scale BLE DEQ: $comment"
 		set failed [catch {{*}$cmd} result]
@@ -129,9 +129,14 @@ proc ble_queue_ack {handle event access characteristic {descriptorUuid ""}} {
 	if {$handle eq $::comms::scale_ble_handle || [::comms::uses_scale_ble_queue $handle]} {
 		if {$handle eq $::comms::scale_ble_handle && [::comms::uses_scale_ble_queue $handle] &&
 			($event ne "descriptor" || [string tolower $descriptorUuid] in {2902 00002902-0000-1000-8000-00805f9b34fb}) &&
-			[lrange $::comms::scale_ble_pending 1 end] eq [list $event $access [string tolower $characteristic]]} {
+			[lrange $::comms::scale_ble_pending 1 3] eq [list $event $access [string tolower $characteristic]]} {
+			set onAck [lindex $::comms::scale_ble_pending 4]
 			::comms::clear_scale_ble_pending
-			::comms::run_scale_ble_queue
+			try {
+				if {$onAck ne ""} {{*}$onAck}
+			} finally {
+				::comms::run_scale_ble_queue
+			}
 		}
 		return
 	}
@@ -143,9 +148,9 @@ proc ble_queue_ack {handle event access characteristic {descriptorUuid ""}} {
 	}
 }
 
-proc userdata_append {comment cmd {vital 0} {guard ""}} {
+proc userdata_append {comment cmd {vital 0} {guard ""} {onAck ""}} {
 	set entry [list $comment $cmd $vital]
-	if {$guard ne ""} {lappend entry $guard}
+	if {$guard ne "" || $onAck ne ""} {lappend entry $guard $onAck}
 	set handle [lindex $cmd 2]
 	if {[lindex $cmd 0] eq "ble" && [lindex $cmd 1] in {read write enable disable} &&
 		[::comms::uses_scale_ble_queue $handle]} {
