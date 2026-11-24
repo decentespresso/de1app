@@ -64,6 +64,10 @@ proc ::comms::uses_scale_ble_queue {handle} {
 		[::comms::scale_ble_isolated]}
 }
 
+proc ::comms::is_cccd {uuid} {
+	expr {[string tolower $uuid] in {2902 00002902-0000-1000-8000-00805f9b34fb}}
+}
+
 proc ::comms::clear_scale_ble_pending {} {
 	variable scale_ble_pending
 	variable scale_ble_deadline
@@ -128,7 +132,7 @@ proc ::comms::run_scale_ble_queue {} {
 proc ble_queue_ack {handle event access characteristic {descriptorUuid ""}} {
 	if {$handle eq $::comms::scale_ble_handle || [::comms::uses_scale_ble_queue $handle]} {
 		if {$handle eq $::comms::scale_ble_handle && [::comms::uses_scale_ble_queue $handle] &&
-			($event ne "descriptor" || [string tolower $descriptorUuid] in {2902 00002902-0000-1000-8000-00805f9b34fb}) &&
+			($event ne "descriptor" || [::comms::is_cccd $descriptorUuid]) &&
 			[lrange $::comms::scale_ble_pending 1 3] eq [list $event $access [string tolower $characteristic]]} {
 			set onAck [lindex $::comms::scale_ble_pending 4]
 			::comms::clear_scale_ble_pending
@@ -818,9 +822,13 @@ proc scale_disconnect_handler { handle } {
 		::device::scale::event::apply::on_disconnect_callbacks $event_dict
 	}
 
+	::comms::retry_scale_ble_connection
+}
+
+proc ::comms::retry_scale_ble_connection {} {
 	if {$::de1(bluetooth_scale_connection_attempts_tried) < $::de1(scale_max_connection_retry_attempts)} {
 		incr ::de1(bluetooth_scale_connection_attempts_tried)
-		::bt::msg -INFO "Disconnected from scale, trying again automatically.  Attempts=$::de1(bluetooth_scale_connection_attempts_tried)"
+		::bt::msg -INFO "Trying BLE scale connection again. Attempts=$::de1(bluetooth_scale_connection_attempts_tried)"
 		ble_connect_to_scale
 	} else {
 		# after 5 minutes, reset the scale retrier count back to zero that when coming back 

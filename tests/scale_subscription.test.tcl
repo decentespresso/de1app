@@ -1,10 +1,14 @@
 package require tcltest
 namespace import ::tcltest::*
 
-package provide de1_comms 1.1
+package provide de1_bluetooth 1.1
 package provide de1_device_scale 1.0
 package provide de1_logging 1.2
+package provide lambda 1.0
 set ::has_bluetooth 0
+set ::appDir [file normalize [file join [file dirname [info script]] .. de1plus]]
+proc homedir {} {return $::appDir}
+source [file join $::appDir de1_comms.tcl]
 
 namespace eval ::logging {
 	proc ble_log_enabled {level} {return 0}
@@ -29,7 +33,7 @@ proc userdata_append {description command vital args} {
 
 proc ble_queue_ack {handle args} {lappend ::ackHandles $handle}
 
-source [file join [file dirname [info script]] .. de1plus bluetooth.tcl]
+source [file join $::appDir bluetooth.tcl]
 
 proc setupScale {} {
 	after cancel [ifexists ::de1(decentscale_display_retry)]
@@ -49,6 +53,7 @@ proc setupScale {} {
 	array set ::settings {scale_type decentscale enable_fluid_ounces 0 keep_scale_on 1}
 	set ::android 1
 	set ::operations {}
+	set ::ackHandles {}
 }
 
 proc descriptorAck {handle {hex ""} {duuid 00002902-0000-1000-8000-00805F9B34FB}} {
@@ -64,6 +69,12 @@ test android-scale-waits-for-cccd {} -setup setupScale -body {
 	descriptorAck ble1 0100
 	list $before $::operations
 } -result {{030a03ffff000a enable} {030a03ffff000a enable 030a0101000108}}
+
+test android-scale-releases-display-on-short-cccd {} -setup setupScale -body {
+	decentscale_start_notifications
+	descriptorAck ble1 0100 2902
+	list $::operations $::ackHandles
+} -result {{enable 030a0101000108} ble1}
 
 test android-scale-ignores-unrelated-and-disabled-cccd {} -setup setupScale -body {
 	decentscale_start_notifications
@@ -112,25 +123,36 @@ test non-android-display-unchanged {} -setup setupScale -body {
 
 proc is_bengle_model {} {return 0}
 proc ble {command args} {
+	if {$command eq "connect"} {
+		lassign $args address callback autoconnect
+		lappend ::nativeCalls [list $command $address $autoconnect]
+		set handle ble[incr ::nextHandle]
+		dict set ::nativeCallbacks $handle $callback
+		return $handle
+	}
 	lappend ::nativeCalls [list $command {*}$args]
 	if {$command eq "stop" && $::failStop} {error "stop failed"}
-	if {$command eq "connect"} {return ble1}
 	if {$command eq "info"} {return [dict create state $::nativeScanState]}
 	if {$command eq "scanner"} {return scanner2}
 }
 
 proc setupScan {} {
 	after cancel [ifexists ::scale_scan_timeout]
+	clear_scale_connect_attempt
 	setupScale
-	set ::de1(scale_device_handle) 0
-	set ::de1(device_handle) 0
-	set ::de1(cmdstack) {blocked machine work}
-	set ::settings(scale_bluetooth_address) AA:BB:CC:DD:EE:FF
-	set ::currently_connecting_scale_handle 0
+	array set ::de1 {scale_device_handle 0 device_handle 0 cmdstack {blocked machine work}
+		bluetooth_scale_connection_attempts_tried 0 scale_max_connection_retry_attempts 10
+		scale_connectivity ble wrote 1}
+	array set ::settings {bluetooth_address {} scale_bluetooth_address AA:BB:CC:DD:EE:FF
+		scale_bluetooth_name {Decent Scale}}
+	set ::currently_connecting_de1_handle 0
+	set ::peripheral_device_list {}
 	set ::ble_scanner scanner1
 	set ::scanning 1
 	set ::scale_scan_handoff {}
 	set ::nativeCalls {}
+	set ::nativeCallbacks {}
+	set ::nextHandle 0
 	set ::failStop 0
 	set ::nativeScanState scanning
 	set ::has_bluetooth 0
@@ -157,7 +179,7 @@ test android-scale-connect-waits-for-current-scan-stop {} -setup setupScan -body
 	set settling [list $::nativeCalls $::scanning]
 	scanSettle
 	list $before $settling $::nativeCalls
-} -result {{{{stop scanner1}} 1} {{{stop scanner1}} 0} {{stop scanner1} {connect AA:BB:CC:DD:EE:FF de1_ble_handler false}}}
+} -result {{{{stop scanner1}} 1} {{{stop scanner1}} 0} {{stop scanner1} {connect AA:BB:CC:DD:EE:FF false}}}
 
 test android-scale-retries-stop-and-accepts-late-idle {} -setup setupScan -body {
 	set ::failStop 1
@@ -168,7 +190,7 @@ test android-scale-retries-stop-and-accepts-late-idle {} -setup setupScan -body 
 	de1_ble_handler connection {handle scanner1 state idle}
 	scanSettle
 	list $afterFailure $::nativeCalls
-} -result {{{{stop scanner1}} {stopping 1}} {{stop scanner1} {info scanner1} {stop scanner1} {connect AA:BB:CC:DD:EE:FF de1_ble_handler false}}}
+} -result {{{{stop scanner1}} {stopping 1}} {{stop scanner1} {info scanner1} {stop scanner1} {connect AA:BB:CC:DD:EE:FF false}}}
 
 test android-scale-reconciles-missing-idle-with-native-state {} -setup setupScan -body {
 	ble_connect_to_scale
@@ -176,7 +198,7 @@ test android-scale-reconciles-missing-idle-with-native-state {} -setup setupScan
 	runScanTimeout
 	scanSettle
 	list $::nativeCalls $::scanning
-} -result {{{stop scanner1} {info scanner1} {connect AA:BB:CC:DD:EE:FF de1_ble_handler false}} 0}
+} -result {{{stop scanner1} {info scanner1} {connect AA:BB:CC:DD:EE:FF false}} 0}
 
 test android-scale-stop-retries-are-bounded-but-accept-late-idle {} -setup setupScan -body {
 	ble_connect_to_scale
@@ -186,7 +208,7 @@ test android-scale-stop-retries-are-bounded-but-accept-late-idle {} -setup setup
 	de1_ble_handler connection {handle scanner1 state idle}
 	scanSettle
 	list $stalled [lindex $::nativeCalls end]
-} -result {{stalled 1 {{stop scanner1} {info scanner1} {stop scanner1} {info scanner1}}} {connect AA:BB:CC:DD:EE:FF de1_ble_handler false}}
+} -result {{stalled 1 {{stop scanner1} {info scanner1} {stop scanner1} {info scanner1}}} {connect AA:BB:CC:DD:EE:FF false}}
 
 proc android_scan_permission_missing {} {return {}}
 
@@ -202,20 +224,87 @@ test android-search-retires-stalled-scanner-and-waits-for-new-idle {} -setup set
 	de1_ble_handler connection {handle scanner2 state idle}
 	scanSettle
 	list $before $::ble_scanner [lindex $::nativeCalls end]
-} -result {{{close scanner1} {scanner de1_ble_handler} {start scanner2} {stop scanner2}} scanner2 {connect AA:BB:CC:DD:EE:FF de1_ble_handler false}}
-
-source [file join [file dirname [info script]] .. de1plus de1_usb.tcl]
-source [file join [file dirname [info script]] .. de1plus de1_usb_scale.tcl]
+} -result {{{close scanner1} {scanner de1_ble_handler} {start scanner2} {stop scanner2}} scanner2 {connect AA:BB:CC:DD:EE:FF false}}
 
 proc update_de1_state {value} {set ::machineState [binary encode hex $value]}
-proc usb {args} {lappend ::usbCalls $args}
+proc usb {args} {
+	lappend ::usbCalls $args
+	if {[lindex $args 0] eq "connect_raw"} {return serial1}
+}
 namespace eval ::comms {
 	proc msg {args} {}
-	proc uses_scale_ble_queue {handle} {expr {$::de1(scale_connectivity) eq "ble"}}
+	proc uses_scale_ble_queue {handle} {expr {[ifexists ::de1(scale_connectivity)] eq "ble"}}
+}
+namespace eval ::device::scale {
+	proc should_handle_disconnect {handle} {expr {$handle eq $::de1(scale_device_handle)}}
 }
 namespace eval ::device::scale::event::apply {
 	proc on_connect_callbacks {args} {}
 }
+
+proc scaleConnectionEvent {handle state} {
+	{*}[dict get $::nativeCallbacks $handle] connection \
+		[dict create handle $handle state $state address $::settings(scale_bluetooth_address)]
+}
+
+proc scaleDeadline {} {
+	lindex [after info $::scale_connect_deadline] 0
+}
+
+test android-scale-reconnect-times-out-and-restarts-through-handoff {} -setup setupScan -body {
+	set ::de1(scale_device_handle) ble-old
+	set ::scanning 0
+	scale_disconnect_handler ble-old
+	set deadline [scaleDeadline]
+	scaleConnectionEvent ble1 discovery
+	set discoveryStillPending [expr {$deadline eq [scaleDeadline]}]
+	set ::scanning 1
+	{*}$deadline
+	scaleConnectionEvent ble1 connected
+	scaleConnectionEvent ble1 disconnected
+	set stalled [list $::currently_connecting_scale_handle $::de1(scale_device_handle) [lindex $::nativeCalls end]]
+	de1_ble_handler connection {handle scanner1 state idle}
+	scanSettle
+	{*}$deadline
+	scaleConnectionEvent ble1 connected
+	scaleConnectionEvent ble1 disconnected
+	set replacement [list $::currently_connecting_scale_handle $::de1(scale_device_handle)]
+	set replacementDeadline $::scale_connect_deadline
+	scaleConnectionEvent ble2 connected
+	{*}[dict get $::nativeCallbacks ble2] descriptor \
+		[dict create handle ble2 state connected access w suuid fff0 cuuid fff4 duuid 2902 value [binary decode hex 0100]]
+	after cancel $::decentscale_send_heartbeat_id
+	list $discoveryStillPending $stalled $replacement $::de1(scale_device_handle) \
+		[catch {after info $replacementDeadline}] $::ackHandles [lindex $::operations end]
+} -result {1 {0 0 {stop scanner1}} {ble2 0} ble2 1 ble2 030a0101000108}
+
+test android-scale-startup-fallback-only-cancels-scale-before-machine-scan {} -setup setupScan -body {
+	set ::scanning 0
+	set ::has_bluetooth 1
+	set ::de1(device_handle) ble-machine
+	ble_connect_to_scale
+	set deadline [scaleDeadline]
+	check_if_initial_connect_didnt_happen_quickly
+	set activeMachine [list $::currently_connecting_scale_handle [expr {$deadline eq [scaleDeadline]}] $::nativeCalls]
+	set ::de1(device_handle) 0
+	set ::currently_connecting_de1_handle ble-machine
+	check_if_initial_connect_didnt_happen_quickly
+	{*}$deadline
+	scaleConnectionEvent ble1 disconnected
+	list $activeMachine $::currently_connecting_scale_handle $::scale_connect_deadline $::nativeCalls
+} -result {{ble1 1 {{connect AA:BB:CC:DD:EE:FF false}}} 0 {} {{connect AA:BB:CC:DD:EE:FF false} {close ble-machine} {close ble1} {start scanner1}}}
+
+test android-scale-retired-pending-attempt-respects-retry-limit {} -setup setupScan -body {
+	set ::scanning 0
+	set ::de1(scale_max_connection_retry_attempts) 1
+	ble_connect_to_scale
+	set deadline [scaleDeadline]
+	scaleConnectionEvent ble1 disconnected
+	{*}$deadline
+	{*}[scaleDeadline]
+	list $::currently_connecting_scale_handle $::scale_connect_deadline \
+		$::de1(bluetooth_scale_connection_attempts_tried) $::nativeCalls
+} -result {0 {} 1 {{connect AA:BB:CC:DD:EE:FF false} {close ble1} {connect AA:BB:CC:DD:EE:FF false} {close ble2}}}
 
 test usb-machine-state-callback-does-not-require-ble-handle {} -setup setupScale -body {
 	foreach key {0D 13 15 14 0A 05 01 12 11 09 0B 0C 0F 10} {
@@ -231,16 +320,27 @@ test usb-machine-state-callback-does-not-require-ble-handle {} -setup setupScale
 test usb-scale-disconnect-then-ble-adoption-selects-ble-queue {} -setup setupScan -body {
 	set ::de1(scale_device_handle) serial1
 	set ::de1(scale_connectivity) usb
-	set ::de1(wrote) 1
 	set ::scanning 0
-	set ::settings(bluetooth_address) ""
-	set ::settings(scale_bluetooth_name) "Decent Scale"
-	set ::peripheral_device_list {}
 	set ::usbCalls {}
 	de1_usb_scale_disconnect
-	de1_ble_handler connection {state connected handle ble1 address AA:BB:CC:DD:EE:FF}
+	ble_connect_to_scale
+	scaleConnectionEvent ble1 connected
 	after cancel $::decentscale_send_heartbeat_id
 	list $::usbCalls $::de1(scale_connectivity) $::de1(scale_device_handle) $::de1(wrote)
 } -result {{{close serial1}} ble ble1 1}
+
+test usb-scale-adoption-cancels-pending-android-ble-attempt {} -setup setupScan -body {
+	set ::scanning 0
+	set ::usbCalls {}
+	ble_connect_to_scale
+	set deadline [scaleDeadline]
+	de1_usb_scale_connect port1
+	{*}$deadline
+	scaleConnectionEvent ble1 disconnected
+	scaleConnectionEvent ble1 connected
+	de1_usb_scale_stop_keepalive
+	list $::de1(scale_device_handle) $::de1(scale_connectivity) \
+		$::currently_connecting_scale_handle $::scale_connect_deadline $::nativeCalls
+} -result {serial1 usb 0 {} {{connect AA:BB:CC:DD:EE:FF false} {close ble1}}}
 
 cleanupTests

@@ -57,7 +57,11 @@ proc de1_usb_scale_connect {device} {
 	# it unset makes every one of them safely early-return over USB (they build
 	# BLE `ble write ... $cinstance(...)` calls that would crash otherwise). USB
 	# commands are sent directly via de1_usb_scale_* / the scale_* USB branches.
-	set ::currently_connecting_scale_handle 0
+	if {[ifexists ::scale_connect_deadline] ne ""} {
+		clear_scale_connect_attempt 1
+	} else {
+		set ::currently_connecting_scale_handle 0
+	}
 	catch { incr ::successful_scale_connection_count }
 
 	# Enable binary weight streaming (decaid: raw 03 20 01 01), and initialise the
