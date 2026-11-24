@@ -158,21 +158,35 @@ test scale-ble-other-platform-retains-shared-queue {} -setup resetQueues -body {
 } -cleanup resetQueues -result {{} heartbeat}
 
 package provide de1_comms 1.1
-package provide de1_device_scale 1.0
+package provide de1_event 1.0
+package provide de1_gui 1.3
 package provide de1_logging 1.2
-set ::has_bluetooth 0
-source [file join [file dirname [info script]] .. de1plus bluetooth.tcl]
-
-namespace eval ::device::scale {
-	proc invalidate_hds_readiness {handle} {}
+package provide lambda 1.0
+namespace eval ::event::listener {
+	proc _init_callback_list {args} {}
+	proc _generic_add {args} {}
 }
+namespace eval ::gui::notify {
+	proc scale_event {event args} {lappend ::scaleEvents $event}
+}
+proc lambda {arguments body} {list apply [list $arguments $body]}
+proc msg {args} {}
+set appDir [file join [file dirname [info script]] .. de1plus]
+source [file join $appDir de1_de1.tcl]
+source [file join $appDir device_scale.tcl]
+set ::has_bluetooth 0
+source [file join $appDir bluetooth.tcl]
+
+proc ::device::scale::process_weight_update {weight eventTime} {}
 
 proc setupHdsQueue {} {
 	resetQueues
 	set ::de1(suuid_decentscale) fff0
+	set ::de1(cuuid_decentscale_read) fff4
 	set ::de1(cuuid_decentscale_write) 36f5
 	foreach key {05 10 11 decentscale_writeback} {set ::de1(cuuid_$key) other}
 	set ::sinstance(fff0) 1
+	set ::cinstance(fff4) 1
 	set ::cinstance(36f5) 2
 	array set ::settings {scale_bluetooth_address A1 keep_scale_on 1 enable_fluid_ounces 0}
 	::hds_sleep::connected ble1 A1
@@ -244,5 +258,29 @@ test scale-ble-softsleep-wake-waits-for-dispatch-and-bounds-reconnect {} -setup 
 	::hds_sleep::connected 0 ""
 	resetQueues
 } -result {{exitQueued {} {ble1 030a03ffff000a}} {statusQueued {} {ble1 030a03ffff000a}} {statusAck 1 1} {statusFrame 1 {}} {ble1 ble1 ble2 ble2} ble1 unconfirmed 1}
+
+test scale-ble-softsleep-queued-entry-pauses-readiness-and-can-be-canceled {} -setup setupHdsQueue -body {
+	set ::de1(decentscale_notification_handle) ble1
+	set ::scaleEvents {}
+	::device::scale::process_decentscale_weight_update ble1 0xCE 12.3 100
+	set before [::device::scale::is_operational]
+	set id $::device::scale::_watchdog_id
+	set watchdog [lindex [after info $id] 0]
+	after cancel $id
+	hdsQueueHeartbeat
+	scale_sleep_display
+	set queued [list $::hds_sleep::phase [::device::scale::is_operational] $::hds_sleep::exitRequired]
+	{*}$watchdog
+	set ignored [::device::scale::process_decentscale_weight_update ble1 0xCE 12.4 101]
+	scale_wake_display
+	hdsQueueAck ble1 030a03ffff000a
+	set beforeWeight [::device::scale::is_operational]
+	::device::scale::process_decentscale_weight_update ble1 0xCE 12.5 102
+	list $before $queued $ignored $beforeWeight [::device::scale::is_operational] $::scaleEvents $::packets
+} -cleanup {
+	::device::scale::_watchdog_cancel
+	::hds_sleep::connected 0 ""
+	resetQueues
+} -result {1 {enterQueued 0 0} False 0 1 {scale_reporting scale_reporting} {{ble1 03220000000021} {ble1 030a03ffff000a} {ble1 030a0101000108}}}
 
 cleanupTests

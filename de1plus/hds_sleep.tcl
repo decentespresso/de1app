@@ -78,7 +78,8 @@ proc ::hds_sleep::subscribed {link} {
 
 proc ::hds_sleep::isQuiet {link} {
 	variable exitRequired
-	expr {$exitRequired && [active $link]}
+	variable phase
+	expr {($exitRequired || $phase eq "enterQueued") && [active $link]}
 }
 
 proc ::hds_sleep::displayGuard {link} {
@@ -167,8 +168,10 @@ proc ::hds_sleep::send {kind} {
 }
 
 proc ::hds_sleep::queueEnter {} {
+	variable handle
 	variable phase
 	set phase enterQueued
+	::device::scale::invalidate_hds_readiness $handle
 	send enter
 }
 
@@ -224,7 +227,6 @@ proc ::hds_sleep::shouldDispatch {link connection epoch try kind payload} {
 			if {!$wantsSleep || $phase ne "enterQueued"} {return 0}
 			set phase enterAck
 			set exitRequired 1
-			::device::scale::invalidate_hds_readiness $link
 			armTimeout $writeAckTimeout
 		}
 		exit {
