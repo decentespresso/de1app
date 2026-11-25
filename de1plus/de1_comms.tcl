@@ -34,6 +34,11 @@ proc long32_to_little_endian_hex {val} {
 # msg -DEBUG "::comms exists: [namespace exists ::comms]" (no)
 
 namespace eval ::comms {
+	variable scale_ble_handle ""
+	variable scale_ble_commands {}
+	variable scale_ble_pending {}
+	variable scale_ble_deadline ""
+	variable scale_ble_attempt 0
 
 	proc ::comms::msg {first args} {
 
@@ -48,11 +53,123 @@ proc comms_msg {args} {
 	}
 }
 
-proc userdata_append {comment cmd {vital 0} } {
+proc ::comms::scale_ble_isolated {} {
+	expr {[ifexists ::has_bluetooth 0] && [ifexists ::android] eq "1" &&
+		[ifexists ::settings(scale_type)] eq "decentscale" &&
+		[ifexists ::de1(scale_connectivity)] ne "usb"}
+}
+
+proc ::comms::uses_scale_ble_queue {handle} {
+	expr {$handle ni {"" 0} && $handle eq [ifexists ::de1(scale_device_handle)] &&
+		[::comms::scale_ble_isolated]}
+}
+
+proc ::comms::is_cccd {uuid} {
+	expr {[string tolower $uuid] in {2902 00002902-0000-1000-8000-00805f9b34fb}}
+}
+
+proc ::comms::clear_scale_ble_pending {} {
+	variable scale_ble_pending
+	variable scale_ble_deadline
+	if {$scale_ble_deadline ne ""} {after cancel $scale_ble_deadline}
+	set scale_ble_deadline ""
+	set scale_ble_pending {}
+}
+
+proc ::comms::discard_scale_ble_queue {handle} {
+	variable scale_ble_handle
+	variable scale_ble_commands
+	if {$handle ne $scale_ble_handle} {return}
+	::comms::clear_scale_ble_pending
+	set scale_ble_commands {}
+	set scale_ble_handle ""
+}
+
+proc ::comms::scale_ble_ack_timeout {handle attempt} {
+	variable scale_ble_handle
+	variable scale_ble_pending
+	if {$handle ne $scale_ble_handle || $attempt ne [lindex $scale_ble_pending 0]} {return}
+	::comms::discard_scale_ble_queue $handle
+	if {![::comms::uses_scale_ble_queue $handle]} {return}
+	::comms::msg -WARNING "Scale BLE command timed out on $handle"
+	scale_disconnect_handler $handle
+}
+
+proc ::comms::run_scale_ble_queue {} {
+	variable scale_ble_handle
+	variable scale_ble_commands
+	variable scale_ble_pending
+	variable scale_ble_deadline
+	variable scale_ble_attempt
+	if {$scale_ble_pending ne {}} {return}
+	set handle $scale_ble_handle
+	if {![::comms::uses_scale_ble_queue $handle]} {
+		::comms::discard_scale_ble_queue $handle
+		return
+	}
+	while {[llength $scale_ble_commands] > 0} {
+		lassign [lindex $scale_ble_commands 0] comment cmd vital guard onAck
+		set scale_ble_commands [lrange $scale_ble_commands 1 end]
+		if {$guard ne "" && ![{*}$guard]} {continue}
+		set action [lindex $cmd 1]
+		set event [expr {$action in {enable disable} ? "descriptor" : "characteristic"}]
+		set access [expr {$action eq "read" ? "r" : "w"}]
+		set attempt [incr scale_ble_attempt]
+		set scale_ble_pending [list $attempt $event $access [string tolower [lindex $cmd 5]] $onAck]
+		set scale_ble_deadline [after 5000 [list ::comms::scale_ble_ack_timeout $handle $attempt]]
+		::comms::msg -INFO "Scale BLE DEQ: $comment"
+		set failed [catch {{*}$cmd} result]
+		if {[lindex $scale_ble_pending 0] ne $attempt || (!$failed && $result == 1)} {return}
+		::comms::clear_scale_ble_pending
+		::comms::msg -WARNING "Scale BLE command rejected on $handle: $comment ($result)"
+		if {$vital} {
+			scale_disconnect_handler $handle
+			return
+		}
+	}
+}
+
+proc ble_queue_ack {handle event access characteristic {descriptorUuid ""}} {
+	if {$handle eq $::comms::scale_ble_handle || [::comms::uses_scale_ble_queue $handle]} {
+		if {$handle eq $::comms::scale_ble_handle && [::comms::uses_scale_ble_queue $handle] &&
+			($event ne "descriptor" || [::comms::is_cccd $descriptorUuid]) &&
+			[lrange $::comms::scale_ble_pending 1 3] eq [list $event $access [string tolower $characteristic]]} {
+			set onAck [lindex $::comms::scale_ble_pending 4]
+			::comms::clear_scale_ble_pending
+			try {
+				if {$onAck ne ""} {{*}$onAck}
+			} finally {
+				::comms::run_scale_ble_queue
+			}
+		}
+		return
+	}
+	if {$handle ni {"" 0 1} && ($handle eq [ifexists ::de1(device_handle)] ||
+		$handle eq [ifexists ::currently_connecting_de1_handle] ||
+		(![::comms::scale_ble_isolated] && $handle eq [ifexists ::de1(scale_device_handle)]))} {
+		set ::de1(wrote) 0
+		run_next_userdata_cmd
+	}
+}
+
+proc userdata_append {comment cmd {vital 0} {guard ""} {onAck ""}} {
+	set entry [list $comment $cmd $vital]
+	if {$guard ne "" || $onAck ne ""} {lappend entry $guard $onAck}
+	set handle [lindex $cmd 2]
+	if {[lindex $cmd 0] eq "ble" && [lindex $cmd 1] in {read write enable disable} &&
+		[::comms::uses_scale_ble_queue $handle]} {
+		if {$::comms::scale_ble_handle ne $handle} {
+			::comms::discard_scale_ble_queue $::comms::scale_ble_handle
+			set ::comms::scale_ble_handle $handle
+		}
+		lappend ::comms::scale_ble_commands $entry
+		::comms::run_scale_ble_queue
+		return
+	}
 	#set cmds [ble userdata $::de1(device_handle)]
 	#lappend cmds $cmd
 	#ble userdata $::de1(device_handle) $cmds
-	lappend ::de1(cmdstack) [list $comment $cmd $vital]
+	lappend ::de1(cmdstack) $entry
 
 	set qlen [llength $::de1(cmdstack)]
 
@@ -88,6 +205,12 @@ proc run_next_userdata_cmd {} {
 		set cmd [lindex $::de1(cmdstack) 0]
 		set cmds [lrange $::de1(cmdstack) 1 end]
 		set vital [lindex $cmd 2]
+		set guard [lindex $cmd 3]
+		if {$guard ne "" && ![{*}$guard]} {
+			set ::de1(cmdstack) $cmds
+			after 0 run_next_userdata_cmd
+			return
+		}
 
 		set result 0
 
@@ -669,6 +792,8 @@ proc scale_disconnect_handler { handle } {
 		return
 	}
 
+	::comms::discard_scale_ble_queue $handle
+	if {![::comms::scale_ble_isolated]} {set ::de1(wrote) 0}
 	catch {
 		ble close $handle
 	}
@@ -697,9 +822,13 @@ proc scale_disconnect_handler { handle } {
 		::device::scale::event::apply::on_disconnect_callbacks $event_dict
 	}
 
+	::comms::retry_scale_ble_connection
+}
+
+proc ::comms::retry_scale_ble_connection {} {
 	if {$::de1(bluetooth_scale_connection_attempts_tried) < $::de1(scale_max_connection_retry_attempts)} {
 		incr ::de1(bluetooth_scale_connection_attempts_tried)
-		::bt::msg -INFO "Disconnected from scale, trying again automatically.  Attempts=$::de1(bluetooth_scale_connection_attempts_tried)"
+		::bt::msg -INFO "Trying BLE scale connection again. Attempts=$::de1(bluetooth_scale_connection_attempts_tried)"
 		ble_connect_to_scale
 	} else {
 		# after 5 minutes, reset the scale retrier count back to zero that when coming back 
