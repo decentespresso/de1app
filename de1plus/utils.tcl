@@ -2128,10 +2128,24 @@ proc decaid_app_candidates {platform} {
 }
 
 # Uncached check. Unsupported platforms count as installed, so the link is never offered there.
+# Decaid's APK has minSdk 28 (Android 9). Older Android refuses it with "There was a problem parsing the package".
+set ::decaid_android_min_sdk 28
+
+# Android API level, or 0 when unknown.
+proc decaid_android_sdk {} {
+	if {[catch {osbuildinfo_as_dict [borg osbuildinfo]} bi]} { return 0 }
+	set sdk [expr {[dict exists $bi version.sdk] ? [dict get $bi version.sdk] : 0}]
+	if {![string is integer -strict $sdk]} { return 0 }
+	return $sdk
+}
+
 proc decaid_check_installed {platform} {
 	if {[decaid_env DE1_DECAID_PRETEND_MISSING] ne ""} { return 0 }
 	switch -- $platform {
 		android {
+			# too old for Decaid: count it as installed so no link is offered
+			set sdk [decaid_android_sdk]
+			if {$sdk > 0 && $sdk < $::decaid_android_min_sdk} { return 1 }
 			if {[catch {borg packageinfo net.tadel.reaprime} info]} { return 0 }
 			return [expr {[llength $info] > 0}]
 		}

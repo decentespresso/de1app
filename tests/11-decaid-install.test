@@ -17,9 +17,10 @@ proc load_procs {path names} {
 load_procs [file join $root de1plus utils.tcl] {
     decaid_platform decaid_asset_name decaid_download_url decaid_env decaid_home decaid_windows_install_dir
     decaid_marker_file decaid_marker_executable decaid_app_candidates decaid_check_installed decaid_is_installed
-    decaid_install_link_text decaid_ps_quote decaid_install_confirmed
+    decaid_install_link_text decaid_ps_quote decaid_install_confirmed decaid_android_sdk
 }
-load_procs [file join $root de1plus updater.tcl] {read_file}
+set ::decaid_android_min_sdk 28
+load_procs [file join $root de1plus updater.tcl] {read_file osbuildinfo_as_dict}
 proc ifexists {varname {default ""}} {upvar 1 $varname v; if {[info exists v]} {return $v}; return $default}
 proc translate {s} {return $s}
 proc msg {args} {}
@@ -111,6 +112,16 @@ test android-detection {borg packageinfo decides on Android; an error means not 
     proc borg {args} {return {classname x datadir /data/data/net.tadel.reaprime}}
     lappend r [decaid_check_installed android]
 } -cleanup {rename borg {}; restore_env} -result {0 0 1}
+
+test android-too-old {Android older than 9 gets no link, since Decaid's APK will not install there} -setup fresh_home -body {
+    set r {}
+    proc borg {cmd args} {
+        if {$cmd eq "osbuildinfo"} { return [list manufacturer x version.sdk $::test_sdk] }
+        error "not found"
+    }
+    foreach ::test_sdk {24 27 28 34 {}} { lappend r [decaid_check_installed android] }
+    set r
+} -cleanup {rename borg {}; unset -nocomplain ::test_sdk; restore_env} -result {1 1 0 0 0}
 
 test link-text {link shows only when missing; a running install's status wins} -setup fresh_home -body {
     set ::iwish 0; set ::android 0
