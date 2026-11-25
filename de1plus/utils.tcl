@@ -1411,6 +1411,36 @@ proc settings_contents_valid {contents} {
     return [expr {$n % 2 == 0}]
 }
 
+# A settings key is always a single bare word. Content that is not a legacy
+# settings list parses as ONE giant list element, which [foreach {k v}] then
+# stores AS a key. Such a key is not itself a parseable list, so every later
+# [huddle create {*}[array get ::settings]] dies with "list element in quotes
+# followed by \":\" instead of space" -- i.e. no shot is saved to history,
+# on every shot, until the key is gone.
+proc valid_setting_key {k} {
+    if {[catch {llength $k} n]} {return 0}
+    return [expr {$n == 1}]
+}
+
+# Which format a profile file actually holds: the extension and folder say
+# nothing, users rename a v2 profile to .tcl and drop it into profiles/. A legacy
+# file is a Tcl "key value" list whose first key never needs bracing, so only
+# JSON ever starts with { or [.
+proc looks_like_json {contents} {
+    return [expr {[string index [string trimleft $contents] 0] in [list "\{" "\["]}]
+}
+
+# ponytail: prune, not repair -- a key that is not a setting name carries no
+# value worth keeping.
+proc prune_invalid_settings {} {
+    foreach k [array names ::settings] {
+        if {![valid_setting_key $k]} {
+            msg -ERROR "discarding damaged settings key: '[string range $k 0 60]'"
+            unset ::settings($k)
+        }
+    }
+}
+
 # Keep a copy of a damaged settings file before anything replaces it, so it can
 # still be looked at by hand.
 proc preserve_damaged_settings {filename contents} {
@@ -1519,6 +1549,7 @@ proc load_settings {} {
         }
     } else {
         array set ::settings $settings_file_contents
+        prune_invalid_settings
 
         msg -NOTICE "OS build info: $osbuildinfo_string"
 

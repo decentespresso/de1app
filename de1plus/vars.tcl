@@ -3438,9 +3438,34 @@ proc load_settings_vars {fn} {
 	set ::settings(settings_profile_type) "settings_2a"
 
 
+	# Decide by content, not by the file name: a v2 (JSON) profile saved or
+	# renamed as .tcl in profiles/ is the common way this goes wrong. Convert it
+	# on the fly so the import just works; only genuinely unusable JSON is
+	# refused.
+	set profile_contents ""
+	catch {set profile_contents [encoding convertfrom utf-8 [read_binary_file $fn]]}
+	if {[looks_like_json $profile_contents]} {
+		set converted [::profile::v2_json_to_legacy $profile_contents]
+		if {$converted eq ""} {
+			msg -ERROR "load_settings_vars: '$fn' is JSON but not a usable v2 profile; ignoring it"
+			catch {popup [translate_toast "That preset file could not be read"]}
+			return
+		}
+		msg -NOTICE "load_settings_vars: '$fn' is a v2 (JSON) profile, imported as an advanced profile"
+		set profile_contents $converted
+	}
+
 	catch {
-		foreach {k v} [encoding convertfrom utf-8 [read_binary_file $fn]] {
+		foreach {k v} $profile_contents {
 			#set ::settings($k) $v
+			# Backstop for any other non-legacy content: it parses as one giant
+			# list element and would land in the settings array AS a key,
+			# poisoning every later [array get ::settings] -> huddle dump
+			# (i.e. saving a shot).
+			if {![valid_setting_key $k]} {
+				msg -ERROR "load_settings_vars: '$fn' is not a legacy profile file, skipping its contents"
+				continue
+			}
 			set temp_settings($k) $v
 		}
 	}
