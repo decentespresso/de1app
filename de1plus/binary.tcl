@@ -2086,7 +2086,7 @@ proc update_de1_state {statechar} {
 
 			Sleep {
 				if { $previous_state != "Sleep" } {
-					scale_disable_lcd
+					scale_sleep_display
 				}
 			}
 		}
@@ -2099,9 +2099,10 @@ proc update_de1_state {statechar} {
 
 			if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
 				msg -INFO "Back from sleep, try to connect to scale automatically (if it is currently disconnected)"
+				::hds_sleep::setIntent 0
 				ble_connect_to_scale
 			} else {
-				scale_enable_lcd
+				scale_wake_display
 			}
 		}
 

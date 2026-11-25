@@ -97,9 +97,11 @@ namespace eval ::device::scale {
 
 	variable _watchdog_timeout 1000
 	variable _watchdog_tickle_timeout 2000
+	variable _watchdog_ack_timeout 10000
 	variable _watchdog_update_tries 10
 
 	variable _watchdog_id ""
+	variable _watchdog_generation 0
 	variable _watchdog_updates_seen False
 	variable _handled_disconnect_handle ""
 
@@ -140,7 +142,8 @@ namespace eval ::device::scale {
 
 	proc is_operational {} {
 		if { [::de1::packet::use_ble_v2] && $::de1(scale_device_handle) == 0 } { return 1 }
-		expr { [::device::scale::is_connected] && $::device::scale::_watchdog_updates_seen }
+		expr { [::device::scale::is_connected] && $::device::scale::_watchdog_updates_seen \
+			&& ![_watchdog_quiet $::de1(scale_device_handle)] }
 	}
 
 	proc should_handle_disconnect {handle} {
@@ -368,6 +371,7 @@ namespace eval ::device::scale {
 			msg -DEBUG "Ignoring weight packet from stale scale handle $handle"
 			return False
 		}
+		if { [_watchdog_quiet $handle] } { return False }
 
 		::device::scale::watchdog_tickle $handle $command
 		::device::scale::process_weight_update $reported_weight $event_time
@@ -478,17 +482,26 @@ namespace eval ::device::scale {
 		} else {
 			after cancel $::device::scale::_watchdog_id
 		}
-		set handle $::de1(scale_device_handle)
-		set ::device::scale::_watchdog_id \
-			[ after $::device::scale::_watchdog_timeout \
-				  [list ::device::scale::_watchdog_first_fire $handle 1] ]
-
+		_watchdog_first_arm $::de1(scale_device_handle) 1
 	}
 
-	proc _watchdog_first_fire {handle tries} {
+	proc _watchdog_first_arm {handle tries} {
+		set generation [incr ::device::scale::_watchdog_generation]
+		set ::device::scale::_watchdog_id \
+			[ after $::device::scale::_watchdog_timeout \
+				  [list ::device::scale::_watchdog_first_fire $handle $tries $generation] ]
+	}
 
-		if { $handle == 0 || ! [::device::scale::is_connected] || $handle != $::de1(scale_device_handle) } {
+	proc _watchdog_first_fire {handle tries generation} {
+
+		if { $generation != $::device::scale::_watchdog_generation || $handle == 0 \
+				|| ! [::device::scale::is_connected] || $handle != $::de1(scale_device_handle) } {
 			msg -DEBUG "Ignoring stale scale watchdog for handle $handle"
+			return
+		}
+
+		if { [_watchdog_quiet $handle] } {
+			_watchdog_first_arm $handle $tries
 			return
 		}
 
@@ -507,9 +520,7 @@ namespace eval ::device::scale {
 
 			scale_enable_weight_notifications
 
-			set ::device::scale::_watchdog_id \
-				[ after $::device::scale::_watchdog_timeout \
-					  [list ::device::scale::_watchdog_first_fire $handle [incr tries]] ]
+			_watchdog_first_arm $handle [incr tries]
 		}
 	}
 
@@ -538,12 +549,57 @@ namespace eval ::device::scale {
 		}
 
 		after cancel $::device::scale::_watchdog_id
-
-		set ::device::scale::_watchdog_id [ after $::device::scale::_watchdog_tickle_timeout \
-				  [list ::device::scale::_watchdog_fire] ]
+		_watchdog_arm $handle
 	}
 
-	proc _watchdog_fire {} {
+	proc _watchdog_arm {handle {phase stream}} {
+		set generation [incr ::device::scale::_watchdog_generation]
+		set timeout [expr {$phase eq "awaitAck" ? $::device::scale::_watchdog_ack_timeout \
+			: $::device::scale::_watchdog_tickle_timeout}]
+		set ::device::scale::_watchdog_id [after $timeout \
+			[list ::device::scale::_watchdog_fire $handle $generation $phase]]
+		return $generation
+	}
+
+	proc _watchdog_current {handle generation} {
+		expr {$generation == $::device::scale::_watchdog_generation \
+			&& $::device::scale::_watchdog_id ne "" \
+			&& ($handle eq "" || $handle eq $::de1(scale_device_handle))}
+	}
+
+	proc _watchdog_quiet {handle} {
+		expr { [::comms::uses_scale_ble_queue $handle] && [llength [info commands ::hds_sleep::isQuiet]] \
+			&& [::hds_sleep::isQuiet $handle] }
+	}
+
+	proc invalidate_hds_readiness {handle} {
+		if { $handle ne [ifexists ::de1(scale_device_handle)] || ![_watchdog_quiet $handle] } { return }
+		set ::device::scale::_watchdog_updates_seen False
+		set ::device::scale::_last_weight_update_time 0
+	}
+
+	proc _watchdog_recovery_current {handle generation} {
+		expr {[_watchdog_current $handle $generation] && [::comms::uses_scale_ble_queue $handle]
+			&& ![_watchdog_quiet $handle]}
+	}
+
+	proc _watchdog_recovery_ack {handle generation} {
+		if {![_watchdog_recovery_current $handle $generation]} { return }
+		after cancel $::device::scale::_watchdog_id
+		_watchdog_arm $handle awaitWeight
+	}
+
+	proc _watchdog_fire {handle generation phase} {
+		if {![_watchdog_current $handle $generation]} { return }
+		if {[_watchdog_quiet $handle]} {
+			_watchdog_arm $handle
+			return
+		}
+		if {$phase ne "stream"} {
+			set ::device::scale::_watchdog_id ""
+			if {[::comms::uses_scale_ble_queue $handle]} { scale_disconnect_handler $handle }
+			return
+		}
 
 		# Guard against a spurious wake-up: if a weight update actually arrived
 		# within the tickle window, the stream is alive and this fire is stale
@@ -553,19 +609,24 @@ namespace eval ::device::scale {
 		set since [expr { ([clock milliseconds] / 1000.0) \
 			- $::device::scale::_last_weight_update_time }]
 		if { $since < ($::device::scale::_watchdog_tickle_timeout / 1000.0) } {
-			set ::device::scale::_watchdog_id [ after $::device::scale::_watchdog_tickle_timeout \
-					  [list ::device::scale::_watchdog_fire] ]
+			_watchdog_arm $handle
 			return
 		}
 
+		set ::device::scale::_watchdog_id ""
 		msg -WARNING "Scale watchdog TIMEOUT"
 		::gui::notify::scale_event timeout_updates
-
-		set ::device::scale::_watchdog_id ""
 		set ::device::scale::_watchdog_updates_seen False
+		if {[::comms::uses_scale_ble_queue $handle]} {
+			set generation [_watchdog_arm $handle awaitAck]
+			decentscale_enable_notifications \
+				[list ::device::scale::_watchdog_recovery_current $handle $generation] \
+				[list ::device::scale::_watchdog_recovery_ack $handle $generation]
+		}
 	}
 
 	proc _watchdog_cancel {} {
+		incr ::device::scale::_watchdog_generation
 
 		if { $::device::scale::_watchdog_id != "" } {
 			after cancel $::device::scale::_watchdog_id

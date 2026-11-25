@@ -1209,7 +1209,7 @@ proc start_idle {} {
 	#after 1000 read_de1_state
 	
 	if {$::de1(scale_device_handle) != 0} {
-		scale_enable_lcd
+		scale_wake_display
 	}
 
 	if {!$::has_bluetooth} {
@@ -1260,7 +1260,7 @@ proc start_schedIdle {} {
 
 	
 	if {$::de1(scale_device_handle) != 0} {
-		scale_enable_lcd
+		scale_wake_display
 	}
 }
 
@@ -1305,7 +1305,7 @@ proc start_sleep {} {
 
 	if {$::de1(scale_device_handle) != 0} {
 
-		scale_disable_lcd
+		scale_sleep_display
 		if {$::settings(keep_scale_on) != 1} {			
 			userdata_append "SCALE: decentscale : disconnect" [list after 1000 scale_disconnect_now] 0
 			popup [translate "Disconnecting from scale"]
